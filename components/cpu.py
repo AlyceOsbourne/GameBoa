@@ -5,6 +5,21 @@ from dataclasses import dataclass
 
 import constants
 from cartridge import Cartridge
+import operator
+
+# we need a timer class that can be ticked at a sonsitent rate
+class Timer:
+    def __init__(self, frequency=4194304):
+        self.frequency = frequency
+        self.last_tick = time.time()
+        self.seconds_per_tick = 1 / self.frequency
+
+    def tick(self):
+        current_time = time.time()
+        if current_time - self.last_tick >= self.seconds_per_tick:
+            self.last_tick = current_time
+            return True
+        return False
 
 
 @dataclass
@@ -61,6 +76,7 @@ class Register:
 
 
 class CPU:
+    timer: Timer = Timer()
     cartridge: Cartridge = None
     ppu = bytearray(0x2000)
     wram = bytearray(0x2000)
@@ -192,88 +208,64 @@ class CPU:
                 return self.fetch16()
             case 'a8' | 'r8' | 'd8':
                 return self.fetch()
-            case '(BC)' | '(DE)' | '(HL)' | '(HL+)' | '(HL-)' | '(C)':
+            case '(BC)' | '(DE)' | '(HL)' | '(HL+)' | '(HL-)' | '(C)' | '(a16)' | '(a8)':
                 return self.read_address(self.read_operator(operator[1:-1]))
-            case '(a8)':
-                return self.read_address(self.read_operator('a8'))
-            case '(a16)':
-                return self.read_address(self.read_operator('a16'))
             case 'Z' | 'N' | 'H' | 'C':
                 return self.read_flag(operator)
+            case 'HL+' | 'HL-':
+                value = self.read_operator('HL')
+                self.write_operator('HL', value + (1 if operator[-1] == '+' else -1))
+                return value
             case '38H':
                 return 0x38
-            case 'HL+':
-                value = self.read_operator('HL')
-                self.write_operator('HL', value + 1)
-                return value
-            case 'HL-':
-                value = self.read_operator('HL')
-                self.write_operator('HL', value - 1)
-                return value
             case 'NZ':
                 return not self.read_flag('Z')
-            case None:
-                return None
             case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12' | '13' | '14' | '15':
                 return int(operator)
+            case None:
+                return None
             case _:
                 raise ValueError(f'Invalid operator: {repr(operator)}')
 
     def write_operator(self, operator: str, value: int | bool):
         match operator:
-            case 'A' | 'B' | 'C' | 'D' | 'E' | 'H' | 'L' | 'F':
+            case 'A' | 'B' | 'C' | 'D' | 'E' | 'H' | 'L' | 'F' | 'AF' | 'BC' | 'DE' | 'HL' | 'SP' | 'PC':
                 self.write_register(operator.lower(), value)
-            case 'AF' | 'BC' | 'DE' | 'HL':
-                self.write_register(operator.lower(), value)
-            case 'SP':
-                self.reg.sp = value
-            case 'PC':
-                self.reg.pc = value
-            case '(BC)' | '(DE)' | '(HL)' | '(HL+)' | '(HL-)' | '(C)':
+            case '(BC)' | '(DE)' | '(HL)' | '(HL+)' | '(HL-)' | '(C)' | '(a16)' | '(a8)':
                 self.write_address(self.read_operator(operator[1:-1]), value)
-            case '(a8)':
-                self.write_address(self.read_operator('a8'), value)
-            case '(a16)':
-                self.write_address(self.read_operator('a16'), value)
             case 'Z' | 'N' | 'H' | 'C':
                 self.write_flag(operator, value)
-            case 'a8':
-                self.write_address(self.read_operator('a8'), value)
-            case 'a16':
-                self.write_address(self.read_operator('a16'), value)
-            case 'NZ':
-                self.write_flag('Z', not value)
+            case 'a8' | 'r8' | 'd8':
+                self.write_address(self.read_operator(operator), value)
+            case 'a16' | 'd16':
+                self.write_address(self.read_operator(operator), value)
+            case 'NZ' | 'NC':
+                self.write_flag(operator[0], not value)
             case '38H':
                 pass
             case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12' | '13' | '14' | '15':
-                mapping = {
-                    '0': 'B',
-                    '1': 'C',
-                    '2': 'D',
-                    '3': 'E',
-                    '4': 'H',
-                    '5': 'L',
-                    '6': '(HL)',
-                    '7': 'A',
-                    '8': 'B',
-                    '9': 'C',
-                    '10': 'D',
-                    '11': 'E',
-                    '12': 'H',
-                    '13': 'L',
-                    '14': '(HL)',
-                    '15': 'A',
-                }[operator]
-                self.write_operator(mapping, value)
-
-            case 'd8':
-                self.write_operator('a8', value)
-
+                self.write_operator({
+                                        '0': 'B',
+                                        '1': 'C',
+                                        '2': 'D',
+                                        '3': 'E',
+                                        '4': 'H',
+                                        '5': 'L',
+                                        '6': '(HL)',
+                                        '7': 'A',
+                                        '8': 'B',
+                                        '9': 'C',
+                                        '10': 'D',
+                                        '11': 'E',
+                                        '12': 'H',
+                                        '13': 'L',
+                                        '14': '(HL)',
+                                        '15': 'A',
+                                    }[operator], value)
             case 'HL+':
                 self.write_operator('HL', value + 1)
             case 'HL-':
                 self.write_operator('HL', value - 1)
-
             case None:
                 pass
             case _:
@@ -287,15 +279,14 @@ class CPU:
     def fetch16(self):
         return self.fetch() | (self.fetch() << 8)
 
-    def decode(self, opcode):
+    def decode(self, opcode: int):
         constants.logger.debug(f'PC: {self.reg.pc:04X} | Opcode: {opcode} | CB: {self.is_cb}')
-        if self.check_cb(opcode):
-            self.is_cb = True
-            opcode = self.fetch()
+        if self.is_cb:
+            self.is_cb = False
             return self.cb_instructions[opcode]
         else:
-            self.is_cb = False
             return self.instructions[opcode]
+
 
     def execute(self, instruction: constants.Instruction):
         operator_1, operator_2 = instruction.operand1, instruction.operand2
@@ -307,59 +298,34 @@ class CPU:
                 self.halted = True
             case 'STOP':
                 self.stopped = True
-            ## interrupts
-            case 'EI':
-                self.ime_delay = True
-            case 'DI':
-                self.ime = False
-            # math
-            case 'ADD':
-                value = self.read_operator(operator_1) + self.read_operator(operator_2)
-                self.write_operator(operator_1, value)
-                self.write_flags(Z=value == 0, N=False, H=(value & 0xF) < (self.read_operator(operator_1) & 0xF),
-                                 C=value > 0xFF)
-            case 'ADC':
-                value = self.read_operator(operator_1) + self.read_operator(operator_2) + self.read_flag('C')
-                self.write_operator(operator_1, value)
-                self.write_flags(Z=value == 0, N=False, H=(value & 0xF) < (self.read_operator(operator_1) & 0xF),
-                                 C=value > 0xFF)
-            case 'SUB':
-                value = self.read_operator(operator_1) - self.read_operator(operator_2)
-                self.write_operator(operator_1, value)
-                self.write_flags(Z=value == 0, N=True, H=(value & 0xF) > (self.read_operator(operator_1) & 0xF),
-                                 C=value < 0)
-            case 'SBC':
-                value = self.read_operator(operator_1) - self.read_operator(operator_2) - self.read_flag('C')
-                self.write_operator(operator_1, value)
-                self.write_flags(Z=value == 0, N=True, H=(value & 0xF) > (self.read_operator(operator_1) & 0xF),
-                                 C=value < 0)
 
-            case 'AND' if operator_2 is None:
-                value = self.read_operator(operator_1) & self.read_operator('A')
-                self.write_operator(operator_1, value)
-                self.write_flags(Z=value == 0, N=False, H=True, C=False)
+            case 'EI' | 'DI':
+                self.ime = instruction.mnemonic == 'EI'
 
-            case 'AND':
-                value = self.read_operator(operator_1) & self.read_operator(operator_2)
-                self.write_operator(operator_1, value)
-                self.write_flags(Z=value == 0, N=False, H=True, C=False)
-            case 'OR' if operator_2 is None:
-                value = self.read_operator(operator_1) | self.read_operator('A')
-                self.write_operator(operator_1, value)
-                self.write_flags(Z=value == 0, N=False, H=False, C=False)
-            case 'OR':
-                value = self.read_operator(operator_1) | self.read_operator(operator_2)
-                self.write_operator(operator_1, value)
-                self.write_flags(Z=value == 0, N=False, H=False, C=False)
 
-            case 'XOR' if operator_2 is None:
-                value = self.read_operator(operator_1) ^ self.read_operator(operator_1)
-                self.write_operator(operator_1, value)
-                self.write_flags(Z=value == 0, N=False, H=False, C=False)
-            case 'XOR':
-                value = self.read_operator(operator_1) ^ self.read_operator(operator_2)
-                self.write_operator(operator_1, value)
-                self.write_flags(Z=value == 0, N=False, H=False, C=False)
+
+            case 'ADD' | 'ADC' | 'SUB' | 'SBC':
+                value_1 = self.read_operator(operator_1)
+                value_2 = self.read_operator(operator_2 if operator_2 is not None else 'A')
+                do_add = instruction.mnemonic[0] == 'A'
+                op = operator.add if do_add else operator.sub
+                result = op(op(value_1, value_2), self.read_flag('C') if instruction.mnemonic[-1] else 0)
+                self.write_operator(operator_1, result)
+                self.write_flags(
+                    Z=result == 0,
+                    N=do_add,
+                    H= (operator.lt if do_add else operator.gt)(result & 0xF, value_1 & 0xf),
+                    C= (operator.gt if do_add else operator.lt(result, 0xff if do_add else 0)
+                ))
+
+            case 'AND' | 'OR' | 'XOR':
+                value_1 = self.read_operator(operator_1)
+                value_2 = self.read_operator(operator_2 if operator_2 is not None else 'A')
+                op = operator.and_ if instruction.mnemonic[0] == 'A' else operator.or_ if instruction.mnemonic[0] == 'O' else operator.xor
+                res = op(value_1, value_2)
+                self.write_operator(operator_1, res)
+                self.write_flags(Z=res == 0, N=False, H= instruction.mnemonic[0] == 'A', C=False)
+
             case 'CP' if operator_2 is None:
                 value = self.read_operator(operator_1)
                 self.write_flags(Z=value == 0, N=True, H=(value & 0xF) > (self.read_operator(operator_1) & 0xF),
@@ -434,23 +400,16 @@ class CPU:
             # jumps
             case 'JP' if operator_2 is None:
                 self.write_operator('PC', self.read_operator(operator_1))
-            case 'JP':
-                self.write_operator(operator_1, self.read_operator(operator_2))
+
             case 'JR' if operator_2 is None:
                 self.write_operator('PC', self.read_operator('PC') + self.read_operator(operator_1))
             case 'JR':
                 self.write_operator(operator_1, self.read_operator(operator_1) + self.read_operator(operator_2))
+
             case 'CALL' if operator_2 is None:
                 self.write_operator('SP', self.read_operator('SP') - 2)
                 self.write_operator('PC', self.read_operator(operator_1))
-            case 'CALL':
-                self.write_operator(operator_1, self.read_operator(operator_2))
-            case 'RET':
-                self.write_operator(operator_1, self.read_operator(operator_2))
-            case 'RST':
-                self.write_operator(operator_1, self.read_operator(operator_2))
-            case 'RETI':
-                self.write_operator(operator_1, self.read_operator(operator_2))
+
             # bit operations
             case 'BIT':
                 value = self.read_operator(operator_1)
@@ -461,45 +420,25 @@ class CPU:
             case 'RES':
                 value = self.read_operator(operator_1)
                 self.write_operator(operator_1, value & ~(1 << self.read_operator(operator_2)))
-            case 'LD':
-                self.write_operator(operator_1, self.read_operator(operator_2))
-            case 'LDH':
-                self.write_operator(operator_1, self.read_operator(operator_2))
-            case 'LDHL':
-                self.write_operator(operator_1, self.read_operator(operator_2))
-            case 'PUSH':
-                self.write_operator(operator_1, self.read_operator(operator_2))
-            case 'POP':
-                self.write_operator(operator_1, self.read_operator(operator_2))
             case 'SWAP':
                 value = self.read_operator(operator_1)
                 self.write_operator(operator_1, ((value & 0xF) << 4) | ((value & 0xF0) >> 4))
                 self.write_flags(Z=value == 0, N=False, H=False, C=False)
-            case 'DI':
-                self.write_operator(operator_1, self.read_operator(operator_2))
-            case 'EI':
-                self.write_operator(operator_1, self.read_operator(operator_2))
-            case 'HALT':
-                self.write_operator(operator_1, self.read_operator(operator_2))
-            case 'STOP':
-                self.write_operator(operator_1, self.read_operator(operator_2))
+
             case 'PREFIX':
+                self.is_cb = True
+
+            case 'LD' | 'LDH' | 'LDHL' | 'PUSH' | 'POP' | 'DI' | 'EI' | 'CALL' | 'RET' | 'RST' | 'RETI' | 'JP':
                 self.write_operator(operator_1, self.read_operator(operator_2))
+
             case _:
                 print('Unknown instruction: ' + instruction.mnemonic)
         return instruction
 
     def step(self):
-        op_code = self.fetch()
-        constants.logger.debug('Op code: ' + hex(op_code))
-        instruction = self.decode(op_code)
-        constants.logger.debug(f"Instruction {instruction.mnemonic} {instruction.operand1} {instruction.operand2}")
-        self.execute(instruction)
-        constants.logger.debug('Registers: ' + str(self.reg))
-        constants.logger.debug('Flags: ' + str(self.read_flags('ZNHC')))
-        return instruction
+        return self.execute(self.decode(self.fetch()))
 
-    def run(self, cart):
+    def run(self, cart: Cartridge):
         constants.logger.debug('Running | ' + cart.title)
         self.cartridge = cart
         self.reset()
@@ -518,14 +457,8 @@ class CPU:
             self.write_register(register, value)
 
     @staticmethod
-    def check_cb(opcode):
+    def check_cb(opcode: int):
         return opcode in [0xCB, 0xDDCB, 0xEDCB, 0xFDCB]
-
-    def draw_ppu(self):
-        for y in range(0, 144):
-            for x in range(0, 160):
-                print(self.ppu[x + y], end='')
-            print()
 
     def print_registers(self):
         print('Registers: ' + str(self.reg))
@@ -537,11 +470,7 @@ class CPU:
 if __name__ == "__main__":
     cpu = CPU()
     cpu.reset()
-    cpu.print_registers()
-    cpu.print_flags()
+    input()
     for instruction in cpu.run(Cartridge('Tetris.gb')):
-        print(instruction.mnemonic, instruction.operand1, instruction.operand2)
-        cpu.print_registers()
-        cpu.print_flags()
-        print()
+        ...
     print('Done')

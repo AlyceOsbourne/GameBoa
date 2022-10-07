@@ -95,9 +95,9 @@ class Cartridge:
 
     mem_view = property(lambda self: self.hex_table(0x00, len(self.rom_data)))
 
-    def read_rom(self, address):
+    def read_rom(self, address:int):
         return self.rom_data[address]
 
-    def write_rom(self, address, value):
+    def write_rom(self, address:int, value:int):
         self.rom_data[address] = value
 

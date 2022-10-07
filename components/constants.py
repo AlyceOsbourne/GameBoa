@@ -4,7 +4,7 @@ from collections import namedtuple
 from enum import Enum, Flag
 
 logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
+logger.setLevel(logging.DEBUG)
 fh = logging.FileHandler('debug.log')
 fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
@@ -17,6 +17,9 @@ logger.addHandler(ch)
 
 rom_bank_size = 0x4000
 ram_bank_size = 0x2000
+screen_width = 160
+screen_height = 144
+
 
 old_licensee_codes = {
     0x00: 'None',
