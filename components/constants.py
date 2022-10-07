@@ -4,7 +4,7 @@ from collections import namedtuple
 from enum import Enum, Flag
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.ERROR)
 fh = logging.FileHandler('debug.log')
 fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()

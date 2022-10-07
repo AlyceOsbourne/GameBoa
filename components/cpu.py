@@ -7,7 +7,6 @@ import constants
 from cartridge import Cartridge
 
 
-
 @dataclass
 class Register:
     a: int = 0x01
@@ -57,15 +56,18 @@ class Register:
         self.h = (value >> 8) & 0xFF
         self.l = value & 0xFF
 
+    def __str__(self):
+        return f'AF: {self.af:04X} BC: {self.bc:04X} DE: {self.de:04X} HL: {self.hl:04X} SP: {self.sp:04X} PC: {self.pc:04X}'
+
 
 class CPU:
     cartridge: Cartridge = None
+    ppu = bytearray(0x2000)
     wram = bytearray(0x2000)
     vram = bytearray(0x2000)
     eram = bytearray(0x2000)
     hram = bytearray(0x80)
     oam = bytearray(0xA0)
-    ppu = bytearray(0x40)
     io = bytearray(0x80)
 
     reg: Register = Register()
@@ -76,6 +78,7 @@ class CPU:
     ime: bool = False
     ime_delay: bool = False
     is_cb: bool = False
+    screen = []
 
     def read_address(self, address: int):
         match address:
@@ -153,7 +156,7 @@ class CPU:
             case constants.MemoryMapRanges.ECHO:
                 constants.logger.debug(f'ECHO: {address:04X}')
                 self.write_address(address - 0x2000, value)
-            case constants.MemoryMapRanges.UNUSABLE:
+            case constants.MemoryMapRanges.UNUSED:
                 pass
             case _:
                 raise Exception(f"Invalid address: {hex(address)}")
@@ -183,22 +186,12 @@ class CPU:
 
     def read_operator(self, operator: str):
         match operator:
-            case 'A' | 'B' | 'C' | 'D' | 'E' | 'H' | 'L' | 'F':
+            case 'A' | 'B' | 'C' | 'D' | 'E' | 'H' | 'L' | 'F' | 'AF' | 'BC' | 'DE' | 'HL' | 'SP' | 'PC':
                 return self.read_register(operator.lower())
-            case 'AF' | 'BC' | 'DE' | 'HL':
-                return self.read_register(operator.lower())
-            case 'SP':
-                return self.reg.sp
-            case 'PC':
-                return self.reg.pc
-            case 'd8':
-                return self.fetch()
-            case 'd16':
+            case 'd16' | 'a16':
                 return self.fetch16()
-            case 'a8':
+            case 'a8' | 'r8' | 'd8':
                 return self.fetch()
-            case 'a16':
-                return self.fetch16()
             case '(BC)' | '(DE)' | '(HL)' | '(HL+)' | '(HL-)' | '(C)':
                 return self.read_address(self.read_operator(operator[1:-1]))
             case '(a8)':
@@ -209,10 +202,22 @@ class CPU:
                 return self.read_flag(operator)
             case '38H':
                 return 0x38
+            case 'HL+':
+                value = self.read_operator('HL')
+                self.write_operator('HL', value + 1)
+                return value
+            case 'HL-':
+                value = self.read_operator('HL')
+                self.write_operator('HL', value - 1)
+                return value
+            case 'NZ':
+                return not self.read_flag('Z')
             case None:
                 return None
+            case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12' | '13' | '14' | '15':
+                return int(operator)
             case _:
-                raise ValueError(f'Invalid operator: {operator}')
+                raise ValueError(f'Invalid operator: {repr(operator)}')
 
     def write_operator(self, operator: str, value: int | bool):
         match operator:
@@ -236,15 +241,48 @@ class CPU:
                 self.write_address(self.read_operator('a8'), value)
             case 'a16':
                 self.write_address(self.read_operator('a16'), value)
+            case 'NZ':
+                self.write_flag('Z', not value)
             case '38H':
                 pass
+            case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12' | '13' | '14' | '15':
+                mapping = {
+                    '0': 'B',
+                    '1': 'C',
+                    '2': 'D',
+                    '3': 'E',
+                    '4': 'H',
+                    '5': 'L',
+                    '6': '(HL)',
+                    '7': 'A',
+                    '8': 'B',
+                    '9': 'C',
+                    '10': 'D',
+                    '11': 'E',
+                    '12': 'H',
+                    '13': 'L',
+                    '14': '(HL)',
+                    '15': 'A',
+                }[operator]
+                self.write_operator(mapping, value)
+
+            case 'd8':
+                self.write_operator('a8', value)
+
+            case 'HL+':
+                self.write_operator('HL', value + 1)
+            case 'HL-':
+                self.write_operator('HL', value - 1)
+
             case None:
                 pass
             case _:
                 raise ValueError(f'Invalid operator: {operator}')
 
     def fetch(self):
-        return self.read_address(self.read_register('pc'))
+        pc = self.read_register('pc')
+        self.write_register('pc', self.read_register('pc') + 1)
+        return self.read_address(pc)
 
     def fetch16(self):
         return self.fetch() | (self.fetch() << 8)
@@ -295,12 +333,27 @@ class CPU:
                 self.write_operator(operator_1, value)
                 self.write_flags(Z=value == 0, N=True, H=(value & 0xF) > (self.read_operator(operator_1) & 0xF),
                                  C=value < 0)
+
+            case 'AND' if operator_2 is None:
+                value = self.read_operator(operator_1) & self.read_operator('A')
+                self.write_operator(operator_1, value)
+                self.write_flags(Z=value == 0, N=False, H=True, C=False)
+
             case 'AND':
                 value = self.read_operator(operator_1) & self.read_operator(operator_2)
                 self.write_operator(operator_1, value)
                 self.write_flags(Z=value == 0, N=False, H=True, C=False)
+            case 'OR' if operator_2 is None:
+                value = self.read_operator(operator_1) | self.read_operator('A')
+                self.write_operator(operator_1, value)
+                self.write_flags(Z=value == 0, N=False, H=False, C=False)
             case 'OR':
                 value = self.read_operator(operator_1) | self.read_operator(operator_2)
+                self.write_operator(operator_1, value)
+                self.write_flags(Z=value == 0, N=False, H=False, C=False)
+
+            case 'XOR' if operator_2 is None:
+                value = self.read_operator(operator_1) ^ self.read_operator(operator_1)
                 self.write_operator(operator_1, value)
                 self.write_flags(Z=value == 0, N=False, H=False, C=False)
             case 'XOR':
@@ -383,8 +436,13 @@ class CPU:
                 self.write_operator('PC', self.read_operator(operator_1))
             case 'JP':
                 self.write_operator(operator_1, self.read_operator(operator_2))
+            case 'JR' if operator_2 is None:
+                self.write_operator('PC', self.read_operator('PC') + self.read_operator(operator_1))
             case 'JR':
                 self.write_operator(operator_1, self.read_operator(operator_1) + self.read_operator(operator_2))
+            case 'CALL' if operator_2 is None:
+                self.write_operator('SP', self.read_operator('SP') - 2)
+                self.write_operator('PC', self.read_operator(operator_1))
             case 'CALL':
                 self.write_operator(operator_1, self.read_operator(operator_2))
             case 'RET':
@@ -403,13 +461,35 @@ class CPU:
             case 'RES':
                 value = self.read_operator(operator_1)
                 self.write_operator(operator_1, value & ~(1 << self.read_operator(operator_2)))
+            case 'LD':
+                self.write_operator(operator_1, self.read_operator(operator_2))
+            case 'LDH':
+                self.write_operator(operator_1, self.read_operator(operator_2))
+            case 'LDHL':
+                self.write_operator(operator_1, self.read_operator(operator_2))
+            case 'PUSH':
+                self.write_operator(operator_1, self.read_operator(operator_2))
+            case 'POP':
+                self.write_operator(operator_1, self.read_operator(operator_2))
+            case 'SWAP':
+                value = self.read_operator(operator_1)
+                self.write_operator(operator_1, ((value & 0xF) << 4) | ((value & 0xF0) >> 4))
+                self.write_flags(Z=value == 0, N=False, H=False, C=False)
+            case 'DI':
+                self.write_operator(operator_1, self.read_operator(operator_2))
+            case 'EI':
+                self.write_operator(operator_1, self.read_operator(operator_2))
+            case 'HALT':
+                self.write_operator(operator_1, self.read_operator(operator_2))
+            case 'STOP':
+                self.write_operator(operator_1, self.read_operator(operator_2))
+            case 'PREFIX':
+                self.write_operator(operator_1, self.read_operator(operator_2))
             case _:
                 print('Unknown instruction: ' + instruction.mnemonic)
-        self.write_operator('PC', self.read_operator('PC') + instruction.length)
         return instruction
 
     def step(self):
-        constants.logger.debug('Step')
         op_code = self.fetch()
         constants.logger.debug('Op code: ' + hex(op_code))
         instruction = self.decode(op_code)
@@ -417,24 +497,14 @@ class CPU:
         self.execute(instruction)
         constants.logger.debug('Registers: ' + str(self.reg))
         constants.logger.debug('Flags: ' + str(self.read_flags('ZNHC')))
-
         return instruction
 
     def run(self, cart):
-        # todo, implement clocks
         constants.logger.debug('Running | ' + cart.title)
-        time.sleep(1)
         self.cartridge = cart
-        input('Press enter to start')
         self.reset()
-        enable_step_mode = input("Enable step mode? (y/n): ") == 'y'
-        skip_nop = True
         while True:
-            ran_instruction = self.step()
-            if enable_step_mode:
-                if not (skip_nop and ran_instruction.mnemonic == 'NOP'):
-                    time.sleep(1)
-                    input()
+            yield self.step()
 
     def reset(self):
         for register, value in [
@@ -451,8 +521,27 @@ class CPU:
     def check_cb(opcode):
         return opcode in [0xCB, 0xDDCB, 0xEDCB, 0xFDCB]
 
+    def draw_ppu(self):
+        for y in range(0, 144):
+            for x in range(0, 160):
+                print(self.ppu[x + y], end='')
+            print()
 
-if __name__ == '__main__':
-    cart = Cartridge(sys.argv[1])
+    def print_registers(self):
+        print('Registers: ' + str(self.reg))
+
+    def print_flags(self):
+        print('Flags: ' + str(self.read_flags('ZNHC')))
+
+
+if __name__ == "__main__":
     cpu = CPU()
-    cpu.run(cart)
+    cpu.reset()
+    cpu.print_registers()
+    cpu.print_flags()
+    for instruction in cpu.run(Cartridge('Tetris.gb')):
+        print(instruction.mnemonic, instruction.operand1, instruction.operand2)
+        cpu.print_registers()
+        cpu.print_flags()
+        print()
+    print('Done')
