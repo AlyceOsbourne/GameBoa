@@ -347,3 +347,14 @@ class Flags(Flag):
 
     def __str__(self):
         return f'Z: {self.Z}, N: {self.N}, H: {self.H}, C: {self.C}'
+
+
+class Interrupts(Flag):
+    VBLANK = 0b00000001
+    LCD_STAT = 0b00000010
+    TIMER = 0b00000100
+    SERIAL = 0b00001000
+    JOYPAD = 0b00010000
+
+    def __str__(self):
+        return f'VBLANK: {self.VBLANK}, LCD_STAT: {self.LCD_STAT}, TIMER: {self.TIMER}, SERIAL: {self.SERIAL}, JOYPAD: {self.JOYPAD}'

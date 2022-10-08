@@ -10,17 +10,38 @@ from cartridge import Cartridge
 
 # we need a timer class that can be ticked at a sonsitent rate
 class Timer:
-    def __init__(self, frequency=4194304):
-        self.frequency = frequency
-        self.last_tick = time.time()
-        self.seconds_per_tick = 1 / self.frequency
+    div: int = 0
+    tima: int = 0
+    tma: int = 0
+    tac: int = 0
 
-    def tick(self):
-        current_time = time.time()
-        if current_time - self.last_tick >= self.seconds_per_tick:
-            self.last_tick = current_time
-            return True
-        return False
+
+    def tick(self, cycles: int):
+        ...
+
+    def read(self, address: int):
+        if address == 0xFF04:
+            return self.div
+        elif address == 0xFF05:
+            return self.tima
+        elif address == 0xFF06:
+            return self.tma
+        elif address == 0xFF07:
+            return self.tac
+        else:
+            raise Exception(f'Invalid address {hex(address)}')
+
+    def write(self, address: int, value: int):
+        if address == 0xFF04:
+            self.div = 0
+        elif address == 0xFF05:
+            self.tima = value
+        elif address == 0xFF06:
+            self.tma = value
+        elif address == 0xFF07:
+            self.tac = value
+        else:
+            raise Exception(f'Invalid address {hex(address)}')
 
 
 @dataclass
@@ -442,7 +463,9 @@ class CPU:
         return instruction
 
     def step(self):
-        return self.execute(self.decode(self.fetch()))
+        op = self.fetch()
+        inst = self.decode(op)
+        return self.execute(inst)
 
     def run(self, cart: Cartridge):
         self.cartridge = cart
@@ -461,36 +484,3 @@ class CPU:
         ]:
             self.write_register(register, value)
 
-    def print_registers(self):
-        print('Registers: ' + str(self.reg))
-
-    def print_flags(self):
-        print('Flags: ' + str(self.read_flags('ZNHC')))
-
-
-def main(step_mode: bool = False):
-    cpu = CPU()
-    cpu.reset()
-    cart = Cartridge(sys.argv[1])
-    time.sleep(1)
-    print('Loaded ' + cart.title)
-    input('Press enter to start')
-    print(chr(27) + "[2J", "\033[F" * 4, end="")
-    time.sleep(1)
-    for instruction in cpu.run(cart):
-        reg = str(cpu.reg)
-        flags = ""
-        for k, v in zip('ZNHC', cpu.read_flags('ZNHC')):
-            # the value should be hex like C3 of FF etc
-            flags += f"{k}:{v:2x} "
-        mnem = instruction.mnemonic
-        op1 = instruction.operand1 if instruction.operand1 else 'NONE'
-        op2 = instruction.operand2 if instruction.operand2 else 'NONE'
-        print(f"\r| REG: {reg} | FLAGS: {flags} | FUNC: {mnem:<4} | OP 1: {op1:<5} | OP 2: {op2:<5} | ",
-              flush=True, end="")
-        if step_mode:
-            input()
-
-
-if __name__ == '__main__':
-    main(False)
