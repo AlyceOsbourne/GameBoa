@@ -1,9 +1,8 @@
 import json
 import logging
-from collections import namedtuple
 from enum import Enum, Flag, auto
 from types import MappingProxyType
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.DEBUG)
@@ -20,8 +19,7 @@ LOGGER.addHandler(_ch)
 ROM_BANK_SIZE = 0x4000
 RAM_BANK_SIZE = 0x2000
 
-OLD_LICENSEE_CODES = MappingProxyType(
-    {
+OLD_LICENSEE_CODES = MappingProxyType({
         0x00: 'None',
         0x01: 'Nintendo R&D',
         0x08: 'Capcom',
@@ -170,8 +168,7 @@ OLD_LICENSEE_CODES = MappingProxyType(
         0xf0: 'A-Wave',
         0xf3: 'Extreme Entertainment',
         0xff: 'LJN',
-    }
-)
+    })
 NEW_LICENSEE_CODES = MappingProxyType({
     0x00: 'None',
     0x01: 'Nintendo R&D',
@@ -266,6 +263,29 @@ CARTRIDGE_TYPES = MappingProxyType({
     0xff: 'HuC1+RAM+BATTERY',
 
 })
+ROM_SIZES = MappingProxyType({
+    0x00: 0x8000,
+    0x01: 0x10000,
+    0x02: 0x20000,
+    0x03: 0x40000,
+    0x04: 0x80000,
+    0x05: 0x100000,
+    0x06: 0x200000,
+    0x07: 0x400000,
+    0x08: 0x800000,
+    0x52: 0x120000,
+    0x53: 0x140000,
+    0x54: 0x180000,
+})
+RAM_SIZES = MappingProxyType({
+    0x00: 0x0000,
+    0x01: 0x0002,
+    0x02: 0x0008,
+    0x03: 0x0020,
+    0x04: 0x0080,
+    0x05: 0x0200,
+})
+
 
 CPU_CLOCK_SPEED = 4194304
 CPU_CLOCK_SPEED_MHZ = round(CPU_CLOCK_SPEED / 1000000, 2)
@@ -281,11 +301,10 @@ class ScreenSize(
 
 
 class MemoryRange(NamedTuple(
-    'MemoryRange', [('start', int), ('end', int | None)]
+    'MemoryRange', [('start', int), ('end', Optional[int])]
 )):
-    # end defaults to None
-    def __new__(cls, start: int, end: int | None = None):
-        return super().__new__(cls, (start, end))
+    def __new__(cls, start: int, end: Optional[int] = None):
+        return super().__new__(cls, start, end)
 
 
 class RangeMap(MemoryRange, Enum):
@@ -304,16 +323,16 @@ class RangeMap(MemoryRange, Enum):
 
 class CartridgeRanges(RangeMap):
     TITLE = 0x0134, 0x0143
-    LICENSEE_CODE = 0x0144, 0x0145
-    SGB_FLAG = 0x0146, 0x0146
-    CGB_FLAG = 0x0143, 0x0143
-    CARTRIDGE_TYPE = 0x0147, 0x0147
+    NEW_LICENSEE_CODE = 0x0144, 0x0145
+    SGB_FLAG = 0x0146
+    CGB_FLAG = 0x0143
+    CARTRIDGE_TYPE = 0x0147
     ROM_SIZE = 0x0148, 0x0148
     RAM_SIZE = 0x0149, 0x0149
-    DESTINATION_CODE = 0x014a, 0x014a
-    OLD_LICENSEE_CODE = 0x014b, 0x014b
-    MASK_ROM_VERSION = 0x014c, 0x014c
-    HEADER_CHECKSUM = 0x014d, 0x014d
+    DESTINATION_CODE = 0x014a
+    OLD_LICENSEE_CODE = 0x014b
+    MASK_ROM_VERSION = 0x014c
+    HEADER_CHECKSUM = 0x014d
     GLOBAL_CHECKSUM = 0x014e, 0x014f
     ROM_BANK_0 = 0x0000, 0x3fff
     ROM_BANK_N = 0x4000, 0x7fff
@@ -340,10 +359,10 @@ class MemoryMapRanges(RangeMap):
     UNUSED = 0xFEA0, 0xFEFF
     IO_PORTS = 0xFF00, 0xFF7F
     HRAM = 0xFF80, 0xFFFE
-    INT_ENABLE = 0xFFFF, 0xFFFF
+    INT_ENABLE = 0xFFFF
 
 
-class HardwareMemoryMapRanges(Enum):
+class HardwareMemoryMapRanges(RangeMap):
     SCROLL_Y = 0xFF42
     SCROLL_X = 0xFF43
     LCDC = 0xFF40
@@ -441,7 +460,7 @@ class Instruction(
                 op_code = int(op_code, 16)
                 loaded_instructions[cat][op_code] = cls(
                     op_code,
-                    op_code_settings.get('mnemonic'),
+                    Operation(op_code_settings['mnemonic']),
                     op_code_settings.get('length'),
                     op_code_settings.get('cycles'),
                     op_code_settings.get('flags'),

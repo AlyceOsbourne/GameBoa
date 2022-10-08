@@ -1,11 +1,15 @@
 # gameboy cpu
 import operator
 from dataclasses import dataclass
-
 import constants
-
-# we need a timer class that can be ticked at a sonsitent rate
 from components.cartridge import Cartridge
+
+
+class Decoder:
+    instructions, cb_instructions = constants.Instruction.load_instructions().values()
+
+    def decode(self, opcode, cb=False):
+        return self.instructions[opcode]
 
 
 class Timer:
@@ -143,8 +147,20 @@ class Flags:
         for flag, value in zip(flags, values):
             self.write_flag(flag, value)
 
+    def __str__(self):
+        out = ''
+        for key, value in {
+            'Z': self.Z,
+            'N': self.N,
+            'H': self.H,
+            'C': self.C,
+        }.items():
+            out += f'{key}: {value} '
+        return out
+
 
 class Bank:
+    """Holds the memory banks for the gameboy, this can be cartridge, vram, wram, etc"""
     data: bytearray
 
     def __init__(self, data: bytearray):
@@ -164,10 +180,10 @@ class Bank:
 class MMU:
 
     def read_address(self, address, length=1):
-        ...
+        raise NotImplementedError
 
     def write_address(self, address, value):
-        ...
+        raise NotImplementedError
 
 
 class PPU:
