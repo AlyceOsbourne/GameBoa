@@ -1,4 +1,7 @@
+import inspect
 import json
+import os
+import sys
 from enum import Enum, Flag, auto
 from types import MappingProxyType
 from typing import NamedTuple, Optional
@@ -6,6 +9,10 @@ from typing import NamedTuple, Optional
 ROM_BANK_SIZE = 0x4000
 RAM_BANK_SIZE = 0x2000
 
+CPU_CLOCK_SPEED = 4194304
+CPU_CLOCK_SPEED_MHZ = round(CPU_CLOCK_SPEED / 1000000, 2)
+
+# immutable mappings cause ints van't be var names, and I want them as the keys here
 OLD_LICENSEE_CODES = MappingProxyType({
     0x00: 'None',
     0x01: 'Nintendo R&D',
@@ -273,8 +280,34 @@ RAM_SIZES = MappingProxyType({
     0x05: 0x0200,
 })
 
-CPU_CLOCK_SPEED = 4194304
-CPU_CLOCK_SPEED_MHZ = round(CPU_CLOCK_SPEED / 1000000, 2)
+NUM_RAM_BANKS = MappingProxyType({
+    0x00: 0,
+    0x01: 1,
+    0x02: 1,
+    0x03: 4,
+    0x04: 16,
+    0x05: 8,
+})
+
+NUM_ROM_BANKS = MappingProxyType({
+    0x00: 2,
+    0x01: 4,
+    0x02: 8,
+    0x03: 16,
+    0x04: 32,
+    0x05: 64,
+    0x06: 128,
+    0x07: 256,
+    0x08: 512,
+    0x52: 72,
+    0x53: 80,
+    0x54: 96,
+})
+
+DESTINATION_CODES = MappingProxyType({
+    0x00: 'Japanese',
+    0x01: 'Non-Japanese',
+})
 
 
 class ScreenSize(
@@ -309,6 +342,16 @@ class RangeMap(MemoryRange, Enum):
     def __len__(self):
         return self.end - self.start + 1
 
+    @classmethod
+    def to_json(cls):
+        dictified = {
+            name: {
+                'start': range_.start,
+                'end': range_.end,
+            } for name, range_ in cls.__members__.items()
+        }
+        return json.dumps(dictified, indent=4)
+
 
 class CartridgeRanges(RangeMap):
     TITLE = 0x0134, 0x0143
@@ -327,6 +370,7 @@ class CartridgeRanges(RangeMap):
     ROM_BANK_N = 0x4000, 0x7fff
     RAM_BANK_0 = 0xa000, 0xbfff
     RAM_BANK_N = 0xa000, 0xbfff
+
 
 
 class MemoryMapRanges(RangeMap):
@@ -469,8 +513,6 @@ class Flags(Flag):
     H = 0b00100000
     C = 0b00010000
 
-    def __str__(self):
-        return f'Z: {self.Z}, N: {self.N}, H: {self.H}, C: {self.C}'
 
 
 class Interrupts(Flag):
@@ -480,5 +522,3 @@ class Interrupts(Flag):
     SERIAL = 0b00001000
     JOYPAD = 0b00010000
 
-    def __str__(self):
-        return f'VBLANK: {self.VBLANK}, LCD_STAT: {self.LCD_STAT}, TIMER: {self.TIMER}, SERIAL: {self.SERIAL}, JOYPAD: {self.JOYPAD}'
