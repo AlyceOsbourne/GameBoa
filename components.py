@@ -1,15 +1,6 @@
 # gameboy cpu
-import operator
-from dataclasses import dataclass
 import constants
-from components.cartridge import Cartridge
-
-
-class Decoder:
-    instructions, cb_instructions = constants.Instruction.load_instructions().values()
-
-    def decode(self, opcode, cb=False):
-        return self.instructions[opcode]
+from constants import Instruction
 
 
 class Timer:
@@ -46,7 +37,6 @@ class Timer:
             raise Exception(f'Invalid address {hex(address)}')
 
 
-@dataclass
 class Register:
     a: int = 0x01
     b: int = 0x00
@@ -166,10 +156,10 @@ class Bank:
     def __init__(self, data: bytearray):
         self.data = data
 
-    def read(self, address: int):
+    def read(self, address: int, length, offset):
         return self.data[address]
 
-    def write(self, address: int, value: int):
+    def write(self, address: int, value: int, offset):
         self.data[address] = value
 
     @classmethod
@@ -177,32 +167,116 @@ class Bank:
         return cls(bytearray(length))
 
 
+class Cartridge:
+    rom_data: bytearray
+
+    def __init__(self, rom_path):
+        self.rom_path = rom_path
+        with open(rom_path, 'rb') as rom_file:
+            self.rom_data = bytearray(rom_file.read())
+
+    def _get_as_ascii(self, start, end):
+        return self.rom_data[start:end].decode('ascii')
+
+    @property
+    def title(self):
+        return self._get_as_ascii(*constants.CartridgeRanges.TITLE.value).strip('\0').title()
+
+    @property
+    def old_licensee_code(self):
+        return constants.OLD_LICENSEE_CODES.get(self.rom_data[constants.CartridgeRanges.OLD_LICENSEE_CODE.value[0]],
+                                                'Unknown').strip('\0')
+
+    @property
+    def new_licensee_code(self):
+        return constants.NEW_LICENSEE_CODES.get(self.rom_data[constants.CartridgeRanges.NEW_LICENSEE_CODE.value[0]],
+                                                'Unknown')
+
+    @property
+    def sgb_flag(self):
+        return bool(self.rom_data[constants.CartridgeRanges.SGB_FLAG.value[0]])
+
+    @property
+    def cgb_flag(self):
+        return bool(self.rom_data[constants.CartridgeRanges.CGB_FLAG.value[0]])
+
+    @property
+    def cartridge_type(self):
+        return constants.CARTRIDGE_TYPES.get(
+            self.rom_data[constants.CartridgeRanges.CARTRIDGE_TYPE.value[0]],
+            'Unknown'
+        )
+
+    @property
+    def rom_size(self):
+        return constants.ROM_SIZES.get(
+            self.rom_data[constants.CartridgeRanges.ROM_SIZE.value[0]],
+            'Unknown'
+        )
+
+    @property
+    def ram_size(self):
+        return constants.RAM_SIZES.get(self.rom_data[constants.CartridgeRanges.RAM_SIZE.value[0]], 'Unknown')
+
+    @property
+    def destination_code(self):
+        return 'Japanese' if self.rom_data[constants.CartridgeRanges.DESTINATION_CODE.value[0]] == 0 else 'Non-Japanese'
+
+    def raw(self):
+        return self.rom_data
+
+    def __str__(self):
+        return f'''Title: {self.title}
+Old Licensee Code: {self.old_licensee_code}
+New Licensee Code: {self.new_licensee_code}
+SGB Flag: {self.sgb_flag}
+CGB Flag: {self.cgb_flag}
+Cartridge Type: {self.cartridge_type}
+ROM Size: {self.rom_size}
+RAM Size: {self.ram_size}
+Destination Code: {self.destination_code}'''
+
+    def __repr__(self):
+        return f'Cartridge({repr(self.rom_path)})'
+
+
 class MMU:
+    vram: Bank
+    wram: Bank
+    sram: Bank
+    hram: Bank
+    oam: Bank
 
     def read_address(self, address, length=1):
-        raise NotImplementedError
+        match address:
+            case constants.MemoryMapRanges.VRAM:
+                return self.vram.read(address, length, constants.MemoryMapRanges.VRAM.value[0])
+            case constants.MemoryMapRanges.WRAM:
+                return self.wram.read(address, length, constants.MemoryMapRanges.WRAM.value[0])
 
     def write_address(self, address, value):
-        raise NotImplementedError
+        match address:
+            case constants.MemoryMapRanges.VRAM:
+                return self.vram.write(address, value, constants.MemoryMapRanges.VRAM.value[0])
 
 
 class PPU:
-    tile_data: None
-    tile_map: None
-    oam: None
+    ...
 
 
 class CPU:
-    def fetch(self):
+    instructions, cb_instructions = constants.Instruction.load_instructions().values()
+
+    def fetch(self, bus: 'Bus'):
         raise NotImplementedError('fetch not implemented')
 
-    def fetch16(self):
-        return self.fetch() | (self.fetch() << 8)
+    def fetch16(self, bus: 'Bus'):
+        return self.fetch(bus) | (self.fetch(bus) << 8)
 
-    def decode(self):
-        raise NotImplementedError('decode not implemented')
+    def decode(self, opcode:int, cb=False):
+        return getattr(self, 'cb_' if cb else '' + 'instructions')[opcode]
 
-    def execute(self):
+    def execute(self, bus: 'Bus', instruction: 'Instruction'):
         raise NotImplementedError('execute not implemented')
 
 
@@ -213,3 +287,5 @@ class Bus:
     timer: Timer
     regiser: Register
     cpu: CPU
+
+

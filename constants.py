@@ -4,18 +4,6 @@ from enum import Enum, Flag, auto
 from types import MappingProxyType
 from typing import NamedTuple, Optional
 
-LOGGER = logging.getLogger()
-LOGGER.setLevel(logging.DEBUG)
-_fh = logging.FileHandler('debug.log')
-_fh.setLevel(logging.DEBUG)
-_ch = logging.StreamHandler()
-_ch.setLevel(logging.DEBUG)
-_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-_fh.setFormatter(_formatter)
-_ch.setFormatter(_formatter)
-LOGGER.addHandler(_fh)
-LOGGER.addHandler(_ch)
-
 ROM_BANK_SIZE = 0x4000
 RAM_BANK_SIZE = 0x2000
 
@@ -346,13 +334,17 @@ class MemoryMapRanges(RangeMap):
     CART_BANK_0 = 0x0150, 0x3FFF
     CART_BANK_N = 0x4000, 0x7FFF
 
+    VRAM = 0x8000, 0x9FFF
     CHAR_RAM = 0x8000, 0x97FF
     BG_RAM_1 = 0x9800, 0x9BFF
     BG_RAM_2 = 0x9C00, 0x9FFF
 
     CART_RAM = 0xA000, 0xBFFF
+
+    WRAM = 0xC000, 0xDFFF
     INTERNAL_RAM_BANK_0 = 0xC000, 0xCFFF
     INTERNAL_RAM_BANK_N = 0xD000, 0xDFFF
+
     ECHO_RAM = 0xE000, 0xFDFF
     OAM_RAM = 0xFE00, 0xFE9F
 
