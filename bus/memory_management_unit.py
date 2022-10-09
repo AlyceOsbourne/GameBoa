@@ -12,6 +12,7 @@ class MMU:
         match address:
             case _:
                 print(f'Unimplemented read from address {address:04X}')
+                return 0
 
     def write_address(self, address, value):
         match address:
