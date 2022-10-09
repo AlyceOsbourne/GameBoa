@@ -19,11 +19,11 @@ class Register:
                f' E: {self.e:02X} H: {self.h:02X} L: {self.l:02X} SP: {self.sp:04X} PC: {self.pc:04X}'
 
     def read_register(self, register: str):
-        if not hasattr(self, register):
+        if not hasattr(self, register.lower()):
             raise Exception(f'Invalid register {register}')
         return getattr(self, register.lower(), None)
 
     def write_register(self, register: str, value: int):
-        if not hasattr(self, register):
+        if not hasattr(self, register.lower()):
             raise Exception(f'Invalid register {register}')
         setattr(self, register.lower(), value)

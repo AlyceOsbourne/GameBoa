@@ -7,7 +7,12 @@ from typing import NamedTuple, Optional
 class ScreenSize(
     NamedTuple(
         'ScreenSize',
-        [('width', int), ('height', int), ('tile_width', int), ('tile_height', int)]),
+        [
+            ('width', int),
+            ('height', int),
+            ('tile_width', int),
+            ('tile_height', int)
+        ]),
     Enum
 ):
     """Screen size constants."""
@@ -15,6 +20,18 @@ class ScreenSize(
     SUPER_GB = 256, 224, 32, 28
     CLASSIC_GBC = 160, 144, 20, 18
     SUPER_GBC = 256, 224, 32, 28
+
+
+class Palette(
+    NamedTuple(
+        'Palette',
+        [('white', int), ('light_gray', int), ('dark_gray', int), ('black', int)]),
+    Enum
+):
+    """Palette constants."""
+    CLASSIC = 0xFF, 0xAA, 0x55, 0x00
+    SUPER = 0xFF, 0x88, 0x44, 0x00
+    POCKET = 0xFF, 0x77, 0x33, 0x00
 
 
 class MemoryRange(NamedTuple(

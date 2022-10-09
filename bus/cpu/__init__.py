@@ -1,4 +1,6 @@
-import constants
+import operator
+from functools import partial
+
 from constants import Instruction
 from typing import Protocol, Callable
 
@@ -10,7 +12,8 @@ class CPU:
     is_stopped: bool
     is_halted: bool
     is_cb: bool
-    instruction, cb_instructions = Instruction.load_instructions('op_codes.json').values()
+    instructions: dict[int, Instruction]
+    cb_instructions: dict[int, Instruction]
 
     def fetch(self, bus: 'Bus') -> int:
         return bus.read_operator('PC')
@@ -23,6 +26,20 @@ class CPU:
 
     # this type hint is stub, I don't know everything that is going to be returned, and int isn't descriptive enough
     def execute(self, bus: 'Bus', instruction: 'Instruction') -> 'cyles':
+        op_code = instruction.op_code
+        mnemonic = instruction.mnemonic
+        operand1, operand2 = instruction.operand1, instruction.operand2
+        flags = instruction.flags
+
+        read_1 = partial(bus.read_operator, operand1)
+        read_2 = partial(bus.read_operator, operand2)
+        write_1 = partial(bus.write_operator, operand1)
+        write_2 = partial(bus.write_operator, operand2)
+
+        def __attempted(failed: bool = False, do_print= True):
+            if do_print:
+                print( f'{hex(op_code)} | {mnemonic} | {repr(operand1)} {repr(operand2)} | {repr(flags)} | {failed}')
+
         match instruction.mnemonic:
             case 'NOP':
                 pass
@@ -32,10 +49,14 @@ class CPU:
                 self.is_stopped = True
             case 'PREFIX':
                 self.is_cb = True
-            case 'LD' | 'LDI' | 'LDD' | 'LDH':
-                bus.write_operator(instruction.operand1, bus.read_operator(instruction.operand2))
+            case 'SET':
+                write_1(1 << read_2())
+            case 'RET':
+                __attempted()
             case _:
-                print(f'Unknown instruction {instruction.mnemonic} with operands {instruction.operand1} and {instruction.operand2}')
+                pass
+                __attempted(True, False)
+
         return instruction.cycles
 
     def run(self, bus: 'Bus'):
@@ -43,3 +64,7 @@ class CPU:
             opcode = self.fetch(bus)
             instruction = self.decode(opcode)
             yield self.execute(bus, instruction)
+
+    def __init__(self, instructions, cb_instructions):
+        self.instructions = instructions
+        self.cb_instructions = cb_instructions
