@@ -1,18 +1,231 @@
-import inspect
 import json
-import os
-import sys
 from enum import Enum, Flag, auto
 from types import MappingProxyType
 from typing import NamedTuple, Optional
 
+
+class ScreenSize(
+    NamedTuple(
+        'ScreenSize',
+        [('width', int), ('height', int), ('tile_width', int), ('tile_height', int)]),
+    Enum
+):
+    """Screen size constants."""
+    CLASSIC_GB = 160, 144, 20, 18
+    SUPER_GB = 256, 224, 32, 28
+    CLASSIC_GBC = 160, 144, 20, 18
+    SUPER_GBC = 256, 224, 32, 28
+
+
+class MemoryRange(NamedTuple(
+    'MemoryRange', [('start', int), ('end', Optional[int])]
+)):
+    """Defines a memory range to be checked against. Is used for mappinga"""
+    def __new__(cls, start: int, end: Optional[int] = None):
+        return super().__new__(cls, start, end)
+
+
+class RangeMap(MemoryRange, Enum):
+    """Defines a mapping of memory ranges to values. Has equality methods that allow us to compare an int to a memory
+    range to see if it lives withion that range there are broad and narro mapping, such as VRAM as the broad and Char
+    Ram, BG_RAm etc being the narrow, this is so we can broadly narrow by device, but still have mapping for specific
+    things inside those components """
+    def __contains__(self, item):
+        is_in_range = self.start <= item <= self.end
+        return is_in_range
+
+    def __eq__(self, other):
+        if isinstance(other, int):
+            return other in self if self.end is not None else self.start == other
+        return super().__eq__(other)
+
+    def __len__(self):
+        return self.end - self.start + 1
+
+
+class CartridgeRanges(RangeMap):
+    """Cartridge memory ranges. For things like title, etc etc"""
+    TITLE = 0x0134, 0x0143
+    NEW_LICENSEE_CODE = 0x0144, 0x0145
+    SGB_FLAG = 0x0146
+    CGB_FLAG = 0x0143
+    CARTRIDGE_TYPE = 0x0147
+    ROM_SIZE = 0x0148, 0x0148
+    RAM_SIZE = 0x0149, 0x0149
+    DESTINATION_CODE = 0x014a
+    OLD_LICENSEE_CODE = 0x014b
+    MASK_ROM_VERSION = 0x014c
+    HEADER_CHECKSUM = 0x014d
+    GLOBAL_CHECKSUM = 0x014e, 0x014f
+    ROM_BANK_0 = 0x0000, 0x3fff
+    ROM_BANK_N = 0x4000, 0x7fff
+    RAM_BANK_0 = 0xa000, 0xbfff
+    RAM_BANK_N = 0xa000, 0xbfff
+
+
+class MemoryMapRanges(RangeMap):
+    """Memory map ranges. For things like VRAM, etc etc"""
+    RES_INT = 0x0000, 0x00FF
+    CART_HEADER = 0x0100, 0x014F
+    CART_BANK_0 = 0x0150, 0x3FFF
+    CART_BANK_N = 0x4000, 0x7FFF
+
+    VRAM = 0x8000, 0x9FFF
+    CHAR_RAM = 0x8000, 0x97FF
+    BG_RAM_1 = 0x9800, 0x9BFF
+    BG_RAM_2 = 0x9C00, 0x9FFF
+
+    CART_RAM = 0xA000, 0xBFFF
+
+    WRAM = 0xC000, 0xDFFF
+    INTERNAL_RAM_BANK_0 = 0xC000, 0xCFFF
+    INTERNAL_RAM_BANK_N = 0xD000, 0xDFFF
+
+    ECHO_RAM = 0xE000, 0xFDFF
+    OAM_RAM = 0xFE00, 0xFE9F
+
+    UNUSED = 0xFEA0, 0xFEFF
+    IO_PORTS = 0xFF00, 0xFF7F
+    HRAM = 0xFF80, 0xFFFE
+    INT_ENABLE = 0xFFFF
+
+
+class HardwareMemoryMapRanges(RangeMap):
+    """Hardware memory map ranges. For things like the joypad, etc etc"""
+    SCROLL_Y = 0xFF42
+    SCROLL_X = 0xFF43
+    LCDC = 0xFF40
+    STAT = 0xFF41
+    LY = 0xFF44
+    LYC = 0xFF45
+    DMA = 0xFF46
+    BGP = 0xFF47
+    OBP0 = 0xFF48
+    OBP1 = 0xFF49
+    WY = 0xFF4A
+    WX = 0xFF4B
+    KEY1 = 0xFF4D
+
+
+class Operation(Enum):
+    """the mnemonic of the operation, will likely contain other data later on"""
+    NOP = auto()
+    HALT = auto()
+    STOP = auto()
+    DI = auto()
+    EI = auto()
+    ADD = auto()
+    ADC = auto()
+    SUB = auto()
+    SBC = auto()
+    AND = auto()
+    OR = auto()
+    XOR = auto()
+    CP = auto()
+    INC = auto()
+    DEC = auto()
+    DAA = auto()
+    CPL = auto()
+    CCF = auto()
+    SCF = auto()
+    RC = auto()
+    RCLA = auto()
+    RLC = auto()
+    RRC = auto()
+    RL = auto()
+    RR = auto()
+    SLA = auto()
+    SRA = auto()
+    SRL = auto()
+    JP = auto()
+    JR = auto()
+    CALL = auto()
+    RET = auto()
+    RST = auto()
+    LD = auto()
+    PUSH = auto()
+    POP = auto()
+    SWAP = auto()
+    BIT = auto()
+    SET = auto()
+    RES = auto()
+    PREFIX = auto()
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return other == self.name
+        return super().__eq__(other)
+
+
+class Instruction(
+    NamedTuple(
+        'Instruction',
+        [
+            ('op_code', int),
+            ('mnemonic', str),
+            ('length', int),
+            ('cycles', int),
+            ('flags', str),
+            ('addr', int),
+            ('group', str),
+            ('operand1', str | None),
+            ('operand2', str | None)
+        ]
+    )
+):
+    """An instruction, as defined by the Gameboy CPU"""
+    @classmethod
+    def load_instructions(cls, path='op_codes.json'):
+        loaded_instructions = {}
+        try:
+            with open(path, 'r') as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            raise FileNotFoundError(f'Could not find {path} in the current directory.')
+        for cat, ops in data.items():
+            if cat not in loaded_instructions:
+                loaded_instructions[cat] = {}
+            for op_code, op_code_settings in ops.items():
+                op_code = int(op_code, 16)
+                loaded_instructions[cat][op_code] = cls(
+                    op_code,
+                    op_code_settings['mnemonic'],
+                    op_code_settings.get('length'),
+                    op_code_settings.get('cycles'),
+                    op_code_settings.get('flags'),
+                    op_code_settings.get('addr'),
+                    op_code_settings.get('group'),
+                    op_code_settings.get('operand1', None),
+                    op_code_settings.get('operand2', None)
+                )
+        return loaded_instructions
+
+
+class Flags(Flag):
+    """Binary flags for the CPU"""
+    Z = 0b10000000
+    N = 0b01000000
+    H = 0b00100000
+    C = 0b00010000
+
+
+class Interrupts(Flag):
+    """Binary interrupt flags for the CPU"""
+    VBLANK = 0b00000001
+    LCD_STAT = 0b00000010
+    TIMER = 0b00000100
+    SERIAL = 0b00001000
+    JOYPAD = 0b00010000
+
+
 ROM_BANK_SIZE = 0x4000
 RAM_BANK_SIZE = 0x2000
 
-CPU_CLOCK_SPEED = 4194304
+CPU_CLOCK_SPEED = 4194304  # 4.194304 MHz
 CPU_CLOCK_SPEED_MHZ = round(CPU_CLOCK_SPEED / 1000000, 2)
 
 # immutable mappings cause ints van't be var names, and I want them as the keys here
+
 OLD_LICENSEE_CODES = MappingProxyType({
     0x00: 'None',
     0x01: 'Nintendo R&D',
@@ -279,7 +492,6 @@ RAM_SIZES = MappingProxyType({
     0x04: 0x0080,
     0x05: 0x0200,
 })
-
 NUM_RAM_BANKS = MappingProxyType({
     0x00: 0,
     0x01: 1,
@@ -288,7 +500,6 @@ NUM_RAM_BANKS = MappingProxyType({
     0x04: 16,
     0x05: 8,
 })
-
 NUM_ROM_BANKS = MappingProxyType({
     0x00: 2,
     0x01: 4,
@@ -303,222 +514,8 @@ NUM_ROM_BANKS = MappingProxyType({
     0x53: 80,
     0x54: 96,
 })
-
 DESTINATION_CODES = MappingProxyType({
     0x00: 'Japanese',
     0x01: 'Non-Japanese',
 })
-
-
-class ScreenSize(
-    NamedTuple(
-        'ScreenSize',
-        [('width', int), ('height', int), ('tile_width', int), ('tile_height', int)]),
-    Enum
-):
-    CLASSIC_GB = 160, 144, 20, 18
-    SUPER_GB = 256, 224, 32, 28
-    CLASSIC_GBC = 160, 144, 20, 18
-    SUPER_GBC = 256, 224, 32, 28
-
-
-class MemoryRange(NamedTuple(
-    'MemoryRange', [('start', int), ('end', Optional[int])]
-)):
-    def __new__(cls, start: int, end: Optional[int] = None):
-        return super().__new__(cls, start, end)
-
-
-class RangeMap(MemoryRange, Enum):
-    def __contains__(self, item):
-        is_in_range = self.start <= item <= self.end
-        return is_in_range
-
-    def __eq__(self, other):
-        if isinstance(other, int):
-            return other in self if self.end is not None else self.start == other
-        return super().__eq__(other)
-
-    def __len__(self):
-        return self.end - self.start + 1
-
-    @classmethod
-    def to_json(cls):
-        dictified = {
-            name: {
-                'start': range_.start,
-                'end': range_.end,
-            } for name, range_ in cls.__members__.items()
-        }
-        return json.dumps(dictified, indent=4)
-
-
-class CartridgeRanges(RangeMap):
-    TITLE = 0x0134, 0x0143
-    NEW_LICENSEE_CODE = 0x0144, 0x0145
-    SGB_FLAG = 0x0146
-    CGB_FLAG = 0x0143
-    CARTRIDGE_TYPE = 0x0147
-    ROM_SIZE = 0x0148, 0x0148
-    RAM_SIZE = 0x0149, 0x0149
-    DESTINATION_CODE = 0x014a
-    OLD_LICENSEE_CODE = 0x014b
-    MASK_ROM_VERSION = 0x014c
-    HEADER_CHECKSUM = 0x014d
-    GLOBAL_CHECKSUM = 0x014e, 0x014f
-    ROM_BANK_0 = 0x0000, 0x3fff
-    ROM_BANK_N = 0x4000, 0x7fff
-    RAM_BANK_0 = 0xa000, 0xbfff
-    RAM_BANK_N = 0xa000, 0xbfff
-
-
-
-class MemoryMapRanges(RangeMap):
-    RES_INT = 0x0000, 0x00FF
-    CART_HEADER = 0x0100, 0x014F
-    CART_BANK_0 = 0x0150, 0x3FFF
-    CART_BANK_N = 0x4000, 0x7FFF
-
-    VRAM = 0x8000, 0x9FFF
-    CHAR_RAM = 0x8000, 0x97FF
-    BG_RAM_1 = 0x9800, 0x9BFF
-    BG_RAM_2 = 0x9C00, 0x9FFF
-
-    CART_RAM = 0xA000, 0xBFFF
-
-    WRAM = 0xC000, 0xDFFF
-    INTERNAL_RAM_BANK_0 = 0xC000, 0xCFFF
-    INTERNAL_RAM_BANK_N = 0xD000, 0xDFFF
-
-    ECHO_RAM = 0xE000, 0xFDFF
-    OAM_RAM = 0xFE00, 0xFE9F
-
-    UNUSED = 0xFEA0, 0xFEFF
-    IO_PORTS = 0xFF00, 0xFF7F
-    HRAM = 0xFF80, 0xFFFE
-    INT_ENABLE = 0xFFFF
-
-
-class HardwareMemoryMapRanges(RangeMap):
-    SCROLL_Y = 0xFF42
-    SCROLL_X = 0xFF43
-    LCDC = 0xFF40
-    STAT = 0xFF41
-    LY = 0xFF44
-    LYC = 0xFF45
-    DMA = 0xFF46
-    BGP = 0xFF47
-    OBP0 = 0xFF48
-    OBP1 = 0xFF49
-    WY = 0xFF4A
-    WX = 0xFF4B
-    KEY1 = 0xFF4D
-
-
-class Operation(Enum):
-    NOP = auto()
-    HALT = auto()
-    STOP = auto()
-    DI = auto()
-    EI = auto()
-    ADD = auto()
-    ADC = auto()
-    SUB = auto()
-    SBC = auto()
-    AND = auto()
-    OR = auto()
-    XOR = auto()
-    CP = auto()
-    INC = auto()
-    DEC = auto()
-    DAA = auto()
-    CPL = auto()
-    CCF = auto()
-    SCF = auto()
-    RC = auto()
-    RLC = auto()
-    RRC = auto()
-    RL = auto()
-    RR = auto()
-    SLA = auto()
-    SRA = auto()
-    SRL = auto()
-    JP = auto()
-    JR = auto()
-    CALL = auto()
-    RET = auto()
-    RST = auto()
-    LD = auto()
-    PUSH = auto()
-    POP = auto()
-    SWAP = auto()
-    BIT = auto()
-    SET = auto()
-    RES = auto()
-    PREFIX = auto()
-
-    def __eq__(self, other):
-        if isinstance(other, str):
-            return other == self.name
-        return super().__eq__(other)
-
-
-class Instruction(
-    NamedTuple(
-        'Instruction',
-        [
-            ('op_code', int),
-            ('mnemonic', Operation),
-            ('length', int),
-            ('cycles', int),
-            ('flags', str),
-            ('addr', int),
-            ('group', str),
-            ('operand1', str | None),
-            ('operand2', str | None)
-        ]
-    )
-):
-
-    @classmethod
-    def load_instructions(cls, path='op_codes.json'):
-        loaded_instructions = {}
-        try:
-            with open(path, 'r') as f:
-                data = json.load(f)
-        except FileNotFoundError:
-            raise FileNotFoundError(f'Could not find {path} in the current directory.')
-        for cat, ops in data.items():
-            if cat not in loaded_instructions:
-                loaded_instructions[cat] = {}
-            for op_code, op_code_settings in ops.items():
-                op_code = int(op_code, 16)
-                loaded_instructions[cat][op_code] = cls(
-                    op_code,
-                    Operation(op_code_settings['mnemonic']),
-                    op_code_settings.get('length'),
-                    op_code_settings.get('cycles'),
-                    op_code_settings.get('flags'),
-                    op_code_settings.get('addr'),
-                    op_code_settings.get('group'),
-                    op_code_settings.get('operand1', None),
-                    op_code_settings.get('operand2', None)
-                )
-        return loaded_instructions
-
-
-class Flags(Flag):
-    Z = 0b10000000
-    N = 0b01000000
-    H = 0b00100000
-    C = 0b00010000
-
-
-
-class Interrupts(Flag):
-    VBLANK = 0b00000001
-    LCD_STAT = 0b00000010
-    TIMER = 0b00000100
-    SERIAL = 0b00001000
-    JOYPAD = 0b00010000
 

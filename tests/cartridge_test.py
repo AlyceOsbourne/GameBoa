@@ -1,4 +1,4 @@
-from components import Cartridge
+from bus import Cartridge
 import pytest
 
 
