@@ -21,6 +21,7 @@ class MemoryRange(NamedTuple(
     'MemoryRange', [('start', int), ('end', Optional[int])]
 )):
     """Defines a memory range to be checked against. Is used for mappinga"""
+
     def __new__(cls, start: int, end: Optional[int] = None):
         return super().__new__(cls, start, end)
 
@@ -30,6 +31,7 @@ class RangeMap(MemoryRange, Enum):
     range to see if it lives withion that range there are broad and narro mapping, such as VRAM as the broad and Char
     Ram, BG_RAm etc being the narrow, this is so we can broadly narrow by device, but still have mapping for specific
     things inside those components """
+
     def __contains__(self, item):
         is_in_range = self.start <= item <= self.end
         return is_in_range
@@ -107,56 +109,6 @@ class HardwareMemoryMapRanges(RangeMap):
     KEY1 = 0xFF4D
 
 
-class Operation(Enum):
-    """the mnemonic of the operation, will likely contain other data later on"""
-    NOP = auto()
-    HALT = auto()
-    STOP = auto()
-    DI = auto()
-    EI = auto()
-    ADD = auto()
-    ADC = auto()
-    SUB = auto()
-    SBC = auto()
-    AND = auto()
-    OR = auto()
-    XOR = auto()
-    CP = auto()
-    INC = auto()
-    DEC = auto()
-    DAA = auto()
-    CPL = auto()
-    CCF = auto()
-    SCF = auto()
-    RC = auto()
-    RCLA = auto()
-    RLC = auto()
-    RRC = auto()
-    RL = auto()
-    RR = auto()
-    SLA = auto()
-    SRA = auto()
-    SRL = auto()
-    JP = auto()
-    JR = auto()
-    CALL = auto()
-    RET = auto()
-    RST = auto()
-    LD = auto()
-    PUSH = auto()
-    POP = auto()
-    SWAP = auto()
-    BIT = auto()
-    SET = auto()
-    RES = auto()
-    PREFIX = auto()
-
-    def __eq__(self, other):
-        if isinstance(other, str):
-            return other == self.name
-        return super().__eq__(other)
-
-
 class Instruction(
     NamedTuple(
         'Instruction',
@@ -174,8 +126,9 @@ class Instruction(
     )
 ):
     """An instruction, as defined by the Gameboy CPU"""
+
     @classmethod
-    def load_instructions(cls, path='op_codes.json'):
+    def load_instructions(cls, path='/op_codes.json'):
         loaded_instructions = {}
         try:
             with open(path, 'r') as f:
@@ -518,4 +471,3 @@ DESTINATION_CODES = MappingProxyType({
     0x00: 'Japanese',
     0x01: 'Non-Japanese',
 })
-

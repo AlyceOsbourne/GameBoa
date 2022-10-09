@@ -4,7 +4,7 @@ import pytest
 
 def test_cartridge_is_tetris():
     rom_path = '../roms/tetris.gb'
-    cart = Cartridge(rom_path)
+    cart = Cartridge.load_from_file(rom_path)
     assert cart.title == 'Tetris'
     assert cart.rom_size == 0x8000
     assert cart.ram_size == 0x00
@@ -16,7 +16,7 @@ def test_cartridge_is_tetris():
     assert cart.passes_header_checksum == True
 
     rom_path = '../roms/pb.gb'
-    cart = Cartridge(rom_path)
+    cart = Cartridge.load_from_file(rom_path)
     assert cart.title != 'Tetris'
     assert cart.rom_size != 0x8000
     assert cart.ram_size != 0x00

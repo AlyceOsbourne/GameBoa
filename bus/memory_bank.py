@@ -12,5 +12,5 @@ class Bank:
         self.data[address] = value
 
     @classmethod
-    def of_len(cls, length: int):
+    def of_len(cls, length: int) -> 'Bank':
         return cls(bytearray(length))
