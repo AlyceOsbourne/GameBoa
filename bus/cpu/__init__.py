@@ -39,6 +39,9 @@ class CPU:
         read_2 = partial(bus.read_operator, operand2)
         write_1 = partial(bus.write_operator, operand1)
 
+        def _attempt():
+            print(f'{mnemonic} | {operand1} {operand2} | {flags}')
+
         match instruction.mnemonic:
             case 'NOP':
                 """No operation"""
