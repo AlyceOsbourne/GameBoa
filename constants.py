@@ -42,6 +42,9 @@ class MemoryRange(NamedTuple(
     def __new__(cls, start: int, end: Optional[int] = None):
         return super().__new__(cls, start, end)
 
+    def __sizeof__(self):
+        return self.end - self.start + 1
+
 
 class RangeMap(MemoryRange, Enum):
     """Defines a mapping of memory ranges to values. Has equality methods that allow us to compare an int to a memory
@@ -85,6 +88,8 @@ class CartridgeRanges(RangeMap):
 class MemoryMapRanges(RangeMap):
     """Memory map ranges. For things like VRAM, etc etc"""
     RES_INT = 0x0000, 0x00FF
+
+    CARTRIDGE = 0x0000, 0x7FFF
     CART_HEADER = 0x0100, 0x014F
     CART_BANK_0 = 0x0150, 0x3FFF
     CART_BANK_N = 0x4000, 0x7FFF

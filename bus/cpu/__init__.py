@@ -2,10 +2,14 @@ import operator
 from functools import partial
 
 from constants import Instruction
-from typing import Protocol, Callable
-import utils.performance_testing
+from typing import Protocol, Callable, TypeAlias
+
+Cycles: TypeAlias = int
+
 
 class Bus(Protocol):
+    """Just a stand in protocol for type hinting, will be done away with and replaced with a typevar once I am finished,
+    This is just to support the IDE's type hinting and linting"""
     read: Callable[[str], int | bool]
     write: Callable[[str, int | bool], bool]
 
@@ -19,20 +23,24 @@ class CPU:
     interupts_enabled = False
 
     def fetch(self, bus: 'Bus') -> int:
+        """Fetches the next op code from the program counter and then increments and returns it"""
         pc_val = bus.read('PC')
         bus.write('PC', pc_val + 1)
         return pc_val
 
     def fetch16(self, bus: 'Bus'):
+        """Fetches the next 16 bit value from the program counter and then increments and returns it"""
         return self.fetch(bus) | (self.fetch(bus) << 8)
 
     def decode(self, opcode: int, cb=False):
+        """Check if this is a CB prefixed instruction,
+        if so, return the CB instruction if not return the normal instruction,
+        since these have already been mapped, is simply a lookup"""
         return getattr(self, 'cb_' if cb else '' + 'instructions')[opcode]
 
-    # this type hint is stub, I don't know everything that is going to be returned, and int isn't descriptive enough
-    @utils.performance_testing.timeit
-    def execute(self, bus: 'Bus', instruction: 'Instruction') -> 'cyles':
-
+    def execute(self, bus: 'Bus', instruction: 'Instruction') -> Cycles:
+        # likely needs to return more values, but stubbed for now
+        """Uses pattern matching to execute the instruction"""
         op_code = instruction.op_code
         mnemonic = instruction.mnemonic
         operand1, operand2 = instruction.operand1, instruction.operand2
@@ -42,17 +50,16 @@ class CPU:
         read_2 = partial(bus.read, operand2)
         write_1 = partial(bus.write, operand1)
 
-        def _attempt():
-            print(f'{mnemonic} | {operand1} {operand2} | {flags}')
-
         match instruction.mnemonic:
             case 'NOP':
                 """No operation"""
             case 'HALT':
                 """Halt CPU & LCD display until button pressed"""
+                # this has some funky logic as I understand it
                 self.is_halted = True
             case 'STOP':
                 """Stop CPU & LCD display until button pressed"""
+                # this has some funky logic as I understand it
                 self.is_stopped = True
             case 'PREFIX':
                 """Prefix CB"""
@@ -79,7 +86,7 @@ class CPU:
             case 'BIT':
                 """Test bit n in register r"""
                 bus.write('F', (bus.read('F') & 0b11110000) | (1 << 4) | (
-                            read_1() & (1 << op_code & 0b111)))
+                        read_1() & (1 << op_code & 0b111)))
             case 'RES':
                 """Reset bit n in register r"""
                 write_1(read_1() & ~(1 << op_code & 0b111))
@@ -174,13 +181,15 @@ class CPU:
                     write_1(read_1() - 1)
             case 'CP':
                 """Compare register r2 with register r1"""
-                bus.write('F', (bus.read('F') & 0b11110000) | (read_1() - (read_2() if operand2 is not None else bus.read('A'))))
+                bus.write('F', (bus.read('F') & 0b11110000) | (
+                            read_1() - (read_2() if operand2 is not None else bus.read('A'))))
             case _:
                 print(
                     f'Unknown instruction: {hex(op_code)} | {mnemonic} | {repr(operand1)} {repr(operand2)} | {repr(flags)}')
         return instruction.cycles
 
     def run(self, bus: 'Bus'):
+        # this function is temporary
         while True:
             opcode = self.fetch(bus)
             instruction = self.decode(opcode)

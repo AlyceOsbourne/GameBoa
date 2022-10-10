@@ -2,8 +2,10 @@ import constants
 import bus
 import bus.cpu
 import pytest
-instructions, cb_instructions = constants.Instruction.load_instructions('../op_codes.json').values()
+from line_profiler import LineProfiler
 
+instructions, cb_instructions = constants.Instruction.load_instructions('../op_codes.json').values()
+lp = LineProfiler()
 
 _cpu = bus.cpu.CPU(
     instructions=instructions,
@@ -22,14 +24,17 @@ _bus = bus.Bus(
 )
 _cpu.bus = _bus
 
+lp.enable()
 
 
 def run_all_instructions():
-    for instruction in instructions.values():
-        _cpu.execute(_bus, instruction)
+    for _ in range(1_000):
+        for instruction in instructions.values():
+            lp.runcall(_cpu.execute, _bus, instruction)
+        for instruction in cb_instructions.values():
+            lp.runcall(_cpu.execute, _bus, instruction)
 
-    for instruction in cb_instructions.values():
-        _cpu.execute(_bus, instruction)
 
 if __name__ == "__main__":
     run_all_instructions()
+    lp.print_stats()

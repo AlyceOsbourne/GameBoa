@@ -53,6 +53,11 @@ class Bus:
                 value = self.mmu.read_address(self.read('HL'), 1)
                 self.register.write_register('HL', self.read('HL') + 1 if operator == '(HL+)' else -1)
                 return value
+            case 'HL+' | 'HL-':
+                """Increment/decrement HL"""
+                value = self.read('HL')
+                self.register.write_register('HL', self.read('HL') + 1 if operator == 'HL+' else -1)
+                return value
             case 'SP+r8':
                 """SP + 8 bit immediate value"""
                 return self.register.read_register('SP') + self.read('d8')
