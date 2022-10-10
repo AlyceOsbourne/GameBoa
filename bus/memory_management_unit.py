@@ -1,3 +1,5 @@
+import random
+
 from bus import Bank
 
 
@@ -16,5 +18,7 @@ class MMU:
 
     def write_address(self, address, value):
         match address:
+            case None:
+                print(f'Not an address {address}')
             case _:
                 print(f'Unimplemented write to address {address:04X}')

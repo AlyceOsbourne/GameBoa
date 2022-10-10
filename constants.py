@@ -170,6 +170,9 @@ class Instruction(
                 )
         return loaded_instructions
 
+    def __str__(self):
+        return f'{self.mnemonic}({self.operand1}, {self.operand2})'
+
 
 class Flags(Flag):
     """Binary flags for the CPU"""
