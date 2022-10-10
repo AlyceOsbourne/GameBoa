@@ -34,17 +34,23 @@ class Bus:
         # gets the data based upon pattern matching
         match operator:
             case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12' | '13' | '14' | '15':
-                return int(operator)
-            case 'd16' | 'd8' | 'a16' | 'a8' | 'r8':
-                ...
+                """just a number"""
+            case 'd16' | 'a16':
+                """16 bit immediate value"""
+            case 'd8' | 'a8':
+                """8 bit immediate value"""
+            case 'r8':
+                """8 bit signed immediate value"""
             case 'PC' | 'SP' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'H' | 'L' | 'AF' | 'BC' | 'DE' | 'HL':
-                ...
+                """Registers"""
             case '(BC)' | '(DE)' | '(HL)' | '(C)' | '(a16)' | '(a8)':
-                ...
+                """At address from location"""
             case '(HL+)' | '(HL-)':
-                ...
+                """At address from location, and increment/decrement HL"""
             case 'SP+r8':
-                ...
+                """SP + 8 bit immediate value"""
+            case 'Z' | 'NZ' | 'NC':
+                """Condition"""
             case None:
                 return None
             case _:
@@ -55,11 +61,13 @@ class Bus:
     def write_operator(self, operator: str, value: any):
         match operator:
             case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12' | '13' | '14' | '15':
-                """Sets the MBC, I think"""
+                """Sets bit register r"""
             case 'PC' | 'SP' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'H' | 'L' | 'AF' | 'BC' | 'DE' | 'HL':
                 """Registers"""
             case '(BC)' | '(DE)' | '(HL)' | '(C)'| '(a16)' | '(a8)'| '(HL+)' | '(HL-)':
                 """At address from location"""
+            case 'd8':
+                """8 bit immediate value"""
             case _:
                 print(f'Unimplemented write to operator {operator}')
 
