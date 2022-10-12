@@ -4,8 +4,6 @@ from functools import partial
 from constants import Instruction
 from typing import Protocol, Callable, TypeAlias
 
-Cycles: TypeAlias = int
-
 
 class Bus(Protocol):
     """Just a stand in protocol for type hinting, will be done away with and replaced with a typevar once I am finished,
@@ -20,7 +18,7 @@ class CPU:
     is_cb: bool
     instructions: dict[int, Instruction]
     cb_instructions: dict[int, Instruction]
-    interupts_enabled = False
+    interrupts_enabled = False
 
     def fetch(self, bus: 'Bus') -> int:
         """Fetches the next op code from the program counter and then increments and returns it"""
@@ -38,7 +36,7 @@ class CPU:
         since these have already been mapped, is simply a lookup"""
         return getattr(self, 'cb_' if cb else '' + 'instructions')[opcode]
 
-    def execute(self, bus: 'Bus', instruction: 'Instruction') -> Cycles:
+    def execute(self, bus: 'Bus', instruction: 'Instruction') -> tuple[int, bool, bool, bool]:
         # likely needs to return more values, but stubbed for now
         """Uses pattern matching to execute the instruction"""
         op_code = instruction.op_code
@@ -79,7 +77,7 @@ class CPU:
                     bus.write('PC', bus.read('PC') + read_1())
             case 'DI' | 'EI':
                 """Disable/enable interrupts"""
-                self.interupts_enabled = op_code == 0xF3
+                self.interrupts_enabled = op_code == 0xF3
             case 'SWAP':
                 """Swap upper & lower nibbles of register"""
                 write_1((read_1() << 4) | (read_1() >> 4))
@@ -148,48 +146,49 @@ class CPU:
             case 'LD' | 'LDH' | 'LDI' | 'LDD':
                 """Load register r2 into register r1"""
                 write_1(read_2())
-            case 'PUSH' | 'POP':
-                """Push or pop register r1 onto / off stack"""
-                if mnemonic == 'PUSH':
-                    bus.write('SP', bus.read('SP') - 2)
-                    bus.write('SP', read_1())
-                else:
-                    write_1(bus.read('SP'))
-                    bus.write('SP', bus.read('SP') + 2)
-            case 'ADD' | 'SUB':
-                """Add register r2 to register r1"""
-                if mnemonic == 'ADD':
-                    write_1(read_1() + (read_2() if operand2 is not None else bus.read('A')))
-                else:
-                    write_1(read_1() - read_2() if operand2 is not None else bus.read('A'))
-
-            case 'ADC' | 'SBC':
+            case 'PUSH':
+                bus.write('SP', bus.read('SP') - 2)
+                bus.write('SP', read_1())
+            case 'POP':
+                write_1(bus.read('SP'))
+                bus.write('SP', bus.read('SP') + 2)
+            case 'ADD':
+                write_1(read_1() + (read_2() if operand2 is not None else bus.read('A')))
+            case 'SUB':
+                """Sub register r2 to register r1"""
+                write_1(read_1() - read_2() if operand2 is not None else bus.read('A'))
+            case 'ADC':
                 """Add register r2 to register r1 with carry"""
-                if mnemonic == 'ADC':
-                    write_1(read_1() + read_2() + (bus.read('F') & 1))
-                else:
-                    write_1(read_1() - read_2() - (bus.read('F') & 1))
-            case 'AND' | 'XOR' | 'OR':
-                """Logical operation"""
-                operation = operator.and_ if mnemonic == 'AND' else operator.xor if mnemonic == 'XOR' else operator.or_
-                write_1(operation(read_1(), read_2() if operand2 is not None else bus.read('A')))
-            case 'INC' | 'DEC':
-                """Increment / decrement register r1"""
-                if mnemonic == 'INC':
-                    write_1(read_1() + 1)
-                else:
-                    write_1(read_1() - 1)
+                write_1(read_1() + read_2() + (bus.read('F') & 1))
+            case 'SBC':
+                """Sub register r2 to register r1 with carry"""
+                write_1(read_1() - read_2() - (bus.read('F') & 1))
+            case 'AND':
+                """AND register r2 with register r1"""
+                write_1(read_1() & (read_2() if operand2 is not None else bus.read('A')))
+            case 'OR':
+                """OR register r2 with register r1"""
+                write_1(read_1() | (read_2() if operand2 is not None else bus.read('A')))
+            case 'XOR':
+                """XOR register r2 with register r1"""
+                write_1(read_1() ^ (read_2() if operand2 is not None else bus.read('A')))
+            case 'INC':
+                """Increment register r1"""
+                write_1(read_1() + 1)
+            case 'DEC':
+                """Decrement register r1"""
+                write_1(read_1() - 1)
             case 'CP':
                 """Compare register r2 with register r1"""
                 bus.write('F', (bus.read('F') & 0b11110000) | (
-                            read_1() - (read_2() if operand2 is not None else bus.read('A'))))
+                        read_1() - (read_2() if operand2 is not None else bus.read('A'))))
             case _:
                 print(
                     f'Unknown instruction: {hex(op_code)} | {mnemonic} | {repr(operand1)} {repr(operand2)} | {repr(flags)}')
         return instruction.cycles
 
     def run(self, bus: 'Bus'):
-        # this function is temporary
+        # this function is temporary, as this will be held by a higher level component that syncs all the components
         while True:
             opcode = self.fetch(bus)
             instruction = self.decode(opcode)
@@ -199,5 +198,5 @@ class CPU:
         self.instructions = instructions
         self.cb_instructions = cb_instructions
 
-    def __repr__(self):
+    def __str__(self):
         return f'CPU'

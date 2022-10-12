@@ -48,33 +48,31 @@ class Bus:
             case '(BC)' | '(DE)' | '(HL)' | '(C)' | '(a16)' | '(a8)':
                 """At address from location"""
                 return self.mmu.read_address(self.read(operator[1:-1]), 1)
-            case '(HL+)' | '(HL-)':
-                """At address from location, and increment/decrement HL"""
-                value = self.mmu.read_address(self.read('HL'), 1)
-                self.register.write_register('HL', self.read('HL') + 1 if operator == '(HL+)' else -1)
-                return value
             case 'HL+' | 'HL-':
                 """Increment/decrement HL"""
                 value = self.read('HL')
                 self.register.write_register('HL', self.read('HL') + 1 if operator == 'HL+' else -1)
                 return value
+            case '(HL+)' | '(HL-)':
+                """At address from location, and increment/decrement HL"""
+                return self.mmu.read_address(self.read(operator[1:-2]), 1)
             case 'SP+r8':
                 """SP + 8 bit immediate value"""
                 return self.register.read_register('SP') + self.read('d8')
-            case 'Z' | 'NZ' | 'NC':
-                """Condition"""
-                if operator == 'Z':
-                    return self.register.read_register('F') & 0b10000000
-                elif operator == 'NZ':
-                    return not self.register.read_register('F') & 0b10000000
-                elif operator == 'NC':
-                    return not self.register.read_register('F') & 0b00010000
+            case 'Z':
+                """Zero flag"""
+                return self.register.read_register('F') & 0b10000000
+            case 'NZ':
+                """Not zero flag"""
+                return not self.register.read_register('F') & 0b10000000
+            case 'NC':
+                """Not carry flag"""
+                return not self.register.read_register('F') & 0b00010000
             case None:
                 return None
             case _:
                 print(f'Unimplemented read from operator {operator}')
                 return None
-        return 0
 
     def write(self, operator: str, value: any):
         match operator:
