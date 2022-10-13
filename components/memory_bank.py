@@ -1,17 +1,23 @@
-from functools import singledispatch
+from functools import singledispatchmethod
 
 
 class Bank:
     """Holds the memory banks for the gameboy, this can be cartridge, vram, wram, etc"""
     data: bytearray
 
-    @singledispatch
-    def __init__(self, data: bytearray):
-        self.data = data
+    @singledispatchmethod
+    def __init__(self, data):
+        raise NotImplementedError
 
-    @__init__.register
-    def _(self, size: int):
+    @__init__.register(int)
+    def sized(self, size: int):
+        """Creates a bank of size"""
         self.data = bytearray(size)
+
+    @__init__.register(bytearray)
+    def from_byte_array(self, data: bytearray):
+        """Creates a bank from a bytearray"""
+        self.data = data
 
     def read(self, address: int, length: int = 1) -> int:
         """Returns the value at address"""

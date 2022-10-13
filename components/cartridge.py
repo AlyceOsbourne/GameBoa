@@ -1,10 +1,12 @@
 from functools import reduce
+from pathlib import Path
 from typing import Any
 
 from components.memory_bank import Bank
-from components.system_mappings import MemoryMapRanges, OLD_LICENSEE_CODES, NEW_LICENSEE_CODES, CARTRIDGE_TYPES, ROM_SIZES, RAM_SIZES, \
+from components.system_mappings import MemoryMapRanges, OLD_LICENSEE_CODES, NEW_LICENSEE_CODES, CARTRIDGE_TYPES, \
+    ROM_SIZES, RAM_SIZES, \
     NUM_RAM_BANKS, NUM_ROM_BANKS, DESTINATION_CODES
-from functools import singledispatch
+from functools import singledispatchmethod
 
 
 class Cartridge:
@@ -16,18 +18,22 @@ class Cartridge:
     cur_rom_bank: int = 1
     cur_ram_bank: int = 0
 
-    @singledispatch
-    def __init__(self, data: bytearray):
+    @singledispatchmethod
+    def __init__(self, data):
+        ...
+
+    @__init__.register(bytearray)
+    def from_byte_array(self, data):
         self.data = data
         self.rom_bank_0 = Bank(self.data[0x0000:0x4000])
         self.rom_bank_n = tuple(Bank(self.data[0x4000 * i:0x4000 * (i + 1)]) for i in range(1, self.num_rom_banks))
         self.ram_bank = tuple(Bank(0x2000) for _ in range(self.num_ram_banks))
 
-
-    @__init__.register
-    def _(self, rom_path: str):
-        with open(rom_path, 'rb') as f:
-            self.__init__(f.read())
+    @__init__.register(Path)
+    @__init__.register(str)
+    def from_file(self, file):
+        with open(file, 'rb') as f:
+            self.__init__(bytearray(f.read()))
 
     def _get_as_ascii(self, start, end):
         return self.data[start:end].decode('ascii')

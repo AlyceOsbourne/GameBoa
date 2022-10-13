@@ -218,6 +218,25 @@ class Interrupts(Flag):
     JOYPAD = 0b00010000
 
 
+class CartType(Flag):
+    ROM = auto()
+    MBC1 = auto()
+    MBC2 = auto()
+    MBC3 = auto()
+    MBC5 = auto()
+    MBC6 = auto()
+    MBC7 = auto()
+    MMM01 = auto()
+    HUC1 = auto()
+    HUC3 = auto()
+    POCKET_CAMERA = auto()
+    BANDAI_TAMA5 = auto()
+    TIMER = auto()
+    BATTERY = auto()
+    RUMBLE = auto()
+    SENSOR = auto()
+    RAM = auto()
+
 ROM_BANK_SIZE = 0x4000
 RAM_BANK_SIZE = 0x2000
 
@@ -440,34 +459,34 @@ NEW_LICENSEE_CODES = MappingProxyType({
     0xa4: 'Konami (Yu-Gi-Oh!)',
 })
 CARTRIDGE_TYPES = MappingProxyType({
-    0x00: 'ROM',
-    0x01: 'MBC1',
-    0x02: 'MBC1+RAM',
-    0x03: 'MBC1+RAM+BATTERY',
-    0x05: 'MBC2',
-    0x06: 'MBC2+BATTERY',
-    0x08: 'ROM+RAM',
-    0x09: 'ROM+RAM+BATTERY',
-    0x0b: 'MMM01',
-    0x0c: 'MMM01+RAM',
-    0x0d: 'MMM01+RAM+BATTERY',
-    0x0f: 'MBC3+TIMER+BATTERY',
-    0x10: 'MBC3+TIMER+RAM+BATTERY',
-    0x11: 'MBC3',
-    0x12: 'MBC3+RAM',
-    0x13: 'MBC3+RAM+BATTERY',
-    0x19: 'MBC5',
-    0x1a: 'MBC5+RAM',
-    0x1b: 'MBC5+RAM+BATTERY',
-    0x1c: 'MBC5+RUMBLE',
-    0x1d: 'MBC5+RUMBLE+RAM',
-    0x1e: 'MBC5+RUMBLE+RAM+BATTERY',
-    0x20: 'MBC6',
-    0x22: 'MBC7+SENSOR+RUMBLE+RAM+BATTERY',
-    0xfc: 'POCKET CAMERA',
-    0xfd: 'BANDAI TAMA5',
-    0xfe: 'HuC3',
-    0xff: 'HuC1+RAM+BATTERY',
+    0x00: CartType.ROM,
+    0x01: CartType.MBC1,
+    0x02: CartType.MBC1 | CartType.RAM,
+    0x03: CartType.MBC1 | CartType.RAM | CartType.BATTERY,
+    0x05: CartType.MBC2,
+    0x06: CartType.MBC2 | CartType.BATTERY,
+    0x08: CartType.ROM | CartType.RAM,
+    0x09: CartType.ROM | CartType.RAM | CartType.BATTERY,
+    0x0b: CartType.MMM01,
+    0x0c: CartType.MMM01 | CartType.RAM,
+    0x0d: CartType.MMM01 | CartType.RAM | CartType.BATTERY,
+    0x0f: CartType.MBC3 | CartType.TIMER | CartType.BATTERY,
+    0x10: CartType.MBC3 | CartType.TIMER | CartType.RAM | CartType.BATTERY,
+    0x11: CartType.MBC3,
+    0x12: CartType.MBC3 | CartType.RAM,
+    0x13: CartType.MBC3 | CartType.RAM | CartType.BATTERY,
+    0x19: CartType.MBC5,
+    0x1a: CartType.MBC5 | CartType.RAM,
+    0x1b: CartType.MBC5 | CartType.RAM | CartType.BATTERY,
+    0x1c: CartType.MBC5 | CartType.RUMBLE,
+    0x1d: CartType.MBC5 | CartType.RUMBLE | CartType.RAM,
+    0x1e: CartType.MBC5 | CartType.RUMBLE | CartType.RAM | CartType.BATTERY,
+    0x20: CartType.MBC6,
+    0x22: CartType.MBC7 | CartType.RUMBLE | CartType.RAM | CartType.BATTERY,
+    0xfc: CartType.POCKET_CAMERA,
+    0xfd: CartType.BANDAI_TAMA5,
+    0xfe: CartType.HUC3,
+    0xff: CartType.HUC1 | CartType.RAM | CartType.BATTERY,
 
 })
 ROM_SIZES = MappingProxyType({

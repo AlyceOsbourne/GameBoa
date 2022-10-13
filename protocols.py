@@ -10,6 +10,7 @@ write_address = Callable[[int, int], None]
 
 class PPU(Protocol):
     read: Callable[[int, int], int]
+    write: Callable[[int, int], None]
 
 
 class Timer(Protocol):

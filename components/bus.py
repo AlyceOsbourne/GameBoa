@@ -139,7 +139,8 @@ class Bus:
         cpu_coro = self.cpu.run(self)
         next(cpu_coro)
         while True:
-            cpu_data = cpu_coro.send(self.fetch8())
+            cpu_coro.send(self.fetch8())
+            
 
     def __str__(self):
         return f'Bus'

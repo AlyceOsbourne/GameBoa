@@ -5,20 +5,21 @@ from protocols import Bus, Timer
 
 
 class CPU:
+    """The CPU of the Gameboy"""
     is_stopped: bool
     is_halted: bool
-    is_cb: bool
     instructions: dict[int, Instruction]
     cb_instructions: dict[int, Instruction]
-    timer: Timer
+    is_cb: bool = False
     interrupts_enabled = False
 
     def decode(self, opcode: int, cb=False):
         """Check if this is a CB prefixed instruction,
         if so, return the CB instruction if not return the normal instruction,
         since these have already been mapped, is simply a lookup"""
-        decoded = getattr(self, 'cb_' if cb else '' + 'instructions')[opcode]
-        print(f'opcode: {opcode:02X} decoded: {decoded}')
+        decoded = getattr(self, ('cb_' if cb else '') + 'instructions')[opcode]
+        if self.is_cb:
+            self.is_cb = False
         return decoded
 
     def execute(self, bus: 'Bus', instruction: 'Instruction') -> int:
@@ -175,7 +176,7 @@ class CPU:
     def __repr__(self):
         return f'{self.__class__.__name__}()'
 
-    def __init__(self, instructions, cb_instructions, timer):
+    def __init__(self, instructions, cb_instructions):
         self.instructions = instructions
         self.cb_instructions = cb_instructions
 
@@ -184,8 +185,12 @@ class CPU:
 
     def run(self, bus:Bus):
         bus = bus
+        current_instr = None
         while True:
-            op_code = yield
-            decoded = self.decode(op_code)
-            cycles = self.execute(bus, decoded)
+            op_code = yield current_instr
+            print(f'OP_CODE: {op_code:#02X}')
+            current_instr = self.decode(op_code, self.is_cb)
+            print(f'DECODED: {current_instr.mnemonic} {current_instr.operand1} {current_instr.operand2} {current_instr.flags}')
+            cycles = self.execute(bus, current_instr)
+            print(f'CYCLES: {cycles}')
 
