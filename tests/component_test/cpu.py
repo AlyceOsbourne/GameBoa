@@ -1,14 +1,7 @@
 from components import cpu, system_mappings
+from tests.mock_components import MockBus
 import pathlib
 import pytest
-
-
-class MockBus:
-    def read(self, address, length=1):
-        return 0
-
-    def write(self, address, value):
-        pass
 
 
 def test_cpu_opcode_decoding():

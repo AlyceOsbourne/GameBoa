@@ -1,4 +1,4 @@
-from components import system_mappings
+from components.system_mappings import CartridgeReadWriteRanges, PPUReadWriteRanges
 from protocols import *
 
 
@@ -74,6 +74,7 @@ class Bus:
                 return None
             case _:
                 print(f'Unimplemented read from operator {operator}')
+                # Todo: once all operator are implemented, this should be a raise
                 return None
 
     def write(self, operator: str, value: any):
@@ -91,48 +92,43 @@ class Bus:
                 """8 bit immediate value"""
                 self.write_address(self.read('PC'), value)
             case _:
+                # Todo: once all operator are implemented, this should be a raise
                 print(f'Unimplemented write to operator {operator}')
 
     def read_address(self, address: int, length: int = 1):
         """Reads from the address"""
         match address:
-            case system_mappings.MemoryMapRanges.CARTRIDGE:
-                """Cartridge"""
-                return self.cart.read(address - system_mappings.MemoryMapRanges.CARTRIDGE.start, length)
-            case system_mappings.MemoryMapRanges.VRAM:
-                """Video RAM"""
-                return self.ppu.read(address - system_mappings.MemoryMapRanges.VRAM.start, length)
-            case system_mappings.MemoryMapRanges.EXT_RAM:
-                """External RAM"""
-                return self.cart.read(address - system_mappings.MemoryMapRanges.SRAM.start, length)
-            case system_mappings.MemoryMapRanges.WRAM:
-                """Work RAM"""
-                return self.wram.read(address - system_mappings.MemoryMapRanges.WRAM.start, length)
-            case system_mappings.MemoryMapRanges.OAM_RAM:
-                """Object Attribute Memory"""
-                return self.ppu.read(address - system_mappings.MemoryMapRanges.OAM.start, length)
-            case system_mappings.MemoryMapRanges.ECHO_RAM:
-                """Echo RAM"""
-                return self.wram.read(address - system_mappings.MemoryMapRanges.ECHO.start, length)
-            case system_mappings.MemoryMapRanges.UNUSED:
-                """Unusable"""
-                return 0xFF
-            case system_mappings.MemoryMapRanges.HRAM:
-                """High RAM"""
-                return self.hram.read(address - system_mappings.MemoryMapRanges.HRAM.start, length)
-            case system_mappings.MemoryMapRanges.IE:
-                """Interrupt Enable Register"""
-                return self.cpu.interrupts_enabled
+            case (
+                CartridgeReadWriteRanges.ROM_BANK_0 |
+                CartridgeReadWriteRanges.ROM_BANK_N |
+                CartridgeReadWriteRanges.ROM_BANK_N_1
+            ) if self.cart is not None:
+                """Reads from the cartridge"""
+                return self.cart.read(address, length)
+            case (PPUReadWriteRanges.VRAM | PPUReadWriteRanges.OAM):
+                """Reads from the PPU"""
+                return self.ppu.read(address, length)
             case _:
-                print(
-                    f'Unimplemented read from address {address}, matching ranges {system_mappings.MemoryMapRanges.from_address(address)}')
+                # Todo: once all operator are implemented, this should be a raise
+                print(f'Unimplemented read from address {address}')
                 return 0xFF
 
     def write_address(self, address: int, value: int):
+        """Writes to the address"""
         match address:
+            case (
+                CartridgeReadWriteRanges.ROM_BANK_0 |
+                CartridgeReadWriteRanges.ROM_BANK_N |
+                CartridgeReadWriteRanges.ROM_BANK_N_1
+            ) if self.cart is not None:
+                """Writes to the cartridge"""
+                self.cart.write(address, value)
+            case (PPUReadWriteRanges.VRAM | PPUReadWriteRanges.OAM):
+                """Writes to the PPU"""
+                self.ppu.write(address, value)
             case _:
-                print(
-                    f'Unimplemented write to address {address}, matching ranges {system_mappings.MemoryMapRanges.from_address(address)}')
+                # Todo: once all operator are implemented, this should be a raise
+                print(f'Unimplemented write to address {address}')
 
     # coroutine for communication with the CPU, PPU, and APU
     def run(self):
@@ -140,7 +136,6 @@ class Bus:
         next(cpu_coro)
         while True:
             cpu_coro.send(self.fetch8())
-            
 
     def __str__(self):
         return f'Bus'

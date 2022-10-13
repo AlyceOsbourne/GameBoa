@@ -1,5 +1,6 @@
 import json
 from enum import Enum, Flag, auto, unique
+from functools import cache
 from types import MappingProxyType
 from typing import NamedTuple, Optional
 
@@ -46,76 +47,7 @@ class MemoryRange(NamedTuple(
         return self.end - self.start + 1
 
 
-class MemoryMapRanges(MemoryRange, Enum):
-    """Memory map ranges. For things like VRAM, etc etc"""
-
-    CARTRIDGE = 0x0000, 0x7FFF
-
-    CART_HEADER = 0x0100, 0x014F
-
-    TITLE = 0x0134, 0x0143
-    NEW_LICENSEE_CODE = 0x0144, 0x0145
-    SGB_FLAG = 0x0146
-    CGB_FLAG = 0x0143
-    CARTRIDGE_TYPE = 0x0147
-    ROM_SIZE = 0x0148, 0x0148
-    RAM_SIZE = 0x0149, 0x0149
-    DESTINATION_CODE = 0x014a
-    OLD_LICENSEE_CODE = 0x014b
-    MASK_ROM_VERSION = 0x014c
-    HEADER_CHECKSUM = 0x014d
-    GLOBAL_CHECKSUM = 0x014e, 0x014f
-
-    CART_BANK_0 = 0x0150, 0x3FFF
-    CART_BANK_N = 0x4000, 0x7FFF
-
-    VRAM = 0x8000, 0x9FFF
-    CHAR_RAM = 0x8000, 0x97FF
-    BG_RAM_1 = 0x9800, 0x9BFF
-    BG_RAM_2 = 0x9C00, 0x9FFF
-
-    EXT_RAM = 0xA000, 0xBFFF
-
-    WRAM = 0xC000, 0xDFFF
-    INTERNAL_RAM_BANK_0 = 0xC000, 0xCFFF
-    INTERNAL_RAM_BANK_N = 0xD000, 0xDFFF
-
-    ECHO_RAM = 0xE000, 0xFDFF
-
-    OAM_RAM = 0xFE00, 0xFE9F
-
-    UNUSED = 0xFEA0, 0xFEFF
-
-    IO_PORTS = 0xFF00, 0xFF7F
-
-    JOYPAD = 0xFF00
-    SERIAL_DATA = 0xFF01, 0xFF02
-    TIME_DIV = 0xFF04
-    SOUND = 0xFF10, 0XFF26
-    WAVE_PATTERN_RAM = 0xFF30, 0xFF3F
-
-    LCDC = 0xFF40
-    STAT = 0xFF41
-    LY = 0xFF44
-    LYC = 0xFF45
-    DMA = 0xFF46
-    BGP = 0xFF47
-    OBP0 = 0xFF48
-    OBP1 = 0xFF49
-    WY = 0xFF4A
-    WX = 0xFF4B
-    KEY1 = 0xFF4D
-    SCY = 0xFF42
-    SCX = 0xFF43
-
-    VRAM_BANK = 0xFF4F
-    DISBALE_BOOT_ROM = 0xFF50
-    VRAM_DMA = 0xFF51, 0xFF55
-    BG_PALETTE = 0xFF68, 0xFF69
-    WRAM_BANK = 0xFF70
-    HRAM = 0xFF80, 0xFFFE
-    IE = 0xFFFF
-
+class MemoryRangeEnum(MemoryRange, Enum):
     def __contains__(self, item):
         if self.end is not None:
             is_in_range = self.start <= item <= self.end
@@ -145,12 +77,60 @@ class MemoryMapRanges(MemoryRange, Enum):
             json.dump(out_dict, f, indent=4)
 
     @classmethod
+    @cache
     def from_address(cls, address: int):
         matching = []
         for enum in cls:
             if address in enum:
                 matching.append(enum)
         return matching
+
+
+class CartridgeHeaderRanges(MemoryRangeEnum):
+    TITLE = 0x0134, 0x0143
+    NEW_LICENSEE_CODE = 0x0144, 0x0145
+    SGB_FLAG = 0x0146
+    CGB_FLAG = 0x0143
+    CARTRIDGE_TYPE = 0x0147
+    ROM_SIZE = 0x0148, 0x0148
+    RAM_SIZE = 0x0149, 0x0149
+    DESTINATION_CODE = 0x014a
+    OLD_LICENSEE_CODE = 0x014b
+    MASK_ROM_VERSION = 0x014c
+    HEADER_CHECKSUM = 0x014d
+    GLOBAL_CHECKSUM = 0x014e, 0x014f
+
+
+class CartridgeReadWriteRanges(MemoryRangeEnum):
+    ROM_BANK_0 = 0x0000, 0x3fff
+    ROM_BANK_N = 0x4000, 0x7fff
+    RAM_BANK_0 = 0xa000, 0xbfff
+    RAM_BANK_N = 0xa000, 0xbfff
+    RAM_TIMER_ENABLE = 0x0000, 0x1fff
+    ROM_BANK_SELECT = 0x2000, 0x3fff
+    RAM_BANK_SELECT_OR_RTC_REGISTER_SELECT = 0x4000, 0x5fff
+    LATCH_CLOCK_DATA = 0x6000, 0x7fff
+    RTC_REGISTER = 0xA000, 0xBFFF
+
+
+class PPUReadWriteRanges(MemoryRangeEnum):
+    VRAM = 0x8000, 0x9fff
+    OAM = 0xfe00, 0xfe9f
+    LCDC = 0xff40
+    STAT = 0xff41
+    SCY = 0xff42
+    SCX = 0xff43
+    LY = 0xff44
+    LYC = 0xff45
+    DMA = 0xff46
+    BGP = 0xff47
+    OBP0 = 0xff48
+    OBP1 = 0xff49
+    WY = 0xff4a
+    WX = 0xff4b
+
+
+
 
 
 class Instruction(
@@ -237,13 +217,24 @@ class CartType(Flag):
     SENSOR = auto()
     RAM = auto()
 
+
+class Model(Enum):
+    DMG = auto()
+    MGB = auto()
+    SGB = auto()
+    SGB2 = auto()
+    CGB = auto()
+    AGB = auto()
+    AGS = auto()
+
+
 ROM_BANK_SIZE = 0x4000
 RAM_BANK_SIZE = 0x2000
 
 CPU_CLOCK_SPEED = 4194304  # 4.194304 MHz
 CPU_CLOCK_SPEED_MHZ = round(CPU_CLOCK_SPEED / 1000000, 2)
 
-# immutable mappings cause ints van't be var names, and I want them as the keys here
+# immutable mappings cause ints can't be var names, and I want them as the keys here
 
 OLD_LICENSEE_CODES = MappingProxyType({
     0x00: 'None',

@@ -5,8 +5,8 @@ class Register:
     a, b, c, d, e, h, l, f, sp, pc = 0x01, 0x00, 0x13, 0x00, 0xD8, 0x01, 0x4D, 0xB0, 0xFFFE, 0x0100
 
     # get 2 8bit register as a 16 bit register
-    _get_16 = lambda self, r1, r2: (getattr(self, r1) << 8) | getattr(self, r2)
-    _set_16 = lambda self, r1, r2, value: setattr(self, r1, (value >> 8) & 0xFF) and setattr(self, r2, value & 0xFF)
+    _get_16 = lambda self, r1, r2: (self.read(r1) << 8) | self.read(r2)
+    _set_16 = lambda self, r1, r2, value: (self.write(r1, (value >> 8) & 0xFF), self.write(r2, value & 0xFF))
 
     # getter/setters for 16 bit registers
     af = property(lambda self: self._get_16('a', 'f'), lambda self, value: self._set_16('a', 'f', value), doc='AF reg')

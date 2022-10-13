@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 
 from components.memory_bank import Bank
-from components.system_mappings import MemoryMapRanges, OLD_LICENSEE_CODES, NEW_LICENSEE_CODES, CARTRIDGE_TYPES, \
+from components.system_mappings import CartridgeHeaderRanges, OLD_LICENSEE_CODES, NEW_LICENSEE_CODES, CARTRIDGE_TYPES, \
     ROM_SIZES, RAM_SIZES, \
     NUM_RAM_BANKS, NUM_ROM_BANKS, DESTINATION_CODES
 from functools import singledispatchmethod
@@ -46,33 +46,34 @@ class Cartridge:
 
     def write(self, address, value):
         match address:
+
             case _:
                 print(f'Unimplemented write to cart {address}')
 
-    title = property(lambda self: self._get_as_ascii(*MemoryMapRanges.TITLE.value).strip('\0').title())
+    title = property(lambda self: self._get_as_ascii(*CartridgeHeaderRanges.TITLE.value).strip('\0').title())
 
     old_licensee_code = property(lambda self: OLD_LICENSEE_CODES.get(
-        self.data[MemoryMapRanges.OLD_LICENSEE_CODE.value[0]], 'Unknown').strip('\0'))
+        self.data[CartridgeHeaderRanges.OLD_LICENSEE_CODE.value[0]], 'Unknown').strip('\0'))
 
     new_licensee_code = property(lambda self: NEW_LICENSEE_CODES.get(
-        self.data[MemoryMapRanges.NEW_LICENSEE_CODE.value[0]], 'Unknown').strip('\0'))
+        self.data[CartridgeHeaderRanges.NEW_LICENSEE_CODE.value[0]], 'Unknown').strip('\0'))
 
-    sgb_flag = property(lambda self: bool(self.data[MemoryMapRanges.SGB_FLAG.value[0]]))
-    cgb_flag = property(lambda self: bool(self.data[MemoryMapRanges.CGB_FLAG.value[0]]))
+    sgb_flag = property(lambda self: bool(self.data[CartridgeHeaderRanges.SGB_FLAG.value[0]]))
+    cgb_flag = property(lambda self: bool(self.data[CartridgeHeaderRanges.CGB_FLAG.value[0]]))
 
     cartridge_type = property(lambda self: CARTRIDGE_TYPES.get(
-        self.data[MemoryMapRanges.CARTRIDGE_TYPE.value[0]], 'Unknown'))
+        self.data[CartridgeHeaderRanges.CARTRIDGE_TYPE.value[0]], 'Unknown'))
 
-    rom_size = property(lambda self: ROM_SIZES.get(self.data[MemoryMapRanges.ROM_SIZE.value[0]], 'Unknown'))
-    ram_size = property(lambda self: RAM_SIZES.get(self.data[MemoryMapRanges.RAM_SIZE.value[0]], 'Unknown'))
+    rom_size = property(lambda self: ROM_SIZES.get(self.data[CartridgeHeaderRanges.ROM_SIZE.value[0]], 'Unknown'))
+    ram_size = property(lambda self: RAM_SIZES.get(self.data[CartridgeHeaderRanges.RAM_SIZE.value[0]], 'Unknown'))
 
     num_ram_banks = property(lambda self: NUM_RAM_BANKS.get(self.data[0x149], 0))
     num_rom_banks = property(lambda self: NUM_ROM_BANKS.get(self.data[0x148], 0))
 
     destination_code = property(lambda self: DESTINATION_CODES.get(
-        self.data[MemoryMapRanges.DESTINATION_CODE.value[0]], 'Unknown'))
+        self.data[CartridgeHeaderRanges.DESTINATION_CODE.value[0]], 'Unknown'))
 
-    header_checksum = property(lambda self: self.data[MemoryMapRanges.HEADER_CHECKSUM.value[0]])
+    header_checksum = property(lambda self: self.data[CartridgeHeaderRanges.HEADER_CHECKSUM.value[0]])
 
     raw = property(lambda self: self.data)
 

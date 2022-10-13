@@ -40,4 +40,6 @@ def test_cartridge():
     assert cart.sgb_flag
     assert cart.cgb_flag
 
+    print('\n',cart.hex_view())
+
 
