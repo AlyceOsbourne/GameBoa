@@ -1,5 +1,5 @@
 import json
-from enum import Enum, Flag, auto
+from enum import Enum, Flag, auto, unique
 from types import MappingProxyType
 from typing import NamedTuple, Optional
 
@@ -46,27 +46,13 @@ class MemoryRange(NamedTuple(
         return self.end - self.start + 1
 
 
-class RangeMap(MemoryRange, Enum):
-    """Defines a mapping of memory ranges to values. Has equality methods that allow us to compare an int to a memory
-    range to see if it lives withion that range there are broad and narro mapping, such as VRAM as the broad and Char
-    Ram, BG_RAm etc being the narrow, this is so we can broadly narrow by device, but still have mapping for specific
-    things inside those components """
+class MemoryMapRanges(MemoryRange, Enum):
+    """Memory map ranges. For things like VRAM, etc etc"""
 
-    def __contains__(self, item):
-        is_in_range = self.start <= item <= self.end
-        return is_in_range
+    CARTRIDGE = 0x0000, 0x7FFF
 
-    def __eq__(self, other):
-        if isinstance(other, int):
-            return other in self if self.end is not None else self.start == other
-        return super().__eq__(other)
+    CART_HEADER = 0x0100, 0x014F
 
-    def __len__(self):
-        return self.end - self.start + 1
-
-
-class CartridgeRanges(RangeMap):
-    """Cartridge memory ranges. For things like title, etc etc"""
     TITLE = 0x0134, 0x0143
     NEW_LICENSEE_CODE = 0x0144, 0x0145
     SGB_FLAG = 0x0146
@@ -79,18 +65,7 @@ class CartridgeRanges(RangeMap):
     MASK_ROM_VERSION = 0x014c
     HEADER_CHECKSUM = 0x014d
     GLOBAL_CHECKSUM = 0x014e, 0x014f
-    ROM_BANK_0 = 0x0000, 0x3fff
-    ROM_BANK_N = 0x4000, 0x7fff
-    RAM_BANK_0 = 0xa000, 0xbfff
-    RAM_BANK_N = 0xa000, 0xbfff
 
-
-class MemoryMapRanges(RangeMap):
-    """Memory map ranges. For things like VRAM, etc etc"""
-    RES_INT = 0x0000, 0x00FF
-
-    CARTRIDGE = 0x0000, 0x7FFF
-    CART_HEADER = 0x0100, 0x014F
     CART_BANK_0 = 0x0150, 0x3FFF
     CART_BANK_N = 0x4000, 0x7FFF
 
@@ -99,25 +74,26 @@ class MemoryMapRanges(RangeMap):
     BG_RAM_1 = 0x9800, 0x9BFF
     BG_RAM_2 = 0x9C00, 0x9FFF
 
-    CART_RAM = 0xA000, 0xBFFF
+    EXT_RAM = 0xA000, 0xBFFF
 
     WRAM = 0xC000, 0xDFFF
     INTERNAL_RAM_BANK_0 = 0xC000, 0xCFFF
     INTERNAL_RAM_BANK_N = 0xD000, 0xDFFF
 
     ECHO_RAM = 0xE000, 0xFDFF
+
     OAM_RAM = 0xFE00, 0xFE9F
 
     UNUSED = 0xFEA0, 0xFEFF
+
     IO_PORTS = 0xFF00, 0xFF7F
-    HRAM = 0xFF80, 0xFFFE
-    INT_ENABLE = 0xFFFF
 
+    JOYPAD = 0xFF00
+    SERIAL_DATA = 0xFF01, 0xFF02
+    TIME_DIV = 0xFF04
+    SOUND = 0xFF10, 0XFF26
+    WAVE_PATTERN_RAM = 0xFF30, 0xFF3F
 
-class HardwareMemoryMapRanges(RangeMap):
-    """Hardware memory map ranges. For things like the joypad, etc etc"""
-    SCROLL_Y = 0xFF42
-    SCROLL_X = 0xFF43
     LCDC = 0xFF40
     STAT = 0xFF41
     LY = 0xFF44
@@ -129,6 +105,52 @@ class HardwareMemoryMapRanges(RangeMap):
     WY = 0xFF4A
     WX = 0xFF4B
     KEY1 = 0xFF4D
+    SCY = 0xFF42
+    SCX = 0xFF43
+
+    VRAM_BANK = 0xFF4F
+    DISBALE_BOOT_ROM = 0xFF50
+    VRAM_DMA = 0xFF51, 0xFF55
+    BG_PALETTE = 0xFF68, 0xFF69
+    WRAM_BANK = 0xFF70
+    HRAM = 0xFF80, 0xFFFE
+    IE = 0xFFFF
+
+    def __contains__(self, item):
+        if self.end is not None:
+            is_in_range = self.start <= item <= self.end
+        else:
+            is_in_range = self.start == item
+        return is_in_range
+
+    def __eq__(self, other):
+        if isinstance(other, int):
+            return other in self if self.end is not None else self.start == other
+        return super().__eq__(other)
+
+    def __len__(self):
+        return self.end - self.start + 1
+
+    @classmethod
+    def to_json_tile(cls, path: str = "memory_map_ranges.json"):
+        out_dict = {}
+        val_fmt = "{:#06x}"
+        for enum in cls:
+            # for each value in the value tuple, format it if not None
+            val = tuple(
+                val_fmt.format(val) for val in enum.value if val is not None
+            )
+            out_dict[enum.name] = val
+        with open(path, "w") as f:
+            json.dump(out_dict, f, indent=4)
+
+    @classmethod
+    def from_address(cls, address: int):
+        matching = []
+        for enum in cls:
+            if address in enum:
+                matching.append(enum)
+        return matching
 
 
 class Instruction(

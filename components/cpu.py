@@ -1,15 +1,7 @@
-import operator
 from functools import partial
 
-from constants import Instruction
-from typing import Protocol, Callable, TypeAlias
-
-
-class Bus(Protocol):
-    """Just a stand in protocol for type hinting, will be done away with and replaced with a typevar once I am finished,
-    This is just to support the IDE's type hinting and linting"""
-    read: Callable[[str], int | bool]
-    write: Callable[[str, int | bool], bool]
+from components.system_mappings import Instruction
+from protocols import Bus, Timer
 
 
 class CPU:
@@ -18,25 +10,18 @@ class CPU:
     is_cb: bool
     instructions: dict[int, Instruction]
     cb_instructions: dict[int, Instruction]
+    timer: Timer
     interrupts_enabled = False
-
-    def fetch(self, bus: 'Bus') -> int:
-        """Fetches the next op code from the program counter and then increments and returns it"""
-        pc_val = bus.read('PC')
-        bus.write('PC', pc_val + 1)
-        return pc_val
-
-    def fetch16(self, bus: 'Bus'):
-        """Fetches the next 16 bit value from the program counter and then increments and returns it"""
-        return self.fetch(bus) | (self.fetch(bus) << 8)
 
     def decode(self, opcode: int, cb=False):
         """Check if this is a CB prefixed instruction,
         if so, return the CB instruction if not return the normal instruction,
         since these have already been mapped, is simply a lookup"""
-        return getattr(self, 'cb_' if cb else '' + 'instructions')[opcode]
+        decoded = getattr(self, 'cb_' if cb else '' + 'instructions')[opcode]
+        print(f'opcode: {opcode:02X} decoded: {decoded}')
+        return decoded
 
-    def execute(self, bus: 'Bus', instruction: 'Instruction') -> tuple[int, bool, bool, bool]:
+    def execute(self, bus: 'Bus', instruction: 'Instruction') -> int:
         # likely needs to return more values, but stubbed for now
         """Uses pattern matching to execute the instruction"""
         op_code = instruction.op_code
@@ -187,16 +172,20 @@ class CPU:
                     f'Unknown instruction: {hex(op_code)} | {mnemonic} | {repr(operand1)} {repr(operand2)} | {repr(flags)}')
         return instruction.cycles
 
-    def run(self, bus: 'Bus'):
-        # this function is temporary, as this will be held by a higher level component that syncs all the components
-        while True:
-            opcode = self.fetch(bus)
-            instruction = self.decode(opcode)
-            yield self.execute(bus, instruction)
+    def __repr__(self):
+        return f'{self.__class__.__name__}()'
 
-    def __init__(self, instructions, cb_instructions):
+    def __init__(self, instructions, cb_instructions, timer):
         self.instructions = instructions
         self.cb_instructions = cb_instructions
 
     def __str__(self):
         return f'CPU'
+
+    def run(self, bus:Bus):
+        bus = bus
+        while True:
+            op_code = yield
+            decoded = self.decode(op_code)
+            cycles = self.execute(bus, decoded)
+

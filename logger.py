@@ -2,7 +2,7 @@ import logging
 
 LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.DEBUG)
-_fh = logging.FileHandler('bus/debug.log')
+_fh = logging.FileHandler('components/bus/debug.log')
 _fh.setLevel(logging.DEBUG)
 _ch = logging.StreamHandler()
 _ch.setLevel(logging.DEBUG)

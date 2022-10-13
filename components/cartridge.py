@@ -1,8 +1,10 @@
 from functools import reduce
+from typing import Any
 
-from bus import Bank
-from constants import CartridgeRanges, OLD_LICENSEE_CODES, NEW_LICENSEE_CODES, CARTRIDGE_TYPES, ROM_SIZES, RAM_SIZES, \
+from components.memory_bank import Bank
+from components.system_mappings import MemoryMapRanges, OLD_LICENSEE_CODES, NEW_LICENSEE_CODES, CARTRIDGE_TYPES, ROM_SIZES, RAM_SIZES, \
     NUM_RAM_BANKS, NUM_ROM_BANKS, DESTINATION_CODES
+from functools import singledispatch
 
 
 class Cartridge:
@@ -14,44 +16,57 @@ class Cartridge:
     cur_rom_bank: int = 1
     cur_ram_bank: int = 0
 
-    @classmethod
-    def load_from_file(cls, path) -> 'Cartridge':
-        with open(path, 'rb') as f:
-            return cls(bytearray(f.read()))
-
+    @singledispatch
     def __init__(self, data: bytearray):
-        super().__init__(data)
+        self.data = data
         self.rom_bank_0 = Bank(self.data[0x0000:0x4000])
         self.rom_bank_n = tuple(Bank(self.data[0x4000 * i:0x4000 * (i + 1)]) for i in range(1, self.num_rom_banks))
-        self.ram_bank = tuple(Bank.of_len(0x2000) for _ in range(self.num_ram_banks))
+        self.ram_bank = tuple(Bank(0x2000) for _ in range(self.num_ram_banks))
+
+
+    @__init__.register
+    def _(self, rom_path: str):
+        with open(rom_path, 'rb') as f:
+            self.__init__(f.read())
 
     def _get_as_ascii(self, start, end):
         return self.data[start:end].decode('ascii')
 
-    title = property(lambda self: self._get_as_ascii(*CartridgeRanges.TITLE.value).strip('\0').title())
+    def read(self, address, length):
+        match address:
+            case _:
+                print(f'Unimplemented read from cart {address}')
+                return 0
+
+    def write(self, address, value):
+        match address:
+            case _:
+                print(f'Unimplemented write to cart {address}')
+
+    title = property(lambda self: self._get_as_ascii(*MemoryMapRanges.TITLE.value).strip('\0').title())
 
     old_licensee_code = property(lambda self: OLD_LICENSEE_CODES.get(
-            self.data[CartridgeRanges.OLD_LICENSEE_CODE.value[0]], 'Unknown').strip('\0'))
+        self.data[MemoryMapRanges.OLD_LICENSEE_CODE.value[0]], 'Unknown').strip('\0'))
 
     new_licensee_code = property(lambda self: NEW_LICENSEE_CODES.get(
-            self.data[CartridgeRanges.NEW_LICENSEE_CODE.value[0]], 'Unknown').strip('\0'))
+        self.data[MemoryMapRanges.NEW_LICENSEE_CODE.value[0]], 'Unknown').strip('\0'))
 
-    sgb_flag = property(lambda self: bool(self.data[CartridgeRanges.SGB_FLAG.value[0]]))
-    cgb_flag = property(lambda self: bool(self.data[CartridgeRanges.CGB_FLAG.value[0]]))
+    sgb_flag = property(lambda self: bool(self.data[MemoryMapRanges.SGB_FLAG.value[0]]))
+    cgb_flag = property(lambda self: bool(self.data[MemoryMapRanges.CGB_FLAG.value[0]]))
 
     cartridge_type = property(lambda self: CARTRIDGE_TYPES.get(
-        self.data[CartridgeRanges.CARTRIDGE_TYPE.value[0]], 'Unknown'))
+        self.data[MemoryMapRanges.CARTRIDGE_TYPE.value[0]], 'Unknown'))
 
-    rom_size = property(lambda self: ROM_SIZES.get(self.data[CartridgeRanges.ROM_SIZE.value[0]], 'Unknown'))
-    ram_size = property(lambda self: RAM_SIZES.get(self.data[CartridgeRanges.RAM_SIZE.value[0]], 'Unknown'))
+    rom_size = property(lambda self: ROM_SIZES.get(self.data[MemoryMapRanges.ROM_SIZE.value[0]], 'Unknown'))
+    ram_size = property(lambda self: RAM_SIZES.get(self.data[MemoryMapRanges.RAM_SIZE.value[0]], 'Unknown'))
 
     num_ram_banks = property(lambda self: NUM_RAM_BANKS.get(self.data[0x149], 0))
     num_rom_banks = property(lambda self: NUM_ROM_BANKS.get(self.data[0x148], 0))
 
     destination_code = property(lambda self: DESTINATION_CODES.get(
-        self.data[CartridgeRanges.DESTINATION_CODE.value[0]], 'Unknown'))
+        self.data[MemoryMapRanges.DESTINATION_CODE.value[0]], 'Unknown'))
 
-    header_checksum = property(lambda self: self.data[CartridgeRanges.HEADER_CHECKSUM.value[0]])
+    header_checksum = property(lambda self: self.data[MemoryMapRanges.HEADER_CHECKSUM.value[0]])
 
     raw = property(lambda self: self.data)
 
