@@ -13,7 +13,8 @@ Currently, it's a mess, we are still working on many of the intrinsics of the ha
 
 ### What are the plans for the project?
 ___
-First and foremost, a functional, performant gameboy emulator, supporting the main classic editions such as the Classic, the Color and the Advanced
+First and foremost, a functional, performant gameboy emulator, supporting the main classic editions such as the Classic, the Color and the Advanced.
+
 Once these have been implemented to a good degree, these are the following features we'd like to get implemented:
 - In Memory IPS patching, no more having a separate rom for each patch, when adding a patch you will be able to select what roms are compatible with it
 - Web based link cable support, allowing you to play with your friends over the internet, we are hoping to ustilize the in memory patching to allow for this

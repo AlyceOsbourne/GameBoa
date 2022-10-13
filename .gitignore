@@ -1,9 +1,6 @@
-/roms/01-special.gb
-/roms/06.gb
-/roms/cpu_instrs.gb
+/roms/*
 /debug.log
-/bios/gameboy
+/bios/*
 /docs/gupea_2077_69341_1.pdf
-/roms/pb.gb
-/roms/Tetris.gb
 /tests/.pytest_cache/
+.gitignore
