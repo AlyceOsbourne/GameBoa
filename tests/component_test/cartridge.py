@@ -6,7 +6,7 @@ import pytest
 rom_folder_path = pathlib.Path(__file__).parent.parent.parent / 'roms'
 
 
-def test_cartridge():
+def test_cartridge_header():
     # TODO: Expand these tests, mainly for things like read and write, but we need known values first
 
     rom_path = rom_folder_path / 'Tetris.gb'
@@ -40,6 +40,5 @@ def test_cartridge():
     assert cart.sgb_flag
     assert cart.cgb_flag
 
-    print('\n',cart.hex_view())
 
 

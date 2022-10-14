@@ -129,6 +129,8 @@ class PPUReadWriteRanges(MemoryRangeEnum):
     WY = 0xff4a
     WX = 0xff4b
 
+class BusReadWriteRanges(MemoryRangeEnum):
+    ...
 
 
 
@@ -196,6 +198,8 @@ class Interrupts(Flag):
     TIMER = 0b00000100
     SERIAL = 0b00001000
     JOYPAD = 0b00010000
+    IF = 0b11100000
+
 
 
 class CartType(Flag):

@@ -34,7 +34,7 @@ class Bus(Protocol):
     fetch16: Callable[[], int]
     read_address: read_address
     write_address: write_address
-
+    request_interrupt: Callable[[int], None]
 
 
 @runtime_checkable

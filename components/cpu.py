@@ -185,9 +185,9 @@ class CPU:
 
     def run(self, bus:Bus):
         bus = bus
-        current_instr = None
+        cycles = 0
         while True:
-            op_code = yield current_instr
+            op_code = yield cycles
             print(f'OP_CODE: {op_code:#02X}')
             current_instr = self.decode(op_code, self.is_cb)
             print(f'DECODED: {current_instr.mnemonic} {current_instr.operand1} {current_instr.operand2} {current_instr.flags}')

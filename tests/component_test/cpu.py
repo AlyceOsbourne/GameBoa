@@ -21,4 +21,3 @@ def test_cpu_opcode_decoding():
     assert not _cpu.is_cb
 
 
-test_cpu_opcode_decoding()

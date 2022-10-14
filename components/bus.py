@@ -1,10 +1,10 @@
-from components.system_mappings import CartridgeReadWriteRanges, PPUReadWriteRanges
+from components.system_mappings import CartridgeReadWriteRanges, PPUReadWriteRanges, Interrupts
 from protocols import *
 
 
 class Bus:
     """The main bus, this handles the data throughput of the gameboy"""
-    __slots__ = ('ppu', 'timer', 'register', 'cpu', 'wram', 'hram', 'cart')
+    __slots__ = ('ppu', 'timer', 'register', 'cpu', 'wram', 'hram', 'cart', 'ime')
 
     def __init__(
             self,
@@ -12,13 +12,16 @@ class Bus:
             register: Register,
             wram: Bank,
             hram: Bank,
-            cpu: CPU, cart: Cartridge | None = None):
+            cpu: CPU,
+            timer: Timer,
+            cart: Cartridge | None = None):
         self.cart = cart
         self.ppu = ppu
         self.register = register
         self.cpu = cpu
         self.wram = wram
         self.hram = hram
+        self.ime = False
 
     def fetch8(self) -> int:
         """Fetches 8 bits from the current PC"""
@@ -30,6 +33,17 @@ class Bus:
         """Fetches 16 bits from the current PC"""
         value = self.read_address(self.read('PC'), 2)
         self.register.write('PC', self.read('PC') + 2)
+        return value
+
+    def push(self, value: int) -> None:
+        """Pushes a value onto the stack"""
+        self.write('SP', self.read('SP') - 2)
+        self.write_address(self.read('SP'), value)
+
+    def pop(self) -> int:
+        """Pops a value from the stack"""
+        value = self.read_address(self.read('SP'), 2)
+        self.write('SP', self.read('SP') + 2)
         return value
 
     def read(self, operator: str) -> int | bool | None:
@@ -99,15 +113,16 @@ class Bus:
         """Reads from the address"""
         match address:
             case (
-                CartridgeReadWriteRanges.ROM_BANK_0 |
-                CartridgeReadWriteRanges.ROM_BANK_N |
-                CartridgeReadWriteRanges.ROM_BANK_N_1
+            CartridgeReadWriteRanges.ROM_BANK_0 |
+            CartridgeReadWriteRanges.ROM_BANK_N |
+            CartridgeReadWriteRanges.ROM_BANK_N_1
             ) if self.cart is not None:
                 """Reads from the cartridge"""
                 return self.cart.read(address, length)
             case (PPUReadWriteRanges.VRAM | PPUReadWriteRanges.OAM):
                 """Reads from the PPU"""
                 return self.ppu.read(address, length)
+
             case _:
                 # Todo: once all operator are implemented, this should be a raise
                 print(f'Unimplemented read from address {address}')
@@ -117,9 +132,9 @@ class Bus:
         """Writes to the address"""
         match address:
             case (
-                CartridgeReadWriteRanges.ROM_BANK_0 |
-                CartridgeReadWriteRanges.ROM_BANK_N |
-                CartridgeReadWriteRanges.ROM_BANK_N_1
+            CartridgeReadWriteRanges.ROM_BANK_0 |
+            CartridgeReadWriteRanges.ROM_BANK_N |
+            CartridgeReadWriteRanges.ROM_BANK_N_1
             ) if self.cart is not None:
                 """Writes to the cartridge"""
                 self.cart.write(address, value)
@@ -130,12 +145,29 @@ class Bus:
                 # Todo: once all operator are implemented, this should be a raise
                 print(f'Unimplemented write to address {address}')
 
-    # coroutine for communication with the CPU, PPU, and APU
-    def run(self):
-        cpu_coro = self.cpu.run(self)
-        next(cpu_coro)
-        while True:
-            cpu_coro.send(self.fetch8())
+    def request_interrupt(self, interrupt: int):
+        """Requests an interrupt"""
+        self.hram.write(0xFF0F, self.hram.read(0xFF0F, 1) | interrupt)
 
-    def __str__(self):
-        return f'Bus'
+    def handle_interrupts(self):
+        """Handles interrupts"""
+        if self.ime:
+            # Interrupt master enable
+            interrupt = self.hram.read(0xFF0F, 1) & self.hram.read(0xFFFF, 1)
+            if interrupt:
+                self.ime = False
+                self.hram.write(0xFF0F, self.hram.read(0xFF0F, 1) & ~interrupt)
+                self.push(self.read('PC'))
+                match interrupt:
+                    case 0b00000001:
+                        self.write('PC', 0x0040)
+                    case 0b00000010:
+                        self.write('PC', 0x0048)
+                    case 0b00000100:
+                        self.write('PC', 0x0050)
+                    case 0b00001000:
+                        self.write('PC', 0x0058)
+                    case 0b00010000:
+                        self.write('PC', 0x0060)
+                    case _:
+                        print(f'Unimplemented interrupt {interrupt}')
