@@ -1,5 +1,6 @@
 from components.register import Register
 
+
 def test_register():
     register = Register()
     assert register.a == 0x01
@@ -16,4 +17,3 @@ def test_register():
     assert register.bc == 0x0013
     assert register.de == 0x00D8
     assert register.hl == 0x014D
-

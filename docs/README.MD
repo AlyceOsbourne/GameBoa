@@ -1,18 +1,14 @@
-# Welcome to GameBoa the Python GameBoy Emulator
+# Welcome to GameBoa!
+What follows is a documentation for the GameBoa project.
 
+## What is it?
+This is a Python-based Game Boy emulator with some superior features.
 
-### What is GameBoa?
-___
+## What is the current state of the project?
+Currently, it's a mess. PedanticHacker and I are still working on many
+of the hardware intrinsics, memory mappings, etc.
 
-GameBoa is my friend, and I's attempt at putting together a python based emulator with some different and interesting features
-
-### What is the current state of the project?
-___
-Currently, it's a mess, we are still working on many of the intrinsics of the hardware, mapping etc etc.
-
-
-### What are the plans for the project?
-___
+## What are the plans for the project?
 First and foremost, a functional, performant gameboy emulator, supporting the main classic editions such as the Classic, the Color and the Advanced.
 
 Once these have been implemented to a good degree, these are the following features we'd like to get implemented:
@@ -21,7 +17,10 @@ Once these have been implemented to a good degree, these are the following featu
 - Neural Network interfacing, to allow you to use gamebout games as a training gym for your neural network, and to allow you to play games using your neural network
 - Debugging tools for gameboy game and romhack development
 
-### How can I help?
-___
-Feel free to submit bug reports, feature requests, or even pull requests, we are relatively new to this so any help is appreciated
-If you have experience with gameboy emulation, feel free to reach out to us, we'd love to hear from you and get your input on the project
+## How can I help?
+Feel free to submit issue reports, feature requests, or pull requests.
+Me and PedanticHacker are relatively new to this, so any expert help is appreciated.
+
+If you have any experience with Game Boy emulation, don't be shy to
+reach out to us, we'd love to hear from you and get your ideas about
+this project.

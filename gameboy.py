@@ -6,7 +6,7 @@ from components.timer import Timer
 from components.bus import Bus
 from components.system_mappings import Instruction
 
-instr, cb_instr = Instruction.load_instructions().values()
+instructions, cb_instructions = Instruction.load_instructions().values()
 
 
 class GameBoy:
@@ -14,26 +14,21 @@ class GameBoy:
 
     def __init__(self):
         self.ppu = PPU()
-        self.cpu = CPU(instr, cb_instr)
+        self.cpu = CPU(instructions, cb_instructions)
         self.register = Register()
         self.timer = Timer()
         self.wram = Bank(0x2000)
         self.hram = Bank(0x7F)
         self.bus = Bus(
-            self.ppu,
-            self.register,
-            self.wram,
-            self.hram,
-            self.cpu,
-            self.timer
+            self.ppu, self.register, self.wram, self.hram, self.cpu, self.timer
         )
 
+    def run(self) -> None:
+        cpu_coroutine = self.cpu.run(self.bus)
+        timer_coroutine = self.timer.run(self.bus)
+        next(cpu_coroutine)
 
-    def run(self):
-        cpu_coro = self.cpu.run(self.bus)
-        timer_coro = self.timer.run(self.bus)
-        next(cpu_coro)
         while True:
-            current_instr = self.bus.fetch8()
-            cycles = cpu_coro.send(current_instr)
-            timer_coro.send(cycles)
+            current_instruction = self.bus.fetch8()
+            cycles = cpu_coroutine.send(current_instruction)
+            timer_coroutine.send(cycles)
