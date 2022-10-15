@@ -22,5 +22,6 @@ Then, to solve some inevitable issues having such a patcher, we plan to
 develop a jump system that accesses specific code of a ROM patch without
 it needing to be a part of the ROM patch itself. This should allow for
 the creation of the aforementioned compatibility issue reports as memory
-jumps will be mapped to the same memory location, ultimately revealing a conflict, where some of which will be easily resolved with ordering,
+jumps will be mapped to the same memory location, ultimately revealing a
+conflict, where some of which will be easily resolved with ordering,
 while others deemed incompatible.
