@@ -132,7 +132,7 @@ class BusReadWriteRanges(MemoryRangeEnum):
     ...
 
 
-class Instruction(
+class Instructions(
     NamedTuple(
         "Instruction",
         [
@@ -151,16 +151,16 @@ class Instruction(
     """Instructions of the CPU."""
 
     @classmethod
-    def load_instructions(cls, path="/op_codes.json"):
+    def load(cls, json_file="/op_codes.json"):
         loaded_instructions = {}
 
         try:
-            with open(path, "r") as f:
-                data = json.load(f)
+            with open(json_file, "r") as op_codes_file:
+                json_data = json.load(op_codes_file)
         except FileNotFoundError:
-            raise FileNotFoundError(f"Could not find {path} in current directory.")
+            raise FileNotFoundError(f"Could not find {json_file} in current directory.")
 
-        for category, operation in data.items():
+        for category, operation in json_data.items():
             if category not in loaded_instructions:
                 loaded_instructions[category] = {}
 

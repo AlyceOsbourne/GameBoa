@@ -1,13 +1,13 @@
-import pathlib
+from pathlib import Path
 
 from mock_components import MockBus
 from components import cpu, system_mappings
 
 
 def test_cpu_opcode_decoding():
-    op_codes_path = pathlib.Path(__file__).parent.parent.parent / "op_codes.json"
-    instructions, cb_instructions = system_mappings.Instruction.load_instructions(
-        op_codes_path
+    op_codes_file = Path(__file__).parent.parent.parent / "op_codes.json"
+    instructions, cb_instructions = system_mappings.Instructions.load(
+        op_codes_file
     ).values()
     _cpu = cpu.CPU(
         instructions=instructions,

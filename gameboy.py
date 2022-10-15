@@ -1,20 +1,22 @@
-from components.cpu import CPU
-from components.memory_bank import Bank
-from components.ppu import PPU
-from components.register import Register
-from components.timer import Timer
 from components.bus import Bus
-from components.system_mappings import Instruction
+from components.ppu import PPU
+from components.memory_bank import Bank
+from components.system_mappings import Instructions
 
-instructions, cb_instructions = Instruction.load_instructions().values()
+
+INSTRUCTIONS, CB_INSTRUCTIONS = Instructions.load().values()
 
 
 class GameBoy:
-    """The main gameboy class, this constructs all of the componets and triggers all of the systems"""
+    """
+    The main composite class of the GameBoa application.
+
+    It includes all required components and triggers all systems.
+    """
 
     def __init__(self):
         self.ppu = PPU()
-        self.cpu = CPU(instructions, cb_instructions)
+        self.cpu = CPU(INSTRUCTIONS, CB_INSTRUCTIONS)
         self.register = Register()
         self.timer = Timer()
         self.wram = Bank(0x2000)
