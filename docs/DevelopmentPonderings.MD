@@ -1,19 +1,26 @@
-# Ponderings on improvements and implementations
-This document talks about some of the issues that
+# Discussion about improvements and implementation techniques
+This is a list of improvement and implementation ideas that me and PedanticHacker are currently discussing.
 
-### Tackling the serial transfer timing problem to allow for link cable over a network connection
-I feel that we may be able to tackle this issue by tricking both games
-into thinking they are in slave mode and then having an asynchronous
-master clock that keeps them both in sync.
+### Serial transfer timing issue in cable link emulation over network connection
+We may be able to tackle this issue by tricking two linked games into
+thinking they are in slave mode, in which an asynchronous master clock
+keeps them both in perfect sync.
 
-### In-memory IPS patching and ROM hell
-The fact that it is 2022 and we still need 101 ROMs to play any collection of ROM hacks is absurd.
+### ROM hell and in-memory IPS patching
+It is required to individually load all the ROM patches to play games
+bundled as a game collection. Therefore, a game collection of 101 games
+requires all 101 ROM patches to be loaded, because loading just one huge
+ROM patch currently doesn't work.
 
-My proposal is a mod-loader style patcher with compatibility reports. I am hoping this will allow for mini patches that target specific parts
-of games allowing for *mod packs* to be made.
+And to make this work, we will develop an in-memory IPS patcher that
+produces a compatibility issue report for such game collection ROMs.
+This patcher will enable mini patches to target specific parts of games
+in game collections, allowing for *ROM patch packs* to be developed and
+used.
 
-To solve some of the inevitable problems, I plan to implement a jump system, so it can access the appropriate patched code
-without it needing to be a part of the rom itself. this in turn hopefully should allow for the creation of the
-compatibility reports, as we would be mapping jumps to the same location, ultimately revealing a conflict,
-some of which can be resolved with ordering, others will be incompatible.
-___
+Then, to solve some inevitable issues having such a patcher, we plan to
+develop a jump system that accesses specific code of a ROM patch without
+it needing to be a part of the ROM patch itself. This should allow for
+the creation of the aforementioned compatibility issue reports as memory
+jumps will be mapped to the same memory location, ultimately revealing a conflict, where some of which will be easily resolved with ordering,
+while others deemed incompatible.

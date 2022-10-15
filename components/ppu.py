@@ -21,9 +21,9 @@ class PPU:
     def read(self, address, length=1):
         match address:
             case _:
-                raise ValueError(f"Invalid address {address}")
+                raise ValueError(f"Invalid address {address}.")
 
     def write(self, address, value):
         match address:
             case _:
-                raise ValueError(f"Invalid address {address}")
+                raise ValueError(f"Invalid address {address}.")

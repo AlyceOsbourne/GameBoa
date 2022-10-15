@@ -33,24 +33,24 @@ class Bus:
 
     def fetch8(self) -> int:
         """Fetches 8 bits from the current PC."""
-        value = self.read_from_address(self.read("PC"))
+        value = self.read_address(self.read("PC"))
         self.register.write("PC", self.read("PC") + 1)
         return value
 
     def fetch16(self) -> int:
         """Fetches 16 bits from the current PC."""
-        value = self.read_from_address(self.read("PC"), 2)
+        value = self.read_address(self.read("PC"), 2)
         self.register.write("PC", self.read("PC") + 2)
         return value
 
     def push(self, value: int) -> None:
         """Pushes a value onto the stack."""
         self.write("SP", self.read("SP") - 2)
-        self.write_to_address(self.read("SP"), value)
+        self.write_address(self.read("SP"), value)
 
     def pop(self) -> int:
         """Pops a value from the stack."""
-        value = self.read_from_address(self.read("SP"), 2)
+        value = self.read_address(self.read("SP"), 2)
         self.write("SP", self.read("SP") + 2)
         return value
 
@@ -60,13 +60,13 @@ class Bus:
             case "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12" | "13" | "14" | "15":
                 return int(operator)
             case "d16" | "a16":
-                return self.read_from_address(self.read("PC"), 2)
+                return self.read_address(self.read("PC"), 2)
             case "d8" | "a8" | "r8":
-                return self.read_from_address(self.read("PC"))
+                return self.read_address(self.read("PC"))
             case "PC" | "SP" | "A" | "B" | "C" | "D" | "E" | "F" | "H" | "L" | "AF" | "BC" | "DE" | "HL":
                 return self.register.read(operator)
             case "(BC)" | "(DE)" | "(HL)" | "(C)" | "(a16)" | "(a8)":
-                return self.read_from_address(self.read(operator[1:-1]))
+                return self.read_address(self.read(operator[1:-1]))
             case "HL+" | "HL-":
                 value = self.read("HL")
                 self.register.write(
@@ -74,7 +74,7 @@ class Bus:
                 )
                 return value
             case "(HL+)" | "(HL-)":
-                return self.read_from_address(self.read(operator[1:-1]), 1)
+                return self.read_address(self.read(operator[1:-1]), 1)
             case "SP+r8":
                 return self.register.read("SP") + self.read("d8")
             case "Z":
@@ -96,19 +96,18 @@ class Bus:
             case "PC" | "SP" | "A" | "B" | "C" | "D" | "E" | "F" | "H" | "L" | "AF" | "BC" | "DE" | "HL":
                 self.register.write(operator, value)
             case "(BC)" | "(DE)" | "(HL)" | "(C)" | "(a16)" | "(a8)" | "(HL+)" | "(HL-)":
-                self.write_to_address(self.read(operator[1:-1]), value)
+                self.write_address(self.read(operator[1:-1]), value)
             case "d8":
-                self.write_to_address(self.read("PC"), value)
+                self.write_address(self.read("PC"), value)
             case _:
                 print(f"Unimplemented write to operator {operator}.")
 
-    def read_from_address(self, address: int, length: int = 1):
+    def read_address(self, address: int, length: int = 1):
         """Reads data from the given address."""
         match address:
             case (
                 CartridgeReadWriteRanges.ROM_BANK_0
                 | CartridgeReadWriteRanges.ROM_BANK_N
-                | CartridgeReadWriteRanges.ROM_BANK_N_1
             ) if self.cart is not None:
                 return self.cart.read(address, length)
             case (PPUReadWriteRanges.VRAM | PPUReadWriteRanges.OAM):
@@ -117,13 +116,12 @@ class Bus:
                 print(f"Unimplemented read from address {address}.")
                 return 0xFF
 
-    def write_to_address(self, address: int, value: int):
+    def write_address(self, address: int, value: int):
         """Writes data to the given address."""
         match address:
             case (
                 CartridgeReadWriteRanges.ROM_BANK_0
                 | CartridgeReadWriteRanges.ROM_BANK_N
-                | CartridgeReadWriteRanges.ROM_BANK_N_1
             ) if self.cart is not None:
                 self.cart.write(address, value)
             case (PPUReadWriteRanges.VRAM | PPUReadWriteRanges.OAM):

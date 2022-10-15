@@ -7,8 +7,8 @@ WriteAddress = Callable[[int, int], None]
 
 @runtime_checkable
 class PPU(Protocol):
-    read: Callable[[int, int], int]
-    write: Callable[[int, int], None]
+    read: ReadAddress
+    write: WriteAddress
 
 
 @runtime_checkable

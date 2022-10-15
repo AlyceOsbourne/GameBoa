@@ -1,6 +1,6 @@
-from functools import reduce
-from pathlib import Path
 from typing import Any
+from pathlib import Path
+from functools import reduce, singledispatchmethod
 
 from components.memory_bank import Bank
 from components.system_mappings import (
@@ -14,7 +14,6 @@ from components.system_mappings import (
     NUM_ROM_BANKS,
     DESTINATION_CODES,
 )
-from functools import singledispatchmethod
 
 
 class Cartridge:

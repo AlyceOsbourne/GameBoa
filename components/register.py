@@ -1,8 +1,10 @@
 class Register:
-    """The registers are used to store data and instructions while they are being processed,
-    we have accessors for both the 8bit and 16 bit registers"""
+    """
+    Stores memory data and CPU instructions while processing them.
 
-    # default register values
+    The accessors support both 8-bit and 16-bit registers.
+    """
+
     a, b, c, d, e, h, l, f, sp, pc = (
         0x01,
         0x00,
@@ -16,14 +18,14 @@ class Register:
         0x0100,
     )
 
-    # get 2 8bit register as a 16 bit register
+    # Convert two 8-bit registers into one 16-bit register.
     _get_16 = lambda self, r1, r2: (self.read(r1) << 8) | self.read(r2)
     _set_16 = lambda self, r1, r2, value: (
         self.write(r1, (value >> 8) & 0xFF),
         self.write(r2, value & 0xFF),
     )
 
-    # getter/setters for 16 bit registers
+    # Provide a getter and a setter for 16-bit registers.
     af = property(
         lambda self: self._get_16("a", "f"),
         lambda self, value: self._set_16("a", "f", value),
@@ -53,7 +55,7 @@ class Register:
 
     def read(self, register: str):
         if not hasattr(self, register.lower()):
-            raise Exception(f"Invalid register {register}")
+            raise Exception(f"Invalid register {register}.")
         return getattr(self, register.lower(), None)
 
     def write(self, register: str, value: int):
