@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QApplication
 from gui.main_window import MainWindow
 
 
-def main():
+def main() -> None:
     app = QApplication()
 
     main_window = MainWindow()

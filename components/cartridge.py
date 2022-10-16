@@ -2,28 +2,28 @@ from typing import Any
 from pathlib import Path
 from functools import reduce, singledispatchmethod
 
-from components.memory_bank import Bank
+from components.memory_bank import MemoryBank
 from components.system_mappings import (
-    CartridgeHeaderRanges,
-    OLD_LICENSEE_CODES,
-    NEW_LICENSEE_CODES,
-    CARTRIDGE_TYPES,
-    ROM_SIZES,
     RAM_SIZES,
-    NUM_RAM_BANKS,
-    NUM_ROM_BANKS,
+    ROM_SIZES,
+    CARTRIDGE_TYPES,
     DESTINATION_CODES,
+    NEW_LICENSEE_CODES,
+    OLD_LICENSEE_CODES,
+    NUMBER_OF_RAM_BANKS,
+    NUMBER_OF_ROM_BANKS,
+    CartridgeHeaderRanges,
 )
 
 
 class Cartridge:
     data: bytearray
-    rom_bank_0: Bank
-    rom_bank_n: tuple[Bank]
-    ram_bank: tuple[Bank]
+    rom_bank_0: MemoryBank
+    current_ram_bank: int = 0
+    current_rom_bank: int = 1
     ram_enabled: bool = False
-    cur_rom_bank: int = 1
-    cur_ram_bank: int = 0
+    ram_bank: tuple[MemoryBank]
+    rom_bank_n: tuple[MemoryBank]
 
     @singledispatchmethod
     def __init__(self, data):
@@ -32,12 +32,12 @@ class Cartridge:
     @__init__.register(bytearray)
     def from_byte_array(self, data):
         self.data = data
-        self.rom_bank_0 = Bank(self.data[0x0000:0x4000])
+        self.rom_bank_0 = MemoryBank(self.data[0x0000:0x4000])
         self.rom_bank_n = tuple(
-            Bank(self.data[0x4000 * i : 0x4000 * (i + 1)])
-            for i in range(1, self.num_rom_banks)
+            MemoryBank(self.data[0x4000 * i : 0x4000 * (i + 1)])
+            for i in range(1, self.rom_bank_quantity)
         )
-        self.ram_bank = tuple(Bank(0x2000) for _ in range(self.num_ram_banks))
+        self.ram_bank = tuple(MemoryBank(0x2000) for _ in range(self.ram_bank_quantity))
 
     @__init__.register(Path)
     @__init__.register(str)
@@ -51,14 +51,14 @@ class Cartridge:
     def read(self, address, length):
         match address:
             case _:
-                print(f"Unimplemented read from cart {address}")
+                print(f"Unimplemented read from cartridge {address}.")
                 return 0
 
     def write(self, address, value):
         match address:
 
             case _:
-                print(f"Unimplemented write to cart {address}")
+                print(f"Unimplemented write to cartridge {address}.")
 
     title = property(
         lambda self: self._get_as_ascii(*CartridgeHeaderRanges.TITLE.value)
@@ -102,8 +102,12 @@ class Cartridge:
         )
     )
 
-    num_ram_banks = property(lambda self: NUM_RAM_BANKS.get(self.data[0x149], 0))
-    num_rom_banks = property(lambda self: NUM_ROM_BANKS.get(self.data[0x148], 0))
+    number_of_ram_banks = property(
+        lambda self: NUMBER_OF_RAM_BANKS.get(self.data[0x149], 0)
+    )
+    number_of_rom_banks = property(
+        lambda self: NUMBER_OF_ROM_BANKS.get(self.data[0x148], 0)
+    )
 
     destination_code = property(
         lambda self: DESTINATION_CODES.get(
@@ -125,33 +129,41 @@ class Cartridge:
         )
 
     def __str__(self):
-        return f"""Title: {self.title}
-Old Licensee Code: {self.old_licensee_code}
-New Licensee Code: {self.new_licensee_code}
-Destination Code: {self.destination_code}
-Cartridge Type: {self.cartridge_type}
-SGB Flag: {self.sgb_flag}
-CGB Flag: {self.cgb_flag}
-ROM Size: {self.rom_size}
-RAM Size: {self.ram_size}
-Number of RAM Banks: {self.num_ram_banks}
-Number of ROM Banks: {self.num_rom_banks}
-Header Checksum: {self.header_checksum}
-Passes Header Checksum: {self.passes_header_checksum}"""
+        return (
+            f"Title: {self.title}\n"
+            f"CGB Flag: {self.cgb_flag}\n"
+            f"RAM Size: {self.ram_size}\n"
+            f"ROM Size: {self.rom_size}\n"
+            f"SGB Flag: {self.sgb_flag}\n"
+            f"Cartridge Type: {self.cartridge_type}\n"
+            f"Header Checksum: {self.header_checksum}\n"
+            f"Destination Code: {self.destination_code}\n"
+            f"New Licensee Code: {self.new_licensee_code}\n"
+            f"Old Licensee Code: {self.old_licensee_code}\n"
+            f"Number of RAM Banks: {self.number_of_ram_banks}\n"
+            f"Number of ROM Banks: {self.number_of_rom_banks}\n"
+            f"Passes Header Checksum: {self.passes_header_checksum}\n"
+        )
 
     def __repr__(self):
         return f"Cartridge()"
 
-    def hex_view(self):
-        out = ""
+    def hex_output(self):
+        output = ""
+
         for i in range(0, len(self.data), 16):
-            out += f"{i:04X}  "
+            output += f"{i:04X}  "
+
             for j in range(16):
-                out += f"{self.data[i + j]:02X} "
-            out += "  "
+                output += f"{self.data[i + j]:02X} "
+
+            output += "  "
+
             for j in range(16):
-                out += chr(
+                output += chr(
                     self.data[i + j] if 0x20 <= self.data[i + j] <= 0x7E else 0x2E
                 )
-            out += "\n"
-        return out
+
+            output += "\n"
+
+        return output

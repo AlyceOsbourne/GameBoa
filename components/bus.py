@@ -55,7 +55,7 @@ class Bus:
         return value
 
     def read(self, operator: str) -> int | bool | None:
-        """Returns data based upon pattern matching."""
+        """Reads a memory address of the given operator."""
         match operator:
             case "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12" | "13" | "14" | "15":
                 return int(operator)
@@ -103,7 +103,7 @@ class Bus:
                 print(f"Unimplemented write to operator {operator}.")
 
     def read_address(self, address: int, length: int = 1):
-        """Reads data from the given address."""
+        """Reads memory data from the given address."""
         match address:
             case (
                 CartridgeReadWriteRanges.ROM_BANK_0
@@ -117,7 +117,7 @@ class Bus:
                 return 0xFF
 
     def write_address(self, address: int, value: int):
-        """Writes data to the given address."""
+        """Writes memory data to the given address."""
         match address:
             case (
                 CartridgeReadWriteRanges.ROM_BANK_0

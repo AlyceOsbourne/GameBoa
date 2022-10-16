@@ -61,16 +61,20 @@ class MemoryRangeEnum(MemoryRange, Enum):
         return self.end - self.start + 1
 
     @classmethod
-    def to_json_tile(cls, path: str = "memory_map_ranges.json"):
-        out_dict = {}
-        val_fmt = "{:#06x}"
+    def to_json_file(cls, json_file: Optional[str] = None):
+        if json_file is None:
+            json_file = cls.__name__ + ".json"
+
+        output_dictionary = {}
 
         for enum in cls:
-            val = tuple(val_fmt.format(val) for val in enum.value if val is not None)
-            out_dict[enum.name] = val
+            enum_value = tuple(
+                f"{value:#06x}" for value in enum.value if value is not None
+            )
+            output_dictionary[enum.name] = enum_value
 
-        with open(path, "w") as f:
-            json.dump(out_dict, f, indent=4)
+        with open(json_file, "w") as memory_map_ranges:
+            json.dump(output_dictionary, memory_map_ranges, indent=2)
 
     @cache
     @classmethod
@@ -508,7 +512,7 @@ RAM_SIZES = MappingProxyType(
         0x05: 0x0200,
     }
 )
-NUM_RAM_BANKS = MappingProxyType(
+NUMBER_OF_RAM_BANKS = MappingProxyType(
     {
         0x00: 0,
         0x01: 1,
@@ -518,7 +522,7 @@ NUM_RAM_BANKS = MappingProxyType(
         0x05: 8,
     }
 )
-NUM_ROM_BANKS = MappingProxyType(
+NUMBER_OF_ROM_BANKS = MappingProxyType(
     {
         0x00: 2,
         0x01: 4,

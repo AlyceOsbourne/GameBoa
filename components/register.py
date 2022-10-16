@@ -49,8 +49,8 @@ class Register:
 
     def __str__(self):
         return (
-            f"A: {self.a:02X} F: {self.f:02X} B: {self.b:02X} C: {self.c:02X} D: {self.d:02X}"
-            f" E: {self.e:02X} H: {self.h:02X} L: {self.l:02X} SP: {self.sp:04X} PC: {self.pc:04X}"
+            f"A: {self.a:02X} F: {self.f:02X} B: {self.b:02X} C: {self.c:02X} D: {self.d:02X} "
+            f"E: {self.e:02X} H: {self.h:02X} L: {self.l:02X} SP: {self.sp:04X} PC: {self.pc:04X}"
         )
 
     def read(self, register: str):
@@ -60,5 +60,5 @@ class Register:
 
     def write(self, register: str, value: int):
         if not hasattr(self, register.lower()):
-            raise Exception(f"Invalid register {register}")
+            raise Exception(f"Invalid register {register}.")
         setattr(self, register.lower(), value)

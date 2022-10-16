@@ -5,17 +5,17 @@ from components.system_mappings import Instructions
 
 
 class CPU:
-    """The CPU of the Game Boy."""
+    """The Central Processing Unit of the Game Boy."""
 
-    is_stopped: bool
     is_halted: bool
-    instructions: dict[int, Instructions]
-    cb_instructions: dict[int, Instructions]
+    is_stopped: bool
     is_cb: bool = False
     interrupts_enabled = False
+    instructions: dict[int, Instructions]
+    cb_instructions: dict[int, Instructions]
 
     def decode(self, op_code: int, cb: bool = False) -> Instructions:
-        """Checks whether a CPU instruction is prefixed with 'cb_'."""
+        """Decodes the given op_code into an instruction."""
         decoded = getattr(self, ("cb_" if cb else "") + "instructions")[op_code]
 
         if self.is_cb:
@@ -36,28 +36,37 @@ class CPU:
 
         match instruction.mnemonic:
             case "NOP":
-                return 0
+                """Performs no operation."""
             case "HALT":
+                """Halts the CPU and LCD display until a button push."""
                 self.is_halted = True
             case "STOP":
-                # this has some funky logic as I understand it
+                """Stops the CPU and LCD display until a button push."""
                 self.is_stopped = True
             case "PREFIX":
+                """Prefixes an instruction with the cb_ prefix."""
                 self.is_cb = True
             case "SET":
+                """Sets the n bit in the r register."""
                 write_1(read_1() | (1 << op_code & 0b111))
             case "CALL" | "RET" | "RETI" | "RETN" | "RST":
+                """Calls the nn memory address."""
                 bus.write("SP", bus.read("SP") + 2)
             case "JP":
+                """Jumps to a memory address."""
                 bus.write("PC", read_1())
             case "JR":
+                """Jumps to a memory address relative to the current."""
                 if read_2() or operand2 is None:
                     bus.write("PC", bus.read("PC") + read_1())
             case "DI" | "EI":
+                """Disables/enables interrupts."""
                 self.interrupts_enabled = op_code == 0xF3
             case "SWAP":
+                """Swaps the upper and lower nibbles of a register."""
                 write_1((read_1() << 4) | (read_1() >> 4))
             case "BIT":
+                """Tests the n bit in the r register."""
                 bus.write(
                     "F",
                     (bus.read("F") & 0b11110000)
@@ -65,35 +74,43 @@ class CPU:
                     | (read_1() & (1 << op_code & 0b111)),
                 )
             case "RES":
+                """Resets the n bit in the r register."""
                 write_1(read_1() & ~(1 << op_code & 0b111))
             case "RLC" | "RRC":
+                """Rotates a register left/right."""
                 if mnemonic[1] == "L":
                     write_1((read_1() << 1) | (read_1() >> 7))
                 else:
                     write_1((read_1() >> 1) | (read_1() << 7))
             case "RL" | "RR":
+                """Rotates a register left/right through carry."""
                 if mnemonic[1] == "L":
                     write_1((read_1() << 1) | (bus.read("F") & 1))
                 else:
                     write_1((read_1() >> 1) | (bus.read("F") & 1))
             case "SLA" | "SRA":
+                """Shifts a register left/right arithmetically."""
                 if mnemonic[1] == "L":
                     write_1((read_1() << 1) | (read_1() >> 7))
                 else:
                     write_1((read_1() >> 1) | (read_1() & 0b10000000))
             case "SRL":
+                """Shifts a register to the right."""
                 write_1((read_1() >> 1) | (read_1() & 0b10000000))
             case "RLCA" | "RRCA" if operand1 is None and operand2 is None:
+                """Rotates the A register left/right."""
                 if mnemonic[2] == "L":
                     bus.write("A", (bus.read("A") << 1) | (bus.read("A") >> 7))
                 else:
                     bus.write("A", (bus.read("A") >> 1) | (bus.read("A") << 7))
             case "RLA" | "RRA":
+                """Rotates the A register left/right through carry."""
                 if mnemonic[2] == "L":
                     bus.write("A", (bus.read("A") << 1) | (bus.read("F") & 1))
                 else:
                     bus.write("A", (bus.read("A") >> 1) | (bus.read("F") & 1))
             case "DAA":
+                """Decimally adjusts the A register."""
                 if bus.read("F") & 0b10000000:
                     if bus.read("F") & 0b10000:
                         bus.write("A", bus.read("A") - 0x60)
@@ -106,14 +123,19 @@ class CPU:
                     if bus.read("F") & 0b1000 or (bus.read("A") & 0x0F) > 0x09:
                         bus.write("A", bus.read("A") + 0x6)
             case "CPL":
+                """Complements the A register."""
                 bus.write("A", ~bus.read("A"))
             case "CCF":
+                """Complements the carry flag."""
                 bus.write("F", bus.read("F") ^ 0b10000)
             case "SCF":
+                """Sets the carry flag."""
                 bus.write("F", bus.read("F") | 0b10000)
             case "LD" | "LDH" | "LDI" | "LDD":
+                """Loads the r2 register into the r1 register."""
                 write_1(read_2())
             case "PUSH":
+                bus.write("SP", bus.read("SP") - 2)
                 bus.write("SP", read_1())
             case "POP":
                 write_1(bus.read("SP"))
@@ -123,28 +145,37 @@ class CPU:
                     read_1() + (read_2() if operand2 is not None else bus.read("A"))
                 )
             case "SUB":
+                """Substitutes the r2 register with the r1 register."""
                 write_1(read_1() - read_2() if operand2 is not None else bus.read("A"))
             case "ADC":
+                """Adds the r2 register to the r1 register and does a carry."""
                 write_1(read_1() + read_2() + (bus.read("F") & 1))
             case "SBC":
+                """Substitutes the r2 register with the r1 register and does a carry."""
                 write_1(read_1() - read_2() - (bus.read("F") & 1))
             case "AND":
+                """ANDs the r2 register with the r1 register."""
                 write_1(
                     read_1() & (read_2() if operand2 is not None else bus.read("A"))
                 )
             case "OR":
+                """ORs the r2 register with the r1 register."""
                 write_1(
                     read_1() | (read_2() if operand2 is not None else bus.read("A"))
                 )
             case "XOR":
+                """XORs the r2 register with the r1 register."""
                 write_1(
                     read_1() ^ (read_2() if operand2 is not None else bus.read("A"))
                 )
             case "INC":
+                """Increments the r1 register."""
                 write_1(read_1() + 1)
             case "DEC":
+                """Decrements the r1 register."""
                 write_1(read_1() - 1)
             case "CP":
+                """Compares the r2 register with the r1 register."""
                 bus.write(
                     "F",
                     (bus.read("F") & 0b11110000)

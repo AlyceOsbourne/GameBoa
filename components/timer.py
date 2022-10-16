@@ -6,10 +6,11 @@ class Timer:
     Generates interrupts at regular intervals.
 
     The timer is clocked at 4096 Hz, which means that it increments its
-    counter 4096 times per second. When it overflows (i.e., gets bigger
-    than FFh), it is reset to the current value of the TIMA register and
-    an interrupt is requested. The frequency of the timer can be changed
-    by writing different values to the TAC register.
+    counter 4096 times per second. When the counter overflows (i.e.,
+    gets bigger than FFh, which is 255 in decimal), it is reset to the
+    current value of the TIMA register and an interrupt is requested.
+    The frequency of the timer can be changed by writing different
+    values to the TAC register.
     """
 
     div: int = 0
