@@ -1,5 +1,4 @@
 /bios/*
 /docs/*
-/roms/*
 /debug.log
 /tests/.pytest_cache/
