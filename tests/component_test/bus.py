@@ -3,15 +3,15 @@ from components.cpu import CPU
 from components.register import Register
 from components.cartridge import Cartridge
 
-from mock_components import MockBank, MockCPU, MockPPU, MockRegister
+from mock_components import MockCPU, MockMemoryBank, MockPPU, MockRegister
 
 
 def test_reg_8():
     bus = Bus(
         cpu=MockCPU(),
         ppu=MockPPU(),
-        hram=MockBank(),
-        wram=MockBank(),
+        hram=MockMemoryBank(),
+        wram=MockMemoryBank(),
         register=Register(),
     )
 
@@ -52,8 +52,8 @@ def test_reg_16():
     bus = Bus(
         cpu=MockCPU(),
         ppu=MockPPU(),
-        hram=MockBank(),
-        wram=MockBank(),
+        hram=MockMemoryBank(),
+        wram=MockMemoryBank(),
         register=Register(),
     )
 
@@ -94,8 +94,8 @@ def test_reg_8_invalid():
     bus = Bus(
         cpu=MockCPU(),
         ppu=MockPPU(),
-        hram=MockBank(),
-        wram=MockBank(),
+        hram=MockMemoryBank(),
+        wram=MockMemoryBank(),
         register=Register(),
     )
 
@@ -104,7 +104,7 @@ def test_reg_16_invalid():
     bus = Bus(
         cpu=MockCPU(),
         ppu=MockPPU(),
-        hram=MockBank(),
-        wram=MockBank(),
+        hram=MockMemoryBank(),
+        wram=MockMemoryBank(),
         register=Register(),
     )

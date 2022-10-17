@@ -3,7 +3,7 @@ from typing import Generator
 from protocols import Bus
 
 
-class MockBank:
+class MockMemoryBank:
     def read(self, address: int) -> int:
         return 0
 
