@@ -1,23 +1,23 @@
+from pathlib import Path
+
+from mock_components import MockBus
 from components import cpu, system_mappings
-from tests.mock_components import MockBus
-import pathlib
-import pytest
 
 
 def test_cpu_opcode_decoding():
-    op_codes_path = pathlib.Path(__file__).parent.parent.parent / 'op_codes.json'
-    instr, cb_instr = system_mappings.Instruction.load_instructions(op_codes_path).values()
+    op_codes_file = Path(__file__).parent.parent.parent / "op_codes.json"
+    instructions, cb_instructions = system_mappings.Instructions.load(
+        op_codes_file
+    ).values()
     _cpu = cpu.CPU(
-        instructions=instr,
-        cb_instructions=cb_instr,
+        instructions=instructions,
+        cb_instructions=cb_instructions,
     )
-    coro = _cpu.run(bus=MockBus())
-    coro.send(None)
-    assert coro.send(0xcb) == instr[0xcb]
+    coroutine = _cpu.run(bus=MockBus())
+    coroutine.send(None)
+    assert coroutine.send(0xCB) == instr[0xCB]
     assert _cpu.is_cb
-    assert coro.send(0x00) == cb_instr[0x00]
+    assert coroutine.send(0x00) == cb_instr[0x00]
     assert not _cpu.is_cb
-    assert coro.send(0x00) == instr[0x00]
+    assert coroutine.send(0x00) == instr[0x00]
     assert not _cpu.is_cb
-
-

@@ -1,6 +1,5 @@
+/bios/*
+/docs/*
 /roms/*
 /debug.log
-/bios/*
-/docs/gupea_2077_69341_1.pdf
 /tests/.pytest_cache/
-.gitignore

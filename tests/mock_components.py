@@ -1,8 +1,9 @@
 from typing import Generator
+
 from protocols import Bus
 
 
-class MockBank:
+class MockMemoryBank:
     def read(self, address: int) -> int:
         return 0
 
@@ -11,7 +12,7 @@ class MockBank:
 
 
 class MockPPU:
-    def read(self, address: int, length) -> int:
+    def read(self, address: int, length: int) -> int:
         return 0
 
     def write(self, address: int, value: int) -> None:
@@ -52,5 +53,5 @@ class MockBus:
 class MockCPU:
     interrupts_enabled = False
 
-    def run(self, bus: "Bus") -> Generator[int, int, None]:
+    def run(self, bus: Bus) -> Generator[int, int, None]:
         ...
