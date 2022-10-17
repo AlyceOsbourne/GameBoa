@@ -2,7 +2,7 @@ from typing import Any
 from pathlib import Path
 from functools import reduce, singledispatchmethod
 
-from components.memory_bank import Bank
+from components.memory_bank import MemoryBank
 from components.system_mappings import (
     RAM_SIZES,
     ROM_SIZES,
@@ -18,12 +18,12 @@ from components.system_mappings import (
 
 class Cartridge:
     data: bytearray
-    rom_bank_0: Bank
+    rom_bank_0: MemoryBank
     current_ram_bank: int = 0
     current_rom_bank: int = 1
     ram_enabled: bool = False
-    ram_bank: tuple[Bank]
-    rom_bank_n: tuple[Bank]
+    ram_bank: tuple[MemoryBank, ...]
+    rom_bank_n: tuple[MemoryBank, ...]
 
     @singledispatchmethod
     def __init__(self, data):
@@ -32,12 +32,12 @@ class Cartridge:
     @__init__.register(bytearray)
     def from_byte_array(self, data):
         self.data = data
-        self.rom_bank_0 = Bank(self.data[0x0000:0x4000])
+        self.rom_bank_0 = MemoryBank(self.data[0x0000:0x4000])
         self.rom_bank_n = tuple(
-            Bank(self.data[0x4000 * i : 0x4000 * (i + 1)])
-            for i in range(1, self.rom_bank_quantity)
+            MemoryBank(self.data[0x4000 * i : 0x4000 * (i + 1)])
+            for i in range(1, self.number_of_rom_banks)
         )
-        self.ram_bank = tuple(Bank(0x2000) for _ in range(self.ram_bank_quantity))
+        self.ram_bank = tuple(MemoryBank(0x2000) for _ in range(self.number_of_ram_banks))
 
     @__init__.register(Path)
     @__init__.register(str)

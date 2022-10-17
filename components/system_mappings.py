@@ -76,8 +76,9 @@ class MemoryRangeEnum(MemoryRange, Enum):
         with open(json_file, "w") as memory_map_ranges:
             json.dump(output_dictionary, memory_map_ranges, indent=2)
 
-    @cache
+
     @classmethod
+    @cache
     def from_address(cls, address: int):
         matching = []
 

@@ -18,8 +18,7 @@ class CPU:
         """Decodes the given op_code into an instruction."""
         decoded = getattr(self, ("cb_" if cb else "") + "instructions")[op_code]
 
-        if self.is_cb:
-            self.is_cb = False
+        self.is_cb = False
 
         return decoded
 
