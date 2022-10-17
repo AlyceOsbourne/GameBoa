@@ -17,7 +17,7 @@ class Timer(Protocol):
 
 
 @runtime_checkable
-class Bank(Protocol):
+class MemoryBank(Protocol):
     read: ReadAddress
     write: WriteAddress
 

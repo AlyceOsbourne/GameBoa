@@ -1,6 +1,6 @@
 from typing import Any
 
-from protocols import Bank, Cartridge, CPU, PPU, Register, Timer
+from protocols import Cartridge, CPU, MemoryBank, PPU, Register, Timer
 from components.system_mappings import (
     Interrupts,
     PPUReadWriteRanges,
@@ -17,9 +17,9 @@ class Bus:
         self,
         cpu: CPU,
         ppu: PPU,
-        hram: Bank,
-        wram: Bank,
         timer: Timer,
+        hram: MemoryBank,
+        wram: MemoryBank,
         register: Register,
         cart: Cartridge | None = None,
     ):

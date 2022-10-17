@@ -1,5 +1,4 @@
-from components.bus import Bank
-from components import system_mappings
+from protocols import MemoryBank
 
 
 class PPU:
@@ -15,8 +14,8 @@ class PPU:
     obp0: int = 0
     obp1: int = 0
     stat: int = 0
-    vram: Bank = Bank
-    oam: Bank = Bank(len(system_mappings.MemoryRange.OAM_RAM))
+    oam: MemoryBank
+    vram: MemoryBank
 
     def read(self, address, length=1):
         match address:
