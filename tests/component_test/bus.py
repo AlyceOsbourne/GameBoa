@@ -10,9 +10,9 @@ def test_reg_8():
     bus = Bus(
         cpu=MockCPU(),
         ppu=MockPPU(),
+        register=Register(),
         hram=MockMemoryBank(),
         wram=MockMemoryBank(),
-        register=Register(),
     )
 
     assert bus.read("A") == 0x01

@@ -1,4 +1,10 @@
-from protocols import MemoryBank
+from protocols import Bank
+from components.memory_bank import MemoryBank
+from components.system_mappings import PPUReadWriteRanges
+
+
+OAM_RANGE = len(PPUReadWriteRanges.OAM)
+VRAM_RANGE = len(PPUReadWriteRanges.VRAM)
 
 
 class PPU:
@@ -14,8 +20,8 @@ class PPU:
     obp0: int = 0
     obp1: int = 0
     stat: int = 0
-    oam: MemoryBank
-    vram: MemoryBank
+    oam: Bank = MemoryBank(OAM_RANGE)
+    vram: Bank = MemoryBank(VRAM_RANGE)
 
     def read(self, address, length=1):
         match address:

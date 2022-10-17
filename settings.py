@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QCheckBox, QDialogButtonBox, QTabWidget
+from PySide6.QtWidgets import QCheckBox, QDialog, QDialogButtonBox
 
 
 OK_BUTTON = QDialogButtonBox.StandardButton.Ok
@@ -11,18 +11,12 @@ class SettingsDialogWindow(QDialog):
     def __init__(self):
         super().__init__()
 
-        self.set_tabs()
         self.set_options()
         self.set_properties()
         self.set_custom_layout()
         self.connect_signals_with_slots()
 
         self.exec()
-
-    def set_tabs(self) -> None:
-        """Sets a tab for each settings category."""
-        self.tab_widget = QTabWidget()
-        self.tab_widget.addTab(QWidget_derivative_here, "Text of the tab here")
 
     def set_options(self) -> None:
         """Sets options that represent GameBoa's settings."""
