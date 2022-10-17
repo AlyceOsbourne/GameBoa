@@ -1,28 +1,23 @@
-import radon.complexity
-import ast
-import pathlib
-component_path = pathlib.Path(__file__).parent.parent / 'components'
+from pathlib import Path
+from radon import complexity
 
 
-def test_performance():
+COMPONENTS_PATH = Path(__file__).parent.parent / "components"
+
+
+def test_complexity():
     for path in [
-        component_path / 'cpu.py',
-        component_path / 'system_mappings.py',
+        COMPONENTS_PATH / "cpu.py",
+        COMPONENTS_PATH / "system_mappings.py",
     ]:
-       # rank using radon
-        radon_rank = radon.complexity.cc_visit(path.read_text())
-        for rank in radon.complexity.sorted_results(radon_rank, order=radon.complexity.SCORE)[:10]:
-            if hasattr(rank, 'classname'):
+        radon_rank = complexity.cc_visit(path.read_text())
+        for rank in complexity.sorted_results(radon_rank, complexity.SCORE)[:10]:
+            if hasattr(rank, "classname"):
                 class_name = rank.classname + "."
             else:
-                class_name = ''
+                class_name = ""
             name, rank = rank.name, rank.complexity
-            print(f'{class_name}{name}: {rank} => {radon.complexity.cc_rank(rank)}')
+            print(f"{class_name}{name}: {rank} => {complexity.cc_rank(rank)}")
 
 
-
-
-
-
-
-test_performance()
+test_complexity()
