@@ -1,6 +1,6 @@
 from typing import Generator
 
-from protocols import Bus
+from protocols import BusProtocol
 
 
 class MockMemoryBank:
@@ -53,5 +53,5 @@ class MockBus:
 class MockCPU:
     interrupts_enabled = False
 
-    def run(self, bus: Bus) -> Generator[int, int, None]:
+    def run(self, bus: BusProtocol) -> Generator[int, int, None]:
         ...

@@ -1,6 +1,6 @@
 from functools import partial
 
-from protocols import Bus, Timer
+from protocols import BusProtocol, TimerProtocol
 from components.system_mappings import Instruction
 
 
@@ -21,7 +21,7 @@ class CPU:
             op_code
         ]
 
-    def execute(self, bus: Bus, instruction: Instruction) -> int:
+    def execute(self, bus: BusProtocol, instruction: Instruction) -> int:
         """Uses pattern matching to execute the given instruction."""
         flags = instruction.flags
         op_code = instruction.op_code
@@ -197,7 +197,7 @@ class CPU:
     def __str__(self):
         return f"CPU"
 
-    def run(self, bus: Bus):
+    def run(self, bus: BusProtocol):
         cycles = 0
 
         while True:

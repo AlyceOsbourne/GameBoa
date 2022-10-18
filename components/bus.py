@@ -1,10 +1,17 @@
-from typing import Any
+from typing import Any, Optional
 
-from protocols import Cartridge, CPU, Bank, PPU, Register, Timer
 from components.system_mappings import (
     Interrupts,
     PPUReadWriteRanges,
     CartridgeReadWriteRanges,
+)
+from protocols import (
+    CPUProtocol,
+    PPUProtocol,
+    TimerProtocol,
+    RegisterProtocol,
+    CartridgeProtocol,
+    MemoryBankProtocol,
 )
 
 
@@ -15,13 +22,13 @@ class Bus:
 
     def __init__(
         self,
-        cpu: CPU,
-        ppu: PPU,
-        hram: Bank,
-        wram: Bank,
-        timer: Timer,
-        register: Register,
-        cart: Cartridge | None = None,
+        cpu: CPUProtocol,
+        ppu: PPUProtocol,
+        timer: TimerProtocol,
+        hram: MemoryBankProtocol,
+        wram: MemoryBankProtocol,
+        register: RegisterProtocol,
+        cart: Optional[CartridgeProtocol] = None,
     ):
         self.cpu = cpu
         self.ppu = ppu

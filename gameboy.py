@@ -8,21 +8,22 @@ INSTRUCTIONS, CB_INSTRUCTIONS = Instruction.load().values()
 
 
 class GameBoy:
-    """
-    The main class of GameBoa.
-
-    It includes all essential components and triggers all systems.
-    """
+    """All essential components and a trigger for all the systems."""
 
     def __init__(self):
         self.ppu = PPU()
         self.timer = Timer()
-        self.hram = Bank(0x7F)
-        self.wram = Bank(0x2000)
         self.register = Register()
+        self.hram = MemoryBank(0x7F)
+        self.wram = MemoryBank(0x2000)
         self.cpu = CPU(INSTRUCTIONS, CB_INSTRUCTIONS)
         self.bus = Bus(
-            self.cpu, self.ppu, self.hram, self.wram, self.timer, self.register
+            cpu=self.cpu,
+            ppu=self.ppu,
+            hram=self.hram,
+            wram=self.wram,
+            timer=self.timer,
+            register=self.register,
         )
 
     def run(self) -> None:
