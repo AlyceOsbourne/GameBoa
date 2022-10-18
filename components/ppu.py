@@ -23,12 +23,13 @@ class PPU:
     oam: Bank = MemoryBank(OAM_RANGE)
     vram: Bank = MemoryBank(VRAM_RANGE)
 
-    def read(self, address, length=1):
+    def read(self, address, length: int = 1):
+        """Reads the given address."""
         match address:
             case _:
                 raise ValueError(f"Invalid address {address}.")
 
-    def write(self, address, value):
+    def write(self, address, value: int):
         match address:
             case _:
-                raise ValueError(f"Invalid address {address}.")
+                raise ValueError(f"Invalid address {address} with value {value}.")

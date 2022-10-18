@@ -8,32 +8,32 @@ class MemoryBank:
 
     @singledispatchmethod
     def __init__(self, data):
-        raise NotImplementedError
+        self.data = data
 
     @__init__.register(int)
-    def sized(self, size: int):
+    def sized(self, size: int) -> None:
         """Creates a memory bank of the given size."""
         self.data = bytearray(size)
 
     @__init__.register(bytearray)
-    def from_bytearray(self, data: bytearray):
+    def from_bytearray(self, data: bytearray) -> None:
         """Creates a memory bank from the given data as a bytearray."""
         self.data = data
 
-    def read(self, address: int, length: int = 1) -> int:
-        """Returns the value of the given address."""
+    def read(self, address: int, length: int = 1) -> bytearray:
+        """Returns a value of the given address."""
         return self.data[address : (address + length)]
 
-    def write(self, address: int, value: int):
+    def write(self, address: int, value: int) -> None:
         """Writes the given value to the given address."""
         self.data[address] = value
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Retuns the size of a memory bank."""
         return len(self.data)
 
     def hex_output(self, start: int, end: int) -> str:
-        """Outputs the hex value of a memory bank."""
+        """Returns the hex value of a memory bank."""
         output = ""
 
         for i in range(start, end):

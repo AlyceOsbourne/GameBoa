@@ -76,7 +76,6 @@ class MemoryRangeEnum(MemoryRange, Enum):
         with open(json_file, "w") as memory_map_ranges:
             json.dump(output_dictionary, memory_map_ranges, indent=2)
 
-
     @classmethod
     @cache
     def from_address(cls, address: int):
@@ -137,7 +136,7 @@ class BusReadWriteRanges(MemoryRangeEnum):
     ...
 
 
-class Instructions(
+class Instruction(
     NamedTuple(
         "Instruction",
         [
@@ -156,8 +155,8 @@ class Instructions(
     """Instructions of the CPU."""
 
     @classmethod
-    def load(cls, json_file="/op_codes.json"):
-        loaded_instructions = {}
+    def load(cls, json_file: str = "/op_codes.json") -> dict:
+        loaded_instructions: dict = {}
 
         try:
             with open(json_file, "r") as op_codes_file:
@@ -182,9 +181,10 @@ class Instructions(
                     op_code_settings.get("operand1", None),
                     op_code_settings.get("operand2", None),
                 )
+
         return loaded_instructions
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.mnemonic}({self.operand1}, {self.operand2})"
 
 

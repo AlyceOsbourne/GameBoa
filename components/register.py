@@ -5,18 +5,16 @@ class Register:
     The accessors support both 8-bit and 16-bit registers.
     """
 
-    a, b, c, d, e, h, l, f, sp, pc = (
-        0x01,
-        0x00,
-        0x13,
-        0x00,
-        0xD8,
-        0x01,
-        0x4D,
-        0xB0,
-        0xFFFE,
-        0x0100,
-    )
+    a = 0x01
+    b = 0x00
+    c = 0x13
+    d = 0x00
+    e = 0xD8
+    f = 0xB0
+    h = 0x01
+    l = 0x4D
+    pc = 0x0100
+    sp = 0xFFFE
 
     # Convert two 8-bit registers into one 16-bit register.
     _get_16 = lambda self, r1, r2: (self.read(r1) << 8) | self.read(r2)
@@ -47,18 +45,17 @@ class Register:
         doc="HL reg",
     )
 
-    def __str__(self):
-        return (
-            f"A: {self.a:02X} F: {self.f:02X} B: {self.b:02X} C: {self.c:02X} D: {self.d:02X} "
-            f"E: {self.e:02X} H: {self.h:02X} L: {self.l:02X} SP: {self.sp:04X} PC: {self.pc:04X}"
-        )
+    def __str__(self) -> str:
+        return f"A={self.a:02X}  B={self.b:02X}  C={self.c:02X}  D={self.d:02X}  E={self.e:02X}  F={self.f:02X}  H={self.h:02X}  L={self.l:02X}  SP={self.sp:04X}  PC={self.pc:04X}"
 
     def read(self, register: str):
         if not hasattr(self, register.lower()):
             raise Exception(f"Invalid register {register}.")
+
         return getattr(self, register.lower(), None)
 
     def write(self, register: str, value: int):
         if not hasattr(self, register.lower()):
             raise Exception(f"Invalid register {register}.")
+
         setattr(self, register.lower(), value)

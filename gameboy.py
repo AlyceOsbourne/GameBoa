@@ -1,28 +1,28 @@
 from components.bus import Bus
 from components.ppu import PPU
-from components.memory_bank import Bank
-from components.system_mappings import Instructions
+from components.memory_bank import MemoryBank
+from components.system_mappings import Instruction
 
 
-INSTRUCTIONS, CB_INSTRUCTIONS = Instructions.load().values()
+INSTRUCTIONS, CB_INSTRUCTIONS = Instruction.load().values()
 
 
 class GameBoy:
     """
-    The main composite class of the GameBoa application.
+    The main class of GameBoa.
 
-    It includes all required components and triggers all systems.
+    It includes all essential components and triggers all systems.
     """
 
     def __init__(self):
         self.ppu = PPU()
-        self.cpu = CPU(INSTRUCTIONS, CB_INSTRUCTIONS)
-        self.register = Register()
         self.timer = Timer()
-        self.wram = Bank(0x2000)
         self.hram = Bank(0x7F)
+        self.wram = Bank(0x2000)
+        self.register = Register()
+        self.cpu = CPU(INSTRUCTIONS, CB_INSTRUCTIONS)
         self.bus = Bus(
-            self.ppu, self.register, self.wram, self.hram, self.cpu, self.timer
+            self.cpu, self.ppu, self.hram, self.wram, self.timer, self.register
         )
 
     def run(self) -> None:

@@ -1,8 +1,8 @@
 from components.bus import Bus
 from components.cpu import CPU
+from components.timer import Timer
 from components.register import Register
 from components.cartridge import Cartridge
-from components.timer import Timer
 
 from tests.mock_components import MockCPU, MockMemoryBank, MockPPU, MockRegister
 
@@ -11,10 +11,10 @@ def test_reg_8():
     bus = Bus(
         cpu=MockCPU(),
         ppu=MockPPU(),
+        timer=Timer(),
         register=Register(),
         hram=MockMemoryBank(),
         wram=MockMemoryBank(),
-        timer=Timer(),
     )
 
     assert bus.read("A") == 0x01
@@ -54,10 +54,10 @@ def test_reg_16():
     bus = Bus(
         cpu=MockCPU(),
         ppu=MockPPU(),
+        timer=Timer(),
+        register=Register(),
         hram=MockMemoryBank(),
         wram=MockMemoryBank(),
-        register=Register(),
-        timer=Timer(),
     )
 
     assert bus.read("PC") == 0x100
@@ -97,10 +97,10 @@ def test_reg_8_invalid():
     bus = Bus(
         cpu=MockCPU(),
         ppu=MockPPU(),
+        timer=Timer(),
+        register=Register(),
         hram=MockMemoryBank(),
         wram=MockMemoryBank(),
-        register=Register(),
-        timer=Timer(),
     )
 
 
@@ -108,8 +108,8 @@ def test_reg_16_invalid():
     bus = Bus(
         cpu=MockCPU(),
         ppu=MockPPU(),
+        timer=Timer(),
+        register=Register(),
         hram=MockMemoryBank(),
         wram=MockMemoryBank(),
-        register=Register(),
-        timer=Timer(),
     )
