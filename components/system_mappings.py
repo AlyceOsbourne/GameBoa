@@ -89,7 +89,6 @@ class MemoryRangeEnum(MemoryRange, Enum):
             json.dump(output_dictionary, memory_map_ranges, indent=2)
 
     @classmethod
-    @cache
     def from_address(cls, address: int):
         matching = []
 
@@ -145,7 +144,11 @@ class PPUReadWriteRanges(MemoryRangeEnum):
 
 
 class BusReadWriteRanges(MemoryRangeEnum):
-    ...
+    HRAM = 0xFF80, 0xFFFE
+    WRAM = 0xC000, 0xDFFF
+    IE = 0xFFFF
+    IF = 0xFF0F
+
 
 
 class Instructions(

@@ -2,13 +2,14 @@ import radon.complexity
 import cProfile
 import pathlib
 
+from components.ppu import PPU
 from components.timer import Timer
 from components.register import Register
 from components.cpu import CPU
 from components.memory_bank import MemoryBank
 from components.cartridge import Cartridge
 from components.bus import Bus
-from components.system_mappings import Instructions
+from components.system_mappings import Instructions, BusReadWriteRanges
 
 component_path = pathlib.Path(__file__).parent.parent / 'components'
 
@@ -31,9 +32,21 @@ def test_performance():
     timer = Timer()
     register = Register()
     cpu = CPU(
-        *Instructions.load().values()
+        *Instructions.load('../op_codes.json').values()
     )
-    bus = Bus()
+    ppu = PPU()
+    cartridge = Cartridge('../roms/tetris.gb')
+    bus = Bus(
+        cpu=cpu,
+        timer=timer,
+        register=register,
+        hram=MemoryBank(len(BusReadWriteRanges.HRAM)),
+        wram=MemoryBank(len(BusReadWriteRanges.WRAM)),
+        ppu=PPU(),
+        cart=cartridge,
+    )
+
+    bus.run()
 
 
 

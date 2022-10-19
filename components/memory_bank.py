@@ -22,7 +22,11 @@ class MemoryBank:
 
     def read(self, address: int, length: int = 1) -> int:
         """Returns the value of the given address."""
-        return self.data[address : (address + length)]
+        if length == 1:
+            return self.data[address]
+        else:
+            # create int from bytes
+            return int.from_bytes(self.data[address : address + length], "little")
 
     def write(self, address: int, value: int):
         """Writes the given value to the given address."""

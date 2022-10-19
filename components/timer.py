@@ -22,7 +22,11 @@ class Timer:
         cycles = 0
 
         while True:
-            cycles += yield
+            cur_cycles = yield
+            if isinstance(cur_cycles, int):
+                cycles += cur_cycles
+            elif isinstance(cur_cycles, list):
+                cycles += sum(cur_cycles)
 
             if cycles >= 4:
                 self.div += 1

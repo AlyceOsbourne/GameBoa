@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from protocols import Cartridge, CPU, Bank, PPU, Register, Timer
 from components.system_mappings import (
     Interrupts,
@@ -33,7 +33,8 @@ class Bus:
 
     def fetch8(self) -> int:
         """Fetches 8 bits from the current PC."""
-        value = self.read_address(self.read("PC"))
+        address = self.read("PC")
+        value = self.read_address(address)
         self.register.write("PC", self.read("PC") + 1)
         return value
 
@@ -54,7 +55,7 @@ class Bus:
         self.write("SP", self.read("SP") + 2)
         return value
 
-    def read(self, operator: str) -> int | bool | None:
+    def read(self, operator: str) -> Optional[int]:
         """Reads a memory address of the given operator."""
         match operator:
             case "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12" | "13" | "14" | "15":
@@ -86,10 +87,9 @@ class Bus:
             case None:
                 return None
             case _:
-                print(f"Unimplemented read from operator {operator}.")
-                return None
+                raise NotImplementedError(f"Unimplemented read from operator {operator}.")
 
-    def write(self, operator: str, value: Any):
+    def write(self, operator: str, value: int):
         match operator:
             case "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12" | "13" | "14" | "15":
                 self.register.write("F", self.register.read("F") | (1 << int(operator)))
@@ -166,12 +166,12 @@ class Bus:
         timer_coro = self.timer.run(self)
         ppu_coro = self.ppu.run(self)
         cpu_coro = self.cpu.run(self)
-
+        for coro in (timer_coro, ppu_coro, cpu_coro):
+            next(coro)
         while True:
             self.handle_interrupts()
             opcode = self.fetch8()
-            decoded = self.cpu.decode(opcode)
-            cycles = cpu_coro.send(decoded)
+            cycles = cpu_coro.send(opcode)
             timer_coro.send(cycles)
             next(ppu_coro)
 

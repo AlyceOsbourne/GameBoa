@@ -203,6 +203,7 @@ class CPU:
 
         while True:
             op_code = yield cycles
+            print(type(op_code))
             print(f"OP_CODE: {op_code:#02X}")
             current_instruction = self.decode(op_code, self.is_cb)
             print(

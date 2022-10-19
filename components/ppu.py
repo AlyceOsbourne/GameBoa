@@ -19,22 +19,22 @@ class PPU:
     oam: Bank = MemoryBank(len(PPUReadWriteRanges.OAM))
     vram: Bank = MemoryBank(len(PPUReadWriteRanges.VRAM))
 
-    def read(self, address, length=1):
+    def read(self, address:int, length:int=1) -> int:
         addr_space = PPUReadWriteRanges.from_address(address)[0]
 
         match address:
             case (PPUReadWriteRanges.LY |
-                    PPUReadWriteRanges.WX |
-                    PPUReadWriteRanges.WY |
-                    PPUReadWriteRanges.BGP |
-                    PPUReadWriteRanges.DMA |
-                    PPUReadWriteRanges.LYC |
-                    PPUReadWriteRanges.SCX |
-                    PPUReadWriteRanges.SCY |
-                    PPUReadWriteRanges.LCDC |
-                    PPUReadWriteRanges.OBP0 |
-                    PPUReadWriteRanges.OBP1 |
-                    PPUReadWriteRanges.STAT
+                  PPUReadWriteRanges.WX |
+                  PPUReadWriteRanges.WY |
+                  PPUReadWriteRanges.BGP |
+                  PPUReadWriteRanges.DMA |
+                  PPUReadWriteRanges.LYC |
+                  PPUReadWriteRanges.SCX |
+                  PPUReadWriteRanges.SCY |
+                  PPUReadWriteRanges.LCDC |
+                  PPUReadWriteRanges.OBP0 |
+                  PPUReadWriteRanges.OBP1 |
+                  PPUReadWriteRanges.STAT
             ):
                 return getattr(self, addr_space.name.lower())
             case PPUReadWriteRanges.OAM | PPUReadWriteRanges.VRAM:
@@ -43,30 +43,27 @@ class PPU:
             case _:
                 raise ValueError(f"Invalid address {address}.")
 
-    def write(self, address, *value: int):
-        if len(value) == 0:
-            raise ValueError("No value to write.")
+    def write(self, address, value: int):
+
+        addr_space = PPUReadWriteRanges.from_address(address)[0]
+
         match address:
             case (PPUReadWriteRanges.LY |
-                    PPUReadWriteRanges.WX |
-                    PPUReadWriteRanges.WY |
-                    PPUReadWriteRanges.BGP |
-                    PPUReadWriteRanges.DMA |
-                    PPUReadWriteRanges.LYC |
-                    PPUReadWriteRanges.SCX |
-                    PPUReadWriteRanges.SCY |
-                    PPUReadWriteRanges.LCDC |
-                    PPUReadWriteRanges.OBP0 |
-                    PPUReadWriteRanges.OBP1 |
-                    PPUReadWriteRanges.STAT
+                  PPUReadWriteRanges.WX |
+                  PPUReadWriteRanges.WY |
+                  PPUReadWriteRanges.BGP |
+                  PPUReadWriteRanges.DMA |
+                  PPUReadWriteRanges.LYC |
+                  PPUReadWriteRanges.SCX |
+                  PPUReadWriteRanges.SCY |
+                  PPUReadWriteRanges.LCDC |
+                  PPUReadWriteRanges.OBP0 |
+                  PPUReadWriteRanges.OBP1 |
+                  PPUReadWriteRanges.STAT
             ):
-                addr_space = PPUReadWriteRanges.from_address(address)[0]
-                offset = address - addr_space.start
-                setattr(self, addr_space.name.lower(), value[offset])
+                setattr(self, addr_space.name.lower(), value)
             case PPUReadWriteRanges.OAM | PPUReadWriteRanges.VRAM:
-                addr_space = PPUReadWriteRanges.from_address(address)
-                offset = address - addr_space.start
-                getattr(self, addr_space.name.lower())[offset:offset + len(value)] = value
+                getattr(self, addr_space.name.lower()).write(address - addr_space.start, value)
             case _:
                 raise ValueError(f"Invalid address {address}.")
 
@@ -86,7 +83,6 @@ class PPU:
             if self.ly > 153:
                 self.ly = 0
             yield 456
-
 
 
 class ScreenConsoleRenderer:
