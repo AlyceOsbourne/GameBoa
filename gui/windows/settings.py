@@ -1,12 +1,12 @@
-from PySide6.QtWidgets import QCheckBox, QDialog, QDialogButtonBox
+from PySide6.QtWidgets import QCheckBox, QDialog, QDialogButtonBox, QHBoxLayout
 
 
 OK_BUTTON = QDialogButtonBox.StandardButton.Ok
 CANCEL_BUTTON = QDialogButtonBox.StandardButton.Cancel
 
 
-class SettingsDialogWindow(QDialog):
-    """A dialog window that provides changing GameBoa's settings."""
+class SettingsDialog(QDialog):
+    """A dialog that provides changing GameBoa's settings."""
 
     def __init__(self):
         super().__init__()
@@ -16,8 +16,6 @@ class SettingsDialogWindow(QDialog):
         self.set_custom_layout()
         self.connect_signals_with_slots()
 
-        self.exec()
-
     def set_options(self) -> None:
         """Sets options that represent GameBoa's settings."""
         self.test_option = QCheckBox()
@@ -26,26 +24,30 @@ class SettingsDialogWindow(QDialog):
 
     def set_properties(self) -> None:
         """
-        Sets specific properties for the dialog window.
+        Sets specific properties for the dialog.
 
+        > Sets a fixed size.
         > Sets the title to be Settings.
         > Sets the standard buttons to be OK and Cancel.
         """
+        self.setFixedSize(300, 300)
         self.setWindowTitle("Settings")
 
         self.button_box = QDialogButtonBox()
         self.button_box.setStandardButtons(OK_BUTTON | CANCEL_BUTTON)
 
     def set_custom_layout(self) -> None:
-        """Sets a custom layout for the widgets on the dialog window."""
-        ...
+        """Sets a horizontal layout for the widgets."""
+        horizontal_layout = QHBoxLayout()
+        horizontal_layout.addWidget(self.test_option)
+        self.setLayout(horizontal_layout)
 
     def connect_signals_with_slots(self) -> None:
-        """Connects event signals with relevant slots as actions."""
+        """Connects event signals with relevant widget actions."""
         self.accepted.connect(self.save_settings)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
 
     def save_settings(self) -> None:
-        """Saves GameBoa's settings to a specific file."""
+        """Saves GameBoa's settings."""
         ...
