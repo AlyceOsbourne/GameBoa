@@ -1,4 +1,4 @@
-from protocols import Bank
+from protocols import MemoryBankProtocol
 from components.memory_bank import MemoryBank
 from components.system_mappings import PPUReadWriteRanges, ScreenSize
 
@@ -23,23 +23,24 @@ class PPU:
         addr_space = PPUReadWriteRanges.from_address(address)[0]
 
         match address:
-            case (PPUReadWriteRanges.LY |
-                    PPUReadWriteRanges.WX |
-                    PPUReadWriteRanges.WY |
-                    PPUReadWriteRanges.BGP |
-                    PPUReadWriteRanges.DMA |
-                    PPUReadWriteRanges.LYC |
-                    PPUReadWriteRanges.SCX |
-                    PPUReadWriteRanges.SCY |
-                    PPUReadWriteRanges.LCDC |
-                    PPUReadWriteRanges.OBP0 |
-                    PPUReadWriteRanges.OBP1 |
-                    PPUReadWriteRanges.STAT
+            case (
+                PPUReadWriteRanges.LY
+                | PPUReadWriteRanges.WX
+                | PPUReadWriteRanges.WY
+                | PPUReadWriteRanges.BGP
+                | PPUReadWriteRanges.DMA
+                | PPUReadWriteRanges.LYC
+                | PPUReadWriteRanges.SCX
+                | PPUReadWriteRanges.SCY
+                | PPUReadWriteRanges.LCDC
+                | PPUReadWriteRanges.OBP0
+                | PPUReadWriteRanges.OBP1
+                | PPUReadWriteRanges.STAT
             ):
                 return getattr(self, addr_space.name.lower())
             case PPUReadWriteRanges.OAM | PPUReadWriteRanges.VRAM:
                 offset = address - addr_space.start
-                return getattr(self, addr_space.name.lower())[offset:offset + length]
+                return getattr(self, addr_space.name.lower())[offset : offset + length]
             case _:
                 raise ValueError(f"Invalid address {address}.")
 
@@ -47,18 +48,19 @@ class PPU:
         if len(value) == 0:
             raise ValueError("No value to write.")
         match address:
-            case (PPUReadWriteRanges.LY |
-                    PPUReadWriteRanges.WX |
-                    PPUReadWriteRanges.WY |
-                    PPUReadWriteRanges.BGP |
-                    PPUReadWriteRanges.DMA |
-                    PPUReadWriteRanges.LYC |
-                    PPUReadWriteRanges.SCX |
-                    PPUReadWriteRanges.SCY |
-                    PPUReadWriteRanges.LCDC |
-                    PPUReadWriteRanges.OBP0 |
-                    PPUReadWriteRanges.OBP1 |
-                    PPUReadWriteRanges.STAT
+            case (
+                PPUReadWriteRanges.LY
+                | PPUReadWriteRanges.WX
+                | PPUReadWriteRanges.WY
+                | PPUReadWriteRanges.BGP
+                | PPUReadWriteRanges.DMA
+                | PPUReadWriteRanges.LYC
+                | PPUReadWriteRanges.SCX
+                | PPUReadWriteRanges.SCY
+                | PPUReadWriteRanges.LCDC
+                | PPUReadWriteRanges.OBP0
+                | PPUReadWriteRanges.OBP1
+                | PPUReadWriteRanges.STAT
             ):
                 addr_space = PPUReadWriteRanges.from_address(address)[0]
                 offset = address - addr_space.start
@@ -66,9 +68,11 @@ class PPU:
             case PPUReadWriteRanges.OAM | PPUReadWriteRanges.VRAM:
                 addr_space = PPUReadWriteRanges.from_address(address)
                 offset = address - addr_space.start
-                getattr(self, addr_space.name.lower())[offset:offset + len(value)] = value
+                getattr(self, addr_space.name.lower())[
+                    offset : offset + len(value)
+                ] = value
             case _:
-                raise ValueError(f"Invalid address {address}.")
+                raise ValueError(f"Invalid address {address} with value {value}.")
 
     def run(self, bus):
         while True:
@@ -88,12 +92,14 @@ class PPU:
             yield 456
 
 
-
 class ScreenConsoleRenderer:
-    # renders the PPUs screen to the console
+    """Renders the screen of the PPU to the console."""
+
     def __init__(self, screen_size: ScreenSize):
         self.screen_size = screen_size
-        self.screen: list[list] = [[0 for _ in range(screen_size.width)] for _ in range(screen_size.height)]
+        self.screen: list[list] = [
+            [0 for _ in range(screen_size.width)] for _ in range(screen_size.height)
+        ]
 
     def render(self):
         for y in range(self.screen_size.height):
@@ -102,7 +108,7 @@ class ScreenConsoleRenderer:
             print()
 
     def update(self, ppu):
-        # update the screen
+        """Updates the screen."""
         for y in range(self.screen_size.height):
             for x in range(self.screen_size.width):
                 pixel_value = ppu.read(0x8000 + y * self.screen_size.width + x)

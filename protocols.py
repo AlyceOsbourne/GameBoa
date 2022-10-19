@@ -7,7 +7,7 @@ WriteAddress = Callable[[int, int], None]
 
 
 @runtime_checkable
-class PPU(Protocol):
+class PPUProtocol(Protocol):
     read: ReadAddress
     write: WriteAddress
     run: Callable[["Bus"], Generator[int, None, None]]
@@ -19,19 +19,19 @@ class Timer(Protocol):
 
 
 @runtime_checkable
-class Bank(Protocol):
+class MemoryBankProtocol(Protocol):
     read: ReadAddress
     write: WriteAddress
 
 
 @runtime_checkable
-class Cartridge(Protocol):
+class CartridgeProtocol(Protocol):
     read: ReadAddress
     write: WriteAddress
 
 
 @runtime_checkable
-class Bus(Protocol):
+class BusProtocol(Protocol):
     read: Callable[[str], int | bool | None]
     write: Callable[[str, int], None]
     fetch8: Callable[[], int]
@@ -42,7 +42,7 @@ class Bus(Protocol):
 
 
 @runtime_checkable
-class CPU(Protocol):
+class CPUProtocol(Protocol):
     interrupts_enabled: bool
     run: Callable[[Bus], Generator[int, int, None]]
     decode: Callable[[int], Instructions]
@@ -50,6 +50,6 @@ class CPU(Protocol):
 
 
 @runtime_checkable
-class Register(Protocol):
+class RegisterProtocol(Protocol):
     read: Callable[[str], int]
     write: Callable[[str, int], None]

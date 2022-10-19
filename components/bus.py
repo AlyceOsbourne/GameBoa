@@ -1,26 +1,32 @@
-from typing import Any
-from protocols import Cartridge, CPU, Bank, PPU, Register, Timer
 from components.system_mappings import (
     Interrupts,
     PPUReadWriteRanges,
     CartridgeReadWriteRanges,
 )
+from protocols import (
+    CPUProtocol,
+    PPUProtocol,
+    TimerProtocol,
+    RegisterProtocol,
+    CartridgeProtocol,
+    MemoryBankProtocol,
+)
 
 
 class Bus:
-    """The main bus that manages data throughput of the Game Boy."""
+    """The main bus that manages data throughput."""
 
     __slots__ = ("cart", "cpu", "hram", "ime", "ppu", "register", "timer", "wram")
 
     def __init__(
-            self,
-            cpu: CPU,
-            ppu: PPU,
-            timer: Timer,
-            hram: Bank,
-            wram: Bank,
-            register: Register,
-            cart: Cartridge | None = None,
+        self,
+        cpu: CPUProtocol,
+        ppu: PPUProtocol,
+        timer: TimerProtocol,
+        hram: MemoryBankProtocol,
+        wram: MemoryBankProtocol,
+        register: RegisterProtocol,
+        cart: Optional[CartridgeProtocol] = None,
     ):
         self.timer = timer
         self.cpu = cpu
@@ -32,24 +38,24 @@ class Bus:
         self.register = register
 
     def fetch8(self) -> int:
-        """Fetches 8 bits from the current PC."""
+        """Fetches 8 bits from the current program counter."""
         value = self.read_address(self.read("PC"))
         self.register.write("PC", self.read("PC") + 1)
         return value
 
     def fetch16(self) -> int:
-        """Fetches 16 bits from the current PC."""
+        """Fetches 16 bits from the current program counter."""
         value = self.read_address(self.read("PC"), 2)
         self.register.write("PC", self.read("PC") + 2)
         return value
 
     def push(self, value: int) -> None:
-        """Pushes a value onto the stack."""
+        """Pushes a value onto the stack pointer."""
         self.write("SP", self.read("SP") - 2)
         self.write_address(self.read("SP"), value)
 
     def pop(self) -> int:
-        """Pops a value from the stack."""
+        """Pops a value from the stack pointer."""
         value = self.read_address(self.read("SP"), 2)
         self.write("SP", self.read("SP") + 2)
         return value
@@ -105,7 +111,6 @@ class Bus:
     def read_address(self, address: int, length: int = 1):
         """Reads memory data from the given address."""
         match address:
-            case (PPUReadWriteRanges.VRAM | PPUReadWriteRanges.OAM):
                 return self.ppu.read(address, length)
             case (
             CartridgeReadWriteRanges.RAM_BANK_0 |
