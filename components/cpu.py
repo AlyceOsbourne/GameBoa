@@ -1,7 +1,7 @@
 from functools import partial
 
-from protocols import Bus, Timer
-from components.system_mappings import Instructions
+from protocols import BusProtocol, TimerProtocol
+from components.system_mappings import Instruction
 
 
 class CPU:
@@ -9,25 +9,24 @@ class CPU:
 
     is_halted: bool
     is_stopped: bool
-    is_cb: bool = False
     interrupts_enabled = False
-    instructions: dict[int, Instructions]
-    cb_instructions: dict[int, Instructions]
+    is_cb_instruction: bool = False
+    instructions: dict[int, Instruction]
+    cb_instructions: dict[int, Instruction]
 
-    def decode(self, op_code: int, cb: bool = False) -> Instructions:
+    def decode(self, op_code: int, is_cb_instruction: bool = False) -> Instruction:
         """Decodes the given op_code into an instruction."""
-        decoded = getattr(self, ("cb_" if cb else "") + "instructions")[op_code]
+        self.is_cb_instruction = False
+        return getattr(self, ("cb_" if is_cb_instruction else "") + "instruction")[
+            op_code
+        ]
 
-        self.is_cb = False
-
-        return decoded
-
-    def execute(self, bus: Bus, instruction: Instructions) -> int:
+    def execute(self, bus: BusProtocol, instruction: Instruction) -> int:
         """Uses pattern matching to execute the given instruction."""
+        flags = instruction.flags
         op_code = instruction.op_code
         mnemonic = instruction.mnemonic
         operand1, operand2 = instruction.operand1, instruction.operand2
-        flags = instruction.flags
 
         read_1 = partial(bus.read, operand1)
         read_2 = partial(bus.read, operand2)
@@ -44,7 +43,7 @@ class CPU:
                 self.is_stopped = True
             case "PREFIX":
                 """Prefixes an instruction with the cb_ prefix."""
-                self.is_cb = True
+                self.is_cb_instruction = True
             case "SET":
                 """Sets the n bit in the r register."""
                 write_1(read_1() | (1 << op_code & 0b111))
@@ -198,14 +197,14 @@ class CPU:
     def __str__(self):
         return f"CPU"
 
-    def run(self, bus: Bus):
+    def run(self, bus: BusProtocol):
         cycles = 0
 
         while True:
             op_code = yield cycles
             print(type(op_code))
             print(f"OP_CODE: {op_code:#02X}")
-            current_instruction = self.decode(op_code, self.is_cb)
+            current_instruction = self.decode(op_code, self.is_cb_instruction)
             print(
                 f"DECODED: {current_instruction.mnemonic} {current_instruction.operand1} {current_instruction.operand2} {current_instruction.flags}"
             )

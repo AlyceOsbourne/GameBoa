@@ -1,4 +1,4 @@
-from protocols import Bus
+from protocols import BusProtocol
 
 
 class Timer:
@@ -18,7 +18,7 @@ class Timer:
     tma: int = 0
     tima: int = 0
 
-    def run(self, bus: Bus):
+    def run(self, bus: BusProtocol):
         cycles = 0
 
         while True:
