@@ -9,7 +9,7 @@ from components.cpu import CPU
 from components.memory_bank import MemoryBank
 from components.cartridge import Cartridge
 from components.bus import Bus
-from components.system_mappings import Instructions, BusReadWriteRanges
+from components.system_mappings import Instruction, BusReadWriteRanges, PPUReadWriteRanges
 
 component_path = pathlib.Path(__file__).parent.parent / 'components'
 
@@ -32,17 +32,24 @@ def test_performance():
     timer = Timer()
     register = Register()
     cpu = CPU(
-        *Instructions.load('../op_codes.json').values()
+        *Instruction.load('../op_codes.json').values()
     )
-    ppu = PPU()
+    wram = MemoryBank(len(BusReadWriteRanges.WRAM))
+    hram = MemoryBank(len(BusReadWriteRanges.HRAM))
+    vram = MemoryBank(len(PPUReadWriteRanges.VRAM))
+    oam = MemoryBank(len(PPUReadWriteRanges.OAM))
+    ppu = PPU(
+        vram=vram,
+        oam=oam,
+    )
     cartridge = Cartridge('../roms/tetris.gb')
     bus = Bus(
         cpu=cpu,
         timer=timer,
         register=register,
-        hram=MemoryBank(len(BusReadWriteRanges.HRAM)),
-        wram=MemoryBank(len(BusReadWriteRanges.WRAM)),
-        ppu=PPU(),
+        hram=hram,
+        wram=wram,
+        ppu=ppu,
         cart=cartridge,
     )
 

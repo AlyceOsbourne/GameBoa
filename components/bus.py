@@ -1,9 +1,9 @@
 from typing import Any, Optional
-from protocols import Cartridge, CPU, Bank, PPU, Register, Timer
+from protocols import BusProtocol, TimerProtocol, PPUProtocol, MemoryBankProtocol, CartridgeProtocol, CPUProtocol, RegisterProtocol
 from components.system_mappings import (
     Interrupts,
     PPUReadWriteRanges,
-    CartridgeReadWriteRanges,
+    CartridgeReadWriteRanges, BusReadWriteRanges,
 )
 
 
@@ -14,13 +14,13 @@ class Bus:
 
     def __init__(
             self,
-            cpu: CPU,
-            ppu: PPU,
-            timer: Timer,
-            hram: Bank,
-            wram: Bank,
-            register: Register,
-            cart: Cartridge | None = None,
+            cpu: CPUProtocol,
+            ppu: PPUProtocol,
+            timer: TimerProtocol,
+            hram: MemoryBankProtocol,
+            wram: MemoryBankProtocol,
+            register: RegisterProtocol,
+            cart: CartridgeProtocol | None = None,
     ):
         self.timer = timer
         self.cpu = cpu
@@ -108,12 +108,14 @@ class Bus:
             case (PPUReadWriteRanges.VRAM | PPUReadWriteRanges.OAM):
                 return self.ppu.read(address, length)
             case (
-            CartridgeReadWriteRanges.RAM_BANK_0 |
-            CartridgeReadWriteRanges.RAM_BANK_N |
-            CartridgeReadWriteRanges.ROM_BANK_0 |
-            CartridgeReadWriteRanges.ROM_BANK_N
+                CartridgeReadWriteRanges.RAM_BANK_0 |
+                CartridgeReadWriteRanges.RAM_BANK_N |
+                CartridgeReadWriteRanges.ROM_BANK_0 |
+                CartridgeReadWriteRanges.ROM_BANK_N
             ):
                 return self.cart.read(address, length)
+            case (BusReadWriteRanges.HRAM | BusReadWriteRanges.WRAM):
+                return self.hram.read(address, length) if address < 0xFF80 else self.wram.read(address, length)
             case _:
                 print(f"Unimplemented read from address {address}.")
                 return 0xFF
@@ -126,10 +128,10 @@ class Bus:
                 self.ppu.write(address, *value)
 
             case (
-            CartridgeReadWriteRanges.RAM_BANK_0 |
-            CartridgeReadWriteRanges.RAM_BANK_N |
-            CartridgeReadWriteRanges.ROM_BANK_0 |
-            CartridgeReadWriteRanges.ROM_BANK_N
+                CartridgeReadWriteRanges.RAM_BANK_0 |
+                CartridgeReadWriteRanges.RAM_BANK_N |
+                CartridgeReadWriteRanges.ROM_BANK_0 |
+                CartridgeReadWriteRanges.ROM_BANK_N
             ):
                 self.cart.write(address, *value)
             case _:

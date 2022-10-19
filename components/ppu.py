@@ -1,5 +1,4 @@
-from protocols import Bank
-from components.memory_bank import MemoryBank
+from protocols import MemoryBankProtocol
 from components.system_mappings import PPUReadWriteRanges, ScreenSize
 
 
@@ -16,8 +15,8 @@ class PPU:
     obp0: int = 0
     obp1: int = 0
     stat: int = 0
-    oam: Bank = MemoryBank(len(PPUReadWriteRanges.OAM))
-    vram: Bank = MemoryBank(len(PPUReadWriteRanges.VRAM))
+    oam: MemoryBankProtocol
+    vram: MemoryBankProtocol
 
     def read(self, address:int, length:int=1) -> int:
         addr_space = PPUReadWriteRanges.from_address(address)[0]
@@ -83,6 +82,10 @@ class PPU:
             if self.ly > 153:
                 self.ly = 0
             yield 456
+
+    def __init__(self, vram, oam):
+        self.vram = vram
+        self.oam = oam
 
 
 class ScreenConsoleRenderer:

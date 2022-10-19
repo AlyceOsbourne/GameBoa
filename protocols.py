@@ -1,6 +1,6 @@
 from typing import Callable, Generator, Protocol, runtime_checkable
 
-from components.system_mappings import Instructions
+from components.system_mappings import Instruction
 
 ReadAddress = Callable[[int, int], int]
 WriteAddress = Callable[[int, int], None]
@@ -10,12 +10,12 @@ WriteAddress = Callable[[int, int], None]
 class PPUProtocol(Protocol):
     read: ReadAddress
     write: WriteAddress
-    run: Callable[["Bus"], Generator[int, None, None]]
+    run: Callable[["BusProtocol"], Generator[int, None, None]]
 
 
 @runtime_checkable
-class Timer(Protocol):
-    run: Callable[['Bus'], Generator[None, int, None]]
+class TimerProtocol(Protocol):
+    run: Callable[['BusProtocol'], Generator[None, int, None]]
 
 
 @runtime_checkable
@@ -44,9 +44,9 @@ class BusProtocol(Protocol):
 @runtime_checkable
 class CPUProtocol(Protocol):
     interrupts_enabled: bool
-    run: Callable[[Bus], Generator[int, int, None]]
-    decode: Callable[[int], Instructions]
-    execute: Callable[[Bus, int], int]
+    run: Callable[[BusProtocol], Generator[int, int, None]]
+    decode: Callable[[int], Instruction]
+    execute: Callable[[BusProtocol, int], int]
 
 
 @runtime_checkable
