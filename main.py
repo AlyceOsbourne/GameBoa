@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QApplication
 
-from gui.main_window import MainWindow
+from gui.windows.main import MainWindow
 
 
 def main() -> None:
