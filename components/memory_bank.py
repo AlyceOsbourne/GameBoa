@@ -29,7 +29,7 @@ class MemoryBank:
         self.data[address] = value
 
     def __len__(self):
-        """Retuns the size of a memory bank."""
+        """Returns the size of a memory bank."""
         return len(self.data)
 
     def hex_output(self, start: int, end: int) -> str:

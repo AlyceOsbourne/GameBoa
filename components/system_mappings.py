@@ -1,8 +1,20 @@
 import json
+from enum import auto, Enum, Flag
 from functools import cache
 from types import MappingProxyType
 from typing import NamedTuple, Optional
-from enum import auto, Enum, Flag, unique
+
+
+# pylint: disable=invalid-name
+
+class Model(Enum):
+    AGB = auto()
+    AGS = auto()
+    CGB = auto()
+    DMG = auto()
+    MGB = auto()
+    SGB = auto()
+    SGB2 = auto()
 
 
 class ScreenSize(
@@ -75,7 +87,6 @@ class MemoryRangeEnum(MemoryRange, Enum):
 
         with open(json_file, "w") as memory_map_ranges:
             json.dump(output_dictionary, memory_map_ranges, indent=2)
-
 
     @classmethod
     @cache
@@ -199,13 +210,16 @@ class Flags(Flag):
 
 class Interrupts(Flag):
     """Binary interrupt flags for the CPU."""
+    # ordered by priority, lowest to highest
 
-    IF = 0b11100000
-    TIMER = 0b00000100
     JOYPAD = 0b00010000
     SERIAL = 0b00001000
-    VBLANK = 0b00000001
+    TIMER = 0b00000100
     LCD_STAT = 0b00000010
+    VBLANK = 0b00000001
+
+    def priority(self):
+        return self.value.bit_length() - 1
 
 
 class CartType(Flag):
@@ -226,16 +240,6 @@ class CartType(Flag):
     BATTERY = auto()
     BANDAI_TAMA5 = auto()
     POCKET_CAMERA = auto()
-
-
-class Model(Enum):
-    AGB = auto()
-    AGS = auto()
-    CGB = auto()
-    DMG = auto()
-    MGB = auto()
-    SGB = auto()
-    SGB2 = auto()
 
 
 OLD_LICENSEE_CODES = MappingProxyType(
