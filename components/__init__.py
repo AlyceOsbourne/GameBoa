@@ -37,3 +37,4 @@ def timer_manager() -> Timer:
 
 def register_manager() -> Register:
     return Register(...)
+

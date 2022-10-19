@@ -2,6 +2,7 @@ from typing import Any
 from pathlib import Path
 from functools import reduce, singledispatchmethod
 
+from components import system_mappings
 from components.memory_bank import MemoryBank
 from components.system_mappings import (
     RAM_SIZES,
@@ -48,13 +49,16 @@ class Cartridge:
     def _get_as_ascii(self, start, end):
         return self.data[start:end].decode("ascii")
 
-    def read(self, address, length):
+    def read(self, address, length: int= 1):
         match address:
+            case system_mappings.CartridgeReadWriteRanges.ROM_BANK_0:
+                return self.rom_bank_0.read(address, length)
+
             case _:
                 print(f"Unimplemented read from cartridge {address}.")
                 return 0
 
-    def write(self, address, value):
+    def write(self, address, *value: int):
         match address:
 
             case _:

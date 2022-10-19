@@ -45,3 +45,4 @@ class Timer:
                 if self.tima > 0xFF:
                     self.tima = self.tma
                     bus.request_interrupt(2)
+

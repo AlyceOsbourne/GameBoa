@@ -27,9 +27,8 @@ class MemoryBank:
     def write(self, address: int, value: int) -> None:
         """Writes the given value to the given address."""
         self.data[address] = value
-
-    def __len__(self) -> int:
-        """Retuns the size of a memory bank."""
+    def __len__(self):
+        """Returns the size of a memory bank."""
         return len(self.data)
 
     def hex_output(self, start: int, end: int) -> str:

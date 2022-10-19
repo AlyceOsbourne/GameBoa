@@ -1,5 +1,3 @@
-from typing import Any, Optional
-
 from components.system_mappings import (
     Interrupts,
     PPUReadWriteRanges,
@@ -30,6 +28,7 @@ class Bus:
         register: RegisterProtocol,
         cart: Optional[CartridgeProtocol] = None,
     ):
+        self.timer = timer
         self.cpu = cpu
         self.ppu = ppu
         self.cart = cart
@@ -104,7 +103,7 @@ class Bus:
                 self.register.write(operator, value)
             case "(BC)" | "(DE)" | "(HL)" | "(C)" | "(a16)" | "(a8)" | "(HL+)" | "(HL-)":
                 self.write_address(self.read(operator[1:-1]), value)
-            case "d8":
+            case "d8" | "a8" | "r8":
                 self.write_address(self.read("PC"), value)
             case _:
                 print(f"Unimplemented write to operator {operator}.")
@@ -112,27 +111,32 @@ class Bus:
     def read_address(self, address: int, length: int = 1):
         """Reads memory data from the given address."""
         match address:
-            case (
-                CartridgeReadWriteRanges.ROM_BANK_0
-                | CartridgeReadWriteRanges.ROM_BANK_N
-            ) if self.cart is not None:
-                return self.cart.read(address, length)
-            case (PPUReadWriteRanges.OAM | PPUReadWriteRanges.VRAM):
                 return self.ppu.read(address, length)
+            case (
+            CartridgeReadWriteRanges.RAM_BANK_0 |
+            CartridgeReadWriteRanges.RAM_BANK_N |
+            CartridgeReadWriteRanges.ROM_BANK_0 |
+            CartridgeReadWriteRanges.ROM_BANK_N
+            ):
+                return self.cart.read(address, length)
             case _:
                 print(f"Unimplemented read from address {address}.")
                 return 0xFF
 
-    def write_address(self, address: int, value: int):
+    def write_address(self, address: int,
+                      *value: int):
         """Writes memory data to the given address."""
         match address:
-            case (
-                CartridgeReadWriteRanges.ROM_BANK_0
-                | CartridgeReadWriteRanges.ROM_BANK_N
-            ) if self.cart is not None:
-                self.cart.write(address, value)
             case (PPUReadWriteRanges.VRAM | PPUReadWriteRanges.OAM):
-                self.ppu.write(address, value)
+                self.ppu.write(address, *value)
+
+            case (
+            CartridgeReadWriteRanges.RAM_BANK_0 |
+            CartridgeReadWriteRanges.RAM_BANK_N |
+            CartridgeReadWriteRanges.ROM_BANK_0 |
+            CartridgeReadWriteRanges.ROM_BANK_N
+            ):
+                self.cart.write(address, *value)
             case _:
                 print(f"Unimplemented write to address {address}.")
 
@@ -151,15 +155,28 @@ class Bus:
                 self.push(self.read("PC"))
 
                 match interrupt:
-                    case 0b00000001:
-                        self.write("PC", 0x0040)
-                    case 0b00000010:
-                        self.write("PC", 0x0048)
-                    case 0b00000100:
-                        self.write("PC", 0x0050)
-                    case 0b00001000:
-                        self.write("PC", 0x0058)
-                    case 0b00010000:
-                        self.write("PC", 0x0060)
-                    case _:
-                        print(f"Unimplemented interrupt {interrupt}.")
+                    case Interrupts.VBLANK:
+                        self.write("PC", 0x40)
+                    case Interrupts.LCD_STAT:
+                        self.write("PC", 0x48)
+                    case Interrupts.TIMER:
+                        self.write("PC", 0x50)
+                    case Interrupts.SERIAL:
+                        self.write("PC", 0x58)
+                    case Interrupts.JOYPAD:
+                        self.write("PC", 0x60)
+
+    def run(self):
+        """Runs the CPU."""
+        timer_coro = self.timer.run(self)
+        ppu_coro = self.ppu.run(self)
+        cpu_coro = self.cpu.run(self)
+
+        while True:
+            self.handle_interrupts()
+            opcode = self.fetch8()
+            decoded = self.cpu.decode(opcode)
+            cycles = cpu_coro.send(decoded)
+            timer_coro.send(cycles)
+            next(ppu_coro)
+
