@@ -1,11 +1,9 @@
 import json
-from enum import auto, Enum, Flag
 from functools import cache
+from enum import auto, Enum, Flag
 from types import MappingProxyType
 from typing import NamedTuple, Optional
 
-
-# pylint: disable=invalid-name
 
 class Model(Enum):
     AGB = auto()
@@ -24,7 +22,7 @@ class ScreenSize(
     ),
     Enum,
 ):
-    """Screen sizes of different Game Boy editions."""
+    """A screen size of each Game Boy edition."""
 
     SUPER_GB = 256, 224, 32, 28
     SUPER_GBC = 256, 224, 32, 28
@@ -39,7 +37,7 @@ class Palette(
     ),
     Enum,
 ):
-    """Color palettes of different Game Boy variants."""
+    """Color palettes of different Game Boy editions."""
 
     SUPER = 0xFF, 0x88, 0x44, 0x00
     POCKET = 0xFF, 0x77, 0x33, 0x00
@@ -89,6 +87,7 @@ class MemoryRangeEnum(MemoryRange, Enum):
             json.dump(output_dictionary, memory_map_ranges, indent=2)
 
     @classmethod
+    @cache
     def from_address(cls, address: int):
         matching = []
 
@@ -144,11 +143,7 @@ class PPUReadWriteRanges(MemoryRangeEnum):
 
 
 class BusReadWriteRanges(MemoryRangeEnum):
-    HRAM = 0xFF80, 0xFFFE
-    WRAM = 0xC000, 0xDFFF
-    IE = 0xFFFF
-    IF = 0xFF0F
-
+    ...
 
 
 class Instruction(
@@ -214,15 +209,15 @@ class Flags(Flag):
 
 class Interrupts(Flag):
     """Binary interrupt flags for the CPU."""
-    # ordered by priority, lowest to highest
 
+    TIMER = 0b00000100
     JOYPAD = 0b00010000
     SERIAL = 0b00001000
-    TIMER = 0b00000100
-    LCD_STAT = 0b00000010
     VBLANK = 0b00000001
+    LCD_STAT = 0b00000010
 
     def priority(self):
+        """Orders flags by priority from the lowest to the highest."""
         return self.value.bit_length() - 1
 
 
