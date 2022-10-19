@@ -6,13 +6,52 @@ from typing import NamedTuple, Optional
 
 
 class Model(Enum):
-    AGB = auto()
-    AGS = auto()
-    CGB = auto()
+    ...
+
+
+class DMGModel(Model):
     DMG = auto()
     MGB = auto()
     SGB = auto()
-    SGB2 = auto()
+    CGB = auto()
+    AGB = auto()
+    AGS = auto()
+
+
+class CGBModel(Model):
+    CGB = auto()
+    AGB = auto()
+    AGS = auto()
+
+
+class RegisterDefault(NamedTuple('RegisterDefaults', [
+    ('af', int),
+    ('bc', int),
+    ('de', int),
+    ('hl', int),
+    ('sp', int),
+    ('pc', int),
+])):
+    pass
+
+
+class RegisterDefaults(RegisterDefault, Enum):
+    ...
+
+
+class DMGModelRegisterDefaults(RegisterDefaults):
+    DMG = 0x01B0, 0x0013, 0x00D8, 0x014D, 0xFFFE, 0x0100
+    MGB = 0xFFB0, 0x0013, 0x00D8, 0x014D, 0xFFFE, 0x0100
+    SGB = 0x0100, 0x0014, 0x0000, 0x060C, 0xFFFE, 0x0100
+    CGB = 0x1180, 0x0000, 0x0008, 0x007C, 0xFFFE, 0x0100
+    AGB = 0x1100, 0x0100, 0x0008, 0x007C, 0xFFFE, 0x0100
+    AGS = 0x1100, 0x0100, 0x0008, 0x007C, 0xFFFE, 0x0100
+
+
+class CGBModelRegisterDefaults(RegisterDefaults):
+    CGB = 0x1180, 0x0000, 0xFF56, 0x000D, 0xFFFE, 0x0100
+    AGB = 0x1100, 0x0100, 0xFF56, 0x000D, 0xFFFE, 0x0100
+    AGS = 0x1100, 0x0100, 0xFF56, 0x000D, 0xFFFE, 0x0100
 
 
 class ScreenSize(
@@ -28,6 +67,9 @@ class ScreenSize(
     SUPER_GBC = 256, 224, 32, 28
     CLASSIC_GB = 160, 144, 20, 18
     CLASSIC_GBC = 160, 144, 20, 18
+    ADVANCED_GB = 240, 160, 30, 20
+    ADVANCED_GBC = 240, 160, 30, 20
+    ADVANCED_GBS = 240, 160, 30, 20
 
 
 class Palette(
@@ -87,7 +129,6 @@ class MemoryRangeEnum(MemoryRange, Enum):
             json.dump(output_dictionary, memory_map_ranges, indent=2)
 
     @classmethod
-    @cache
     def from_address(cls, address: int):
         matching = []
 
@@ -143,7 +184,10 @@ class PPUReadWriteRanges(MemoryRangeEnum):
 
 
 class BusReadWriteRanges(MemoryRangeEnum):
-    ...
+    HRAM = 0xFF80, 0xFFFE
+    WRAM = 0xC000, 0xDFFF
+    IE = 0xFFFF
+    IF = 0xFF0F
 
 
 class Instruction(
@@ -209,12 +253,13 @@ class Flags(Flag):
 
 class Interrupts(Flag):
     """Binary interrupt flags for the CPU."""
+    # ordered by priority, lowest to highest
 
-    TIMER = 0b00000100
     JOYPAD = 0b00010000
     SERIAL = 0b00001000
-    VBLANK = 0b00000001
+    TIMER = 0b00000100
     LCD_STAT = 0b00000010
+    VBLANK = 0b00000001
 
     def priority(self):
         """Orders flags by priority from the lowest to the highest."""

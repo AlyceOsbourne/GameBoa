@@ -1,6 +1,7 @@
-from PySide6.QtWidgets import QCheckBox, QDialog, QDialogButtonBox, QHBoxLayout
+from PySide6.QtWidgets import QCheckBox, QDialog, QDialogButtonBox, QHBoxLayout, QTabWidget
 
-
+from config import Config
+import pathlib
 OK_BUTTON = QDialogButtonBox.StandardButton.Ok
 CANCEL_BUTTON = QDialogButtonBox.StandardButton.Cancel
 
@@ -11,16 +12,25 @@ class SettingsDialog(QDialog):
     def __init__(self):
         super().__init__()
 
-        self.set_options()
+        self.set_options(Config(pathlib.Path("config.ini")))
         self.set_properties()
         self.set_custom_layout()
         self.connect_signals_with_slots()
 
-    def set_options(self) -> None:
+    def set_options(self, config_file: Config) -> None:
         """Sets options that represent GameBoa's settings."""
+        # needs to load from the config object
+        # for section in config:
+        #     make tab
+        #     for option in section:
+        #         make by checking the type of the option, cause config parser, will be a string,
+        #         I would use pattern matching to generate the correct widget
+        # use QTabWidget
         self.test_option = QCheckBox()
         self.test_option.setText("Test")
         self.test_option.setChecked(True)
+
+
 
     def set_properties(self) -> None:
         """
