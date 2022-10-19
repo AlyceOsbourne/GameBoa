@@ -70,22 +70,22 @@ class PPU:
             case _:
                 raise ValueError(f"Invalid address {address}.")
 
-        def run(self, bus):
-            while True:
-                if self.ly == 144:
-                    self.stat |= 0b00000001
-                    self.stat &= 0b11111110
-                    bus.interrupts.request_interrupt(0)
-                elif self.ly < 144:
-                    self.stat |= 0b00000010
-                    self.stat &= 0b11111101
-                else:
-                    self.stat |= 0b00000000
-                    self.stat &= 0b11111111
-                self.ly += 1
-                if self.ly > 153:
-                    self.ly = 0
-                yield 456
+    def run(self, bus):
+        while True:
+            if self.ly == 144:
+                self.stat |= 0b00000001
+                self.stat &= 0b11111110
+                bus.interrupts.request_interrupt(0)
+            elif self.ly < 144:
+                self.stat |= 0b00000010
+                self.stat &= 0b11111101
+            else:
+                self.stat |= 0b00000000
+                self.stat &= 0b11111111
+            self.ly += 1
+            if self.ly > 153:
+                self.ly = 0
+            yield 456
 
 
 
