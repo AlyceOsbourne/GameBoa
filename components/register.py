@@ -1,5 +1,36 @@
 import array
-from core import system_mappings
+from enum import Enum
+from typing import NamedTuple
+
+
+class RegisterDefault(NamedTuple('RegisterDefaults', [
+    ('af', int),
+    ('bc', int),
+    ('de', int),
+    ('hl', int),
+    ('sp', int),
+    ('pc', int),
+])):
+    pass
+
+
+class RegisterDefaults(RegisterDefault, Enum):
+    ...
+
+
+class DMGModelRegisterDefaults(RegisterDefaults):
+    DMG = 0x01B0, 0x0013, 0x00D8, 0x014D, 0xFFFE, 0x0100
+    MGB = 0xFFB0, 0x0013, 0x00D8, 0x014D, 0xFFFE, 0x0100
+    SGB = 0x0100, 0x0014, 0x0000, 0x060C, 0xFFFE, 0x0100
+    CGB = 0x1180, 0x0000, 0x0008, 0x007C, 0xFFFE, 0x0100
+    AGB = 0x1100, 0x0100, 0x0008, 0x007C, 0xFFFE, 0x0100
+    AGS = 0x1100, 0x0100, 0x0008, 0x007C, 0xFFFE, 0x0100
+
+
+class CGBModelRegisterDefaults(RegisterDefaults):
+    CGB = 0x1180, 0x0000, 0xFF56, 0x000D, 0xFFFE, 0x0100
+    AGB = 0x1100, 0x0100, 0xFF56, 0x000D, 0xFFFE, 0x0100
+    AGS = 0x1100, 0x0100, 0xFF56, 0x000D, 0xFFFE, 0x0100
 
 
 class Register:
@@ -62,7 +93,6 @@ class Register:
         except KeyError:
             raise AttributeError(f"Invalid attribute: {key}")
 
-
     def __repr__(self):
         return f"Register({self._registry})"
 
@@ -83,12 +113,10 @@ class Register:
     @classmethod
     def from_bytes(cls, data: bytes):
         """Creates a new register from the given bytes."""
-        register = cls()
-        register._registry = array.array('B', data)
-        return register
+        return cls(array.array('B', data))
 
     @classmethod
-    def from_default(cls, default: system_mappings.RegisterDefaults):
+    def from_default(cls, default: RegisterDefaults):
         """Creates a new register with default values."""
         register = cls()
         for k, v in default._asdict().items():

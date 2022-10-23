@@ -2,7 +2,7 @@ import functools
 import itertools
 import unittest
 from core.system_mappings import DMGModelRegisterDefaults, CGBModelRegisterDefaults
-from components.cpu.register import Register
+from components.register import Register
 
 
 class TestRegister(unittest.TestCase):

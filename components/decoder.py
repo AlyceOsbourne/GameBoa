@@ -1,5 +1,4 @@
-
-from core.system_mappings import Instruction
+from components.instruction import Instruction
 
 
 class Decoder:
