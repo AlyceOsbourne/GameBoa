@@ -1,5 +1,3 @@
-/bios/*
-/docs/*
-/roms/*
-/debug.log
-/tests/.pytest_cache/
+/roms/06.gb
+/tests/test_components/*.prof
+

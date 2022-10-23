@@ -1,5 +1,5 @@
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtWidgets import QMainWindow, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QMenuBar, QStatusBar, QFileDialog
 
 from gui.windows.settings import SettingsDialog
 
@@ -53,6 +53,13 @@ class MainWindow(QMainWindow):
         self.quit_action.triggered.connect(self.close)
         self.quit_action.setStatusTip("Offers to quit GameBoa.")
 
+        # Load ROM action
+        self.load_rom_action = QAction()
+        self.load_rom_action.setText("Load ROM...")
+        self.load_rom_action.setShortcut("Ctrl+O")
+        self.load_rom_action.setStatusTip("Loads a ROM file.")
+        self.load_rom_action.triggered.connect(self.load_rom)
+
     def create_menu_bar(self) -> None:
         """Creates a menu bar with actions in separate menus."""
 
@@ -67,6 +74,9 @@ class MainWindow(QMainWindow):
 
         # Help menu
         help_menu = self.menu_bar.addMenu("Help")
+
+        # General > Load ROM...
+        general_menu.addAction(self.load_rom_action)
 
         # General > Quit...
         general_menu.addAction(self.quit_action)
@@ -125,3 +135,35 @@ class MainWindow(QMainWindow):
             event.accept()
         else:
             event.ignore()
+
+    def load_rom(self):
+        """Loads a ROM file."""
+        # open file dialog
+        # load ROM if extension is .gb, .gbc, or .zip
+        # show error message if extension is not .gb, .gbc, or .zip
+        file_dialog = QFileDialog()
+        file_dialog.setFileMode(QFileDialog.ExistingFile)
+        file_dialog.setNameFilter("*GB; *GBC; *ZIP")
+        file_dialog.setViewMode(QFileDialog.Detail)
+        file_dialog.setAcceptMode(QFileDialog.AcceptOpen)
+        file_dialog.setWindowTitle("Load ROM")
+        file_dialog.setLabelText(QFileDialog.Accept, "Load")
+        file_dialog.setLabelText(QFileDialog.Reject, "Cancel")
+
+        if file_dialog.exec():
+            file_path = file_dialog.selectedFiles()[0]
+            print(file_path)
+
+            if file_path.endswith(".gb") or file_path.endswith(".gbc") or file_path.endswith(".zip"):
+                print("Valid ROM")
+            else:
+                print("Invalid ROM")
+                parent = self
+                title = "Invalid ROM"
+                message = "The ROM file must be a .gb, .gbc, or .zip file."
+                QMessageBox.critical(parent, title, message)
+
+        else:
+            print("Cancelled")
+
+

@@ -1,0 +1,8 @@
+import struct
+
+
+ROM_BANK_SIZE = 0x4000
+RAM_BANK_SIZE = 0x2000
+ROM_BANK_FORMAT = '16s'
+RAM_BANK_FORMAT = '8s'
+

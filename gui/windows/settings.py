@@ -1,9 +1,66 @@
-from PySide6.QtWidgets import QCheckBox, QDialog, QDialogButtonBox, QHBoxLayout, QTabWidget
+# import so we can increment numbers, take strings as input etc etc
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QDialog,
+    QDialogButtonBox,
+    QTabWidget,
+    QWidget,
+    QVBoxLayout,
+    QSpinBox, QLineEdit, QLabel,
+)
 
-from config import Config
-import pathlib
+from core.config import config
+
 OK_BUTTON = QDialogButtonBox.StandardButton.Ok
 CANCEL_BUTTON = QDialogButtonBox.StandardButton.Cancel
+
+
+class SettingsTab:
+    """A class to handle a tab in the settings window."""
+
+    def __init__(self, tab_widget: QTabWidget, name: str):
+        self.tab_widget = tab_widget
+        self.name = name
+        self.tab = QWidget()
+        self.tab_widget.addTab(self.tab, self.name)
+        self.layout = QVBoxLayout()
+        self.tab.setLayout(self.layout)
+
+    def add_checkbox(self, text: str, option: str) -> QCheckBox:
+        """Adds a checkbox to the tab."""
+        checkbox = QCheckBox(text)
+        checkbox.setChecked(config.get_boolean(self.name, option))
+        checkbox.stateChanged.connect(lambda: config.set(self.name, option, str(checkbox.isChecked())))
+        label = QLabel(text)
+        self.layout.addWidget(label)
+        self.layout.addWidget(checkbox)
+        return checkbox
+
+    def add_spinbox(self, text: str, option: str, min: int, max: int) -> QSpinBox:
+        """Adds a spinbox to the tab."""
+        spinbox = QSpinBox()
+        spinbox.setMinimum(min)
+        spinbox.setMaximum(max)
+        spinbox.setValue(config.getint(self.name, option))
+        spinbox.valueChanged.connect(lambda: config.set(self.name, option, str(spinbox.value())))
+        label = QLabel(text)
+        self.layout.addWidget(label)
+        self.layout.addWidget(spinbox)
+        return spinbox
+
+    def add_line_edit(self, text: str, option: str) -> QLineEdit:
+        """Adds a line edit to the tab."""
+        line_edit = QLineEdit()
+        line_edit.setText(config.get(self.name, option))
+        line_edit.textChanged.connect(lambda: config.set(self.name, option, line_edit.text()))
+        label = QLabel(text)
+        self.layout.addWidget(label)
+        self.layout.addWidget(line_edit)
+        return line_edit
+
+
+
+
 
 
 class SettingsDialog(QDialog):
@@ -12,52 +69,30 @@ class SettingsDialog(QDialog):
     def __init__(self):
         super().__init__()
 
-        self.set_options(Config(pathlib.Path("config.ini")))
-        self.set_properties()
-        self.set_custom_layout()
-        self.connect_signals_with_slots()
-
-    def set_options(self, config_file: Config) -> None:
-        """Sets options that represent GameBoa's settings."""
-        # needs to load from the config object
-        # for section in config:
-        #     make tab
-        #     for option in section:
-        #         make by checking the type of the option, cause config parser, will be a string,
-        #         I would use pattern matching to generate the correct widget
-        # use QTabWidget
-        self.test_option = QCheckBox()
-        self.test_option.setText("Test")
-        self.test_option.setChecked(True)
-
-
-
-    def set_properties(self) -> None:
-        """
-        Sets specific properties for the dialog.
-
-        > Sets a fixed size.
-        > Sets the title to be Settings.
-        > Sets the standard buttons to be OK and Cancel.
-        """
-        self.setFixedSize(300, 300)
         self.setWindowTitle("Settings")
+        self.setFixedSize(400, 300)
 
-        self.button_box = QDialogButtonBox()
-        self.button_box.setStandardButtons(OK_BUTTON | CANCEL_BUTTON)
+        self.tab_widget = QTabWidget()
+        for section in config.sections():
+            settings_tab = SettingsTab(self.tab_widget, section)
+            for option in config.options(section):
+                value = config.get_value_as_dtype(section, option)
+                if isinstance(value, bool):
+                    settings_tab.add_checkbox(option, option)
+                elif isinstance(value, int):
+                    settings_tab.add_spinbox(option, option, 0, 100)
+                elif isinstance(value, str):
+                    settings_tab.add_line_edit(option, option)
 
-    def set_custom_layout(self) -> None:
-        """Sets a horizontal layout for the widgets."""
-        horizontal_layout = QHBoxLayout()
-        horizontal_layout.addWidget(self.test_option)
-        self.setLayout(horizontal_layout)
 
-    def connect_signals_with_slots(self) -> None:
-        """Connects event signals with relevant widget actions."""
-        self.accepted.connect(self.save_settings)
+
+
+
+        self.button_box = QDialogButtonBox(OK_BUTTON | CANCEL_BUTTON)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
 
-    def save_settings(self) -> None:
-        """Saves GameBoa's settings."""
-        ...
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.tab_widget)
+        self.layout.addWidget(self.button_box)
+        self.setLayout(self.layout)
