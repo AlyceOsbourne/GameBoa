@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QTabWidget,
     QWidget,
     QVBoxLayout,
+    QHBoxLayout,
     QSpinBox, QLineEdit, QLabel,
 )
 
@@ -31,8 +32,6 @@ class SettingsTab:
         checkbox = QCheckBox(text)
         checkbox.setChecked(config.get_boolean(self.name, option))
         checkbox.stateChanged.connect(lambda: config.set(self.name, option, str(checkbox.isChecked())))
-        label = QLabel(text)
-        self.layout.addWidget(label)
         self.layout.addWidget(checkbox)
         return checkbox
 
@@ -43,19 +42,22 @@ class SettingsTab:
         spinbox.setMaximum(max)
         spinbox.setValue(config.getint(self.name, option))
         spinbox.valueChanged.connect(lambda: config.set(self.name, option, str(spinbox.value())))
-        label = QLabel(text)
-        self.layout.addWidget(label)
         self.layout.addWidget(spinbox)
         return spinbox
 
     def add_line_edit(self, text: str, option: str) -> QLineEdit:
         """Adds a line edit to the tab."""
+        # should have a label to the left of the line edit
+        label = QLabel(text)
         line_edit = QLineEdit()
         line_edit.setText(config.get(self.name, option))
         line_edit.textChanged.connect(lambda: config.set(self.name, option, line_edit.text()))
-        label = QLabel(text)
-        self.layout.addWidget(label)
-        self.layout.addWidget(line_edit)
+        widget_pair = QWidget()
+        widget_pair_layout = QHBoxLayout()
+        widget_pair.setLayout(widget_pair_layout)
+        widget_pair_layout.addWidget(label)
+        widget_pair_layout.addWidget(line_edit)
+        self.layout.addWidget(widget_pair)
         return line_edit
 
 

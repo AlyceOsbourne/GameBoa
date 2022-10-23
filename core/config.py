@@ -1,25 +1,13 @@
 import configparser
 import pathlib
 import re
-# default values
+
 DEFAULTS = {
     # developer_options
     "developer_options": {
-        "debug_mode": "False"
+        "debug mode": "False",
+        "enable indev features": "False"
     },
-    # general
-    "general": {
-        "language": "en"
-    },
-    # gui
-    "gui": {
-        "theme": "light"
-    },
-    # paths
-    "paths": {
-        "data": "data",
-        "logs": "logs"
-    }
 }
 
 dtype_patterns = {
@@ -37,16 +25,28 @@ class _Config:
         self.config_file = pathlib.Path("../config.ini")
         self.config = configparser.ConfigParser()
         self.config.read(self.config_file)
+        # check structure matches defaults
         self._set_defaults()
 
     def _set_defaults(self) -> None:
         """Sets default values for the configuration file."""
         for section, options in DEFAULTS.items():
-            if not self.config.has_section(section):
+            if section not in self.config.sections():
                 self.config.add_section(section)
             for option, value in options.items():
-                if not self.config.has_option(section, option):
+                if option not in self.config.options(section):
                     self.config.set(section, option, value)
+        for section in self.config.sections():
+            if section not in DEFAULTS:
+                self.config.remove_section(section)
+            else:
+                for option in self.config.options(section):
+                    if option not in DEFAULTS[section]:
+                        self.config.remove_option(section, option)
+
+
+
+
 
     def save(self) -> None:
         """Saves the configuration file."""
