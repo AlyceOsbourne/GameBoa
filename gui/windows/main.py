@@ -1,12 +1,18 @@
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtWidgets import QMainWindow, QMessageBox, QMenuBar, QStatusBar, QFileDialog
+from PySide6.QtWidgets import (
+    QMenuBar,
+    QStatusBar,
+    QFileDialog,
+    QMainWindow,
+    QMessageBox,
+)
 
 from gui.windows.settings import SettingsDialog
 
 
-LOGO_ICON = QIcon("gui/icons/logo.svg")
 QUIT_ICON = QIcon("gui/icons/quit.svg")
 ABOUT_ICON = QIcon("gui/icons/about.svg")
+APP_LOGO_ICON = QIcon("gui/icons/logo.svg")
 SETTINGS_ICON = QIcon("gui/icons/settings.svg")
 
 
@@ -31,9 +37,9 @@ class MainWindow(QMainWindow):
 
         # About action
         self.about_action = QAction()
-        self.about_action.setIcon(LOGO_ICON)
         self.about_action.setText("About...")
         self.about_action.setShortcut("Ctrl+I")
+        self.about_action.setIcon(APP_LOGO_ICON)
         self.about_action.triggered.connect(self.about)
         self.about_action.setStatusTip("Shows an About GameBoa message box.")
 
@@ -116,7 +122,10 @@ class MainWindow(QMainWindow):
         """Shows an About GameBoa message box."""
         parent = self
         title = "About GameBoa"
-        message = "A Python-based Game Boy emulator.\n\nCopyright 2022 Alyce Osbourne"
+        message = (
+            "A Python-based Game Boy emulator.\n\n"
+            "Copyright 2022 Alyce Osbourne, Boštjan Mejak"
+        )
         QMessageBox.about(parent, title, message)
 
     def show_settings_dialog(self):
@@ -138,15 +147,12 @@ class MainWindow(QMainWindow):
 
     def load_rom(self):
         """Loads a ROM file."""
-        # open file dialog
-        # load ROM if extension is .gb, .gbc, or .zip
-        # show error message if extension is not .gb, .gbc, or .zip
         file_dialog = QFileDialog()
         file_dialog.setFileMode(QFileDialog.ExistingFile)
-        file_dialog.setNameFilter("*GB; *GBC; *ZIP")
+        file_dialog.setNameFilter("ROM file (*.gb, *.gbc, *.zip)")
         file_dialog.setViewMode(QFileDialog.Detail)
         file_dialog.setAcceptMode(QFileDialog.AcceptOpen)
-        file_dialog.setWindowTitle("Load ROM")
+        file_dialog.setWindowTitle("Load ROM file...")
         file_dialog.setLabelText(QFileDialog.Accept, "Load")
         file_dialog.setLabelText(QFileDialog.Reject, "Cancel")
 
@@ -154,10 +160,15 @@ class MainWindow(QMainWindow):
             file_path = file_dialog.selectedFiles()[0]
             print(file_path)
 
-            if file_path.endswith(".gb") or file_path.endswith(".gbc") or file_path.endswith(".zip"):
+            if (
+                file_path.endswith(".gb")
+                or file_path.endswith(".gbc")
+                or file_path.endswith(".zip")
+            ):
                 print("Valid ROM")
             else:
                 print("Invalid ROM")
+
                 parent = self
                 title = "Invalid ROM"
                 message = "The ROM file must be a .gb, .gbc, or .zip file."
@@ -165,5 +176,3 @@ class MainWindow(QMainWindow):
 
         else:
             print("Cancelled")
-
-
