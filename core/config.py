@@ -1,92 +1,78 @@
-import configparser
-import pathlib
-import re
+from pathlib import Path
+from re import compile, IGNORECASE
+from configparser import ConfigParser
 
 DEFAULTS = {
-    # developer_options
-    "developer_options": {
-        "debug mode": "False",
-        "enable indev features": "False"
-    },
+    "developer_options": {"debug mode": "False", "enable indev features": "False"},
 }
 
-dtype_patterns = {
-    bool: re.compile(r"^(true|false)$", re.IGNORECASE),
-    int: re.compile(r"^-?\d+$"),
-    float: re.compile(r"^-?\d+\.\d+$")
+data_type_patterns = {
+    int: compile(r"^-?\d+$"),
+    float: compile(r"^-?\d+\.\d+$"),
+    bool: compile(r"^(true|false)$", IGNORECASE),
 }
 
 
-class _Config:
-    """A class to handle the configuration file."""
+class ConfigManager:
+    """Manages the configuration file."""
 
     def __init__(self):
-        self.config_parser = configparser.ConfigParser()
-        self.config_file = pathlib.Path("../config.ini")
-        self.config = configparser.ConfigParser()
-        self.config.read(self.config_file)
-        # check structure matches defaults
+        self.config_manager = ConfigParser()
+        self.config_file = Path("config.ini")
+        self.config_manager.read(self.config_file)
+
         self._set_defaults()
+        self.save()
 
     def _set_defaults(self) -> None:
         """Sets default values for the configuration file."""
-        for section, options in DEFAULTS.items():
-            if section not in self.config.sections():
-                self.config.add_section(section)
-            for option, value in options.items():
-                if option not in self.config.options(section):
-                    self.config.set(section, option, value)
-        for section in self.config.sections():
+        for (section, option) in DEFAULTS.items():
+            if section not in self.config_manager.sections():
+                self.config_manager.add_section(section)
+
+            for (option, value) in option.items():
+                if option not in self.config_manager.options(section):
+                    self.config_manager.set(section, option, value)
+
+        for section in self.config_manager.sections():
             if section not in DEFAULTS:
-                self.config.remove_section(section)
+                self.config_manager.remove_section(section)
             else:
-                for option in self.config.options(section):
+                for option in self.config_manager.options(section):
                     if option not in DEFAULTS[section]:
-                        self.config.remove_option(section, option)
-
-
-
-
+                        self.config_manager.remove_option(section, option)
 
     def save(self) -> None:
         """Saves the configuration file."""
         with open(self.config_file, "w") as file:
-            self.config.write(file)
+            self.config_manager.write(file)
 
     def get(self, section: str, option: str) -> str:
         """Gets a value from the configuration file."""
-        return self.config.get(section, option)
+        return self.config_manager.get(section, option)
 
     def set(self, section: str, option: str, value: str) -> None:
         """Sets a value in the configuration file."""
-        self.config.set(section, option, value)
+        self.config_manager.set(section, option, value)
 
     def sections(self) -> list:
         """Gets all sections in the configuration file."""
-        return self.config.sections()
+        return self.config_manager.sections()
 
     def options(self, section: str) -> list:
         """Gets all options in a section in the configuration file."""
-        return self.config.options(section)
+        return self.config_manager.options(section)
 
-    def get_value_as_dtype(self, section: str, option: str):
-        """Gets a value from the configuration file and auto casts it."""
+    def get_value_as_type(self, section: str, option: str) -> str | int | float | bool:
+        """Gets a value from the configuration file and autocasts it."""
         value = self.get(section, option)
-        for dtype, pattern in dtype_patterns.items():
+
+        for (data_type, pattern) in data_type_patterns.items():
             if pattern.match(value):
-                return dtype(value)
+                return data_type(value)
+
         return value
 
     def get_boolean(self, section: str, option: str) -> bool:
         """Gets a boolean value from the configuration file."""
-        return self.config.getboolean(section, option)
-
-
-
-
-# regex patterns to match values to their types
-
-
-
-config = _Config()
-config.save()
+        return self.config_manager.getboolean(section, option)
