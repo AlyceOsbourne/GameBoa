@@ -1,11 +1,11 @@
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
-
+import __metadata__ as meta
 from gui.windows.main import MainWindow
 
 
 APP_NAME = "GameBoa"
-APP_VERSION_NUMBER = "1.0.0"
+APP_VERSION_NUMBER = meta.__version__
 LOGO_ICON = QIcon("gui/icons/logo.svg")
 
 

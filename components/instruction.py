@@ -1,6 +1,9 @@
+import gzip
 import json
+from pathlib import Path
 from typing import NamedTuple
 
+default_path = Path("../core/ops.bin")
 
 class Instruction(
     NamedTuple(
@@ -21,14 +24,12 @@ class Instruction(
     """Instructions of the CPU."""
 
     @classmethod
-    def load(cls, json_file: str = "/op_codes.json") -> dict:
+    def load(cls, file_path:Path) -> dict:
         loaded_instructions: dict = {}
-
         try:
-            with open(json_file, "r") as op_codes_file:
-                json_data = json.load(op_codes_file)
+            json_data = json.loads(gzip.decompress(file_path.read_bytes()).decode())
         except FileNotFoundError:
-            raise FileNotFoundError(f"Could not find {json_file} in current directory.")
+            raise FileNotFoundError(f"Could not find {file_path} in current directory.")
 
         for category, operation in json_data.items():
             if category not in loaded_instructions:
@@ -52,3 +53,24 @@ class Instruction(
 
     def __str__(self) -> str:
         return f"{self.mnemonic}({self.operand1}, {self.operand2})"
+
+
+class Decoder:
+    """ simply handles the decoding of the opcodes """
+
+    def __init__(self, instruction_set):
+        self.instructions, self.cb_instructions = instruction_set
+
+    def decode(self, op_code: int, is_cb: bool) -> Instruction:
+        """Decodes the given op_code into an instruction."""
+        return getattr(self, ("cb_" if is_cb else "") + "instructions").get(op_code, None)
+
+    def __str__(self):
+        return f"{self.instructions} {self.cb_instructions}"
+
+
+def load_decoder(boa_file:Path = default_path) -> Decoder:
+    return Decoder(Instruction.load(boa_file).values())
+
+if __name__ == "__main__":
+    print(load_decoder())

@@ -2,16 +2,14 @@ import array
 from enum import Enum
 from typing import NamedTuple
 
-
-class RegisterDefault(NamedTuple('RegisterDefaults', [
+RegisterDefault = NamedTuple('RegisterDefaults', [
     ('af', int),
     ('bc', int),
     ('de', int),
     ('hl', int),
     ('sp', int),
     ('pc', int),
-])):
-    pass
+])
 
 
 class RegisterDefaults(RegisterDefault, Enum):
@@ -41,25 +39,26 @@ class Register:
     def __init__(self, registry: array.array = None):
         self._registry = registry if registry else array.array('B', [0] * 12)
 
+
     def __getitem__(self, item):
         match item:
-            case "reg_8_a" | "reg_8_f" | "reg_8_b" | "reg_8_c" | "reg_8_d" | "reg_8_e" | "reg_8_h" | "reg_8_l":
-                return self._registry["afbcdehl".index(item[-1])] & 0xff
-            case "reg_16_af" | "reg_16_bc" | "reg_16_de" | "reg_16_hl" | "reg_16_sp" | "reg_16_pc":
-                idx = "afbcdehlsppc".index(item[-2:]) & 0xff
+            case "A" | "F" | "B" | "C" | "D" | "E" | "H" | "L":
+                return self._registry["ABCDEFHL".index(item)]
+            case "AF" | "BC" | "DE" | "HL" | "SP" | "PC":
+                idx = "AFBCDEHLSPPC".index(item)
                 return (self._registry[idx] << 8) | self._registry[idx + 1]
-            case "flag_z" | "flag_n" | "flag_h" | "flag_c":
-                return (self._registry[1] >> (7 - 'znhc'.index(item[-1]))) & 1 & 0xff
+            case "FZ" | "FN" | "FH" | "FC":
+                return (self._registry[1] >> (7 - 'ZNCH'.index(item[-1]))) & 1 & 0xff
             case _:
                 raise KeyError(f"Invalid key: {item}")
 
     def __setitem__(self, key, value):
         match key:
-            case "reg_8_a" | "reg_8_f" | "reg_8_b" | "reg_8_c" | "reg_8_d" | "reg_8_e" | "reg_8_h" | "reg_8_l" if value <= 0xff:
-                self._registry["afbcdehl".index(key[-1])] = value
+            case "A" | "F" | "B" | "C" | "D" | "E" | "H" | "L" if value <= 0xff:
+                self._registry["ABCDEFHL".index(key)] = value
 
-            case "reg_16_af" | "reg_16_bc" | "reg_16_de" | "reg_16_hl" | "reg_16_sp" | "reg_16_pc" if value <= 0xffff:
-                idx = "afbcdehlsppc".index(key[-2:])
+            case "AF" | "BC" | "DE" | "HL" | "SP" | "PC" if value <= 0xffff:
+                idx = "AFBCDEHLSPPC".index(key)
                 self._registry[idx] = value >> 8
                 self._registry[idx + 1] = value & 0xff
 
@@ -69,10 +68,9 @@ class Register:
 
             case (
             'flag_z' | 'flag_n' | 'flag_h' | 'flag_c' |
-            "reg_8_a" | "reg_8_f" | "reg_8_b" | "reg_8_c" | "reg_8_d" | "reg_8_e" | "reg_8_h" | "reg_8_l"|
-            "reg_16_af" | "reg_16_bc" | "reg_16_de" | "reg_16_hl" | "reg_16_sp" | "reg_16_pc"):
+            "A" | "F" | "B" | "C" | "D" | "E" | "H" | "L" |
+            "AF" | "BC" | "DE" | "HL" | "SP" | "PC"):
                 raise ValueError(f"Value {value} is too large for {key}")
-
             case _:
                 raise KeyError(f"Invalid key: {key}")
 
