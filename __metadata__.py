@@ -1,6 +1,6 @@
 import colorama
-VERSION = MAJOR, MINOR, DEBUG, DEV = 0, 0, 0, 12
-__version__ = ".".join(map(str, [MAJOR, MINOR, DEBUG])) + ("." + str(DEV) + " DEV" if DEV else " RELEASE")
+VERSION = MAJOR, MINOR, MICRO, DEV = 0, 0, 0, 12
+__version__ = ".".join(map(str, [MAJOR, MINOR, MICRO])) + ("-dev" + str(DEV) if DEV else "-release")
 __authors__ = "Alyce Osbourne", "Boštjan Mejak"
 __github__ = "https://github.com/AlyceOsbourne/GameBoaV2"
 __license__ = "MIT"
