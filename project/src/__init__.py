@@ -1,6 +1,5 @@
 from .gui import MainWindow
-from .system.event_handler import EventHandler
-from .system.events import SystemEvents, GuiEvents, ComponentEvents
+from .system import EventHandler, SystemEvents, GuiEvents, ComponentEvents, load_config, get_value, set_value, save_config
 from .components import register
 
 

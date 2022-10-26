@@ -10,7 +10,7 @@ class Event(Flag):
 
     @staticmethod
     def get_all_events():
-        return (member for subcls in Event.__subclasses__() for member in subcls.__members__.values())
+        return {member.name: member for subcls in Event.__subclasses__() for member in subcls.__members__.values()}
 
 
 class SystemEvents(Event):
@@ -18,6 +18,7 @@ class SystemEvents(Event):
     RomLoaded = auto()
     RomUnloaded = auto()
     HeaderLoaded = auto()
+    SettingsUpdated = auto()
 
 class GuiEvents(Event):
     UnloadRom = auto()
@@ -31,4 +32,4 @@ class ComponentEvents(Event):
     RegisterWrite = auto()
 
 
-print(*Event.get_all_events(), sep="\n")
+print("Loaded Events", *Event.get_all_events(), sep="\n", end="\n\n")

@@ -13,7 +13,6 @@ class Register:
         self._registry = array.array('B', data)
         EventHandler.publish(ComponentEvents.RegisterWrite, self)
 
-
     def __getitem__(self, item):
         match item:
             case "A" | "F" | "B" | "C" | "D" | "E" | "H" | "L":
@@ -25,6 +24,7 @@ class Register:
                 return (self._registry[1] >> (7 - 'ZNCH'.index(item[-1]))) & 1 & 0xff
             case _:
                 raise KeyError(f"Invalid key: {item}")
+
 
     def __setitem__(self, key, value):
         match key:

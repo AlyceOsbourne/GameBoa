@@ -122,6 +122,7 @@ class SettingsWindow(Toplevel):
 
     def save(self):
         save_config()
+        EventHandler.publish(SystemEvents.SettingsUpdated)
         self.destroy()
 
     def cancel(self):

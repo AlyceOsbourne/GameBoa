@@ -3,9 +3,7 @@ import json
 from pathlib import Path
 from typing import NamedTuple
 
-from project.src.system import EventHandler
-
-default_path = Path("../../resources/ops.bin")
+from __paths__ import op_code_path
 
 class Instruction(
     NamedTuple(
@@ -26,7 +24,7 @@ class Instruction(
     """Instructions of the CPU."""
 
     @classmethod
-    def load(cls, file_path:Path) -> dict:
+    def load(cls, file_path:Path = op_code_path) -> dict:
         loaded_instructions: dict = {}
         try:
             json_data = json.loads(gzip.decompress(file_path.read_bytes()).decode())
@@ -50,7 +48,7 @@ class Instruction(
                     op_code_settings.get("operand1", None),
                     op_code_settings.get("operand2", None),
                 )
-
+        print(f"Loaded {sum([len(inst) for inst in loaded_instructions.values()])} instructions.")
         return loaded_instructions
 
     def __str__(self) -> str:
@@ -69,9 +67,3 @@ class Decoder:
 
     def __str__(self):
         return f"{self.instructions} {self.cb_instructions}"
-
-decoder = Decoder(Instruction.load(default_path))
-
-@EventHandler.subscriber('Decode OpCode')
-def decode_op_code(op_code: int, is_cb: bool):
-    EventHandler.publish('Execute Instruction', decoder.decode(op_code, is_cb))

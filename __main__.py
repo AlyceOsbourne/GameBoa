@@ -2,7 +2,7 @@ import argparse
 from build_tools import build
 import pathlib
 from subprocess import call
-
+from __paths__ import test_build_path
 argparser = argparse.ArgumentParser()
 
 argparser.add_argument('--build', action='store_true')
@@ -14,13 +14,12 @@ if args.build:
     build()
 
 elif args.test_build:
-    path = pathlib.Path(__file__).parent / 'build_tools' / 'dist' / 'GameBoa.exe'
-    print(f'Testing build at {path}')
-    if not path.exists():
+    print(f'Testing build at {test_build_path}')
+    if not test_build_path.exists():
         print('Building...')
         build()
 
-    call(str(path), shell=True)
+    call(str(test_build_path), shell=True)
 
 else:
     from project.run import main

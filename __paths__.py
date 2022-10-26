@@ -3,10 +3,10 @@ import pathlib
 import sys
 
 try:
-    # PyInstaller creates a temp folder and stores path in _MEIPASS
-    root = pathlib.Path(sys._MEIPASS)
+    root = pathlib.Path(sys._MEIPASS).parent
     user_dir = pathlib.Path.home() / "GameBoa"
     user_dir.mkdir(exist_ok=True)
+    print("Running from PyInstaller at:", root)
 
 except Exception:
     root = pathlib.Path(__file__).parent
@@ -23,6 +23,9 @@ config_path = config_folder_path / "gameboa.config"
 project_folder = root / "project"
 
 resources = project_folder / "resources"
+
+op_code_path = resources / "ops.bin"
+
 resources_gui = resources / "gui"
 resources_gui_icons = resources_gui / "icons"
 
@@ -35,7 +38,7 @@ build_path = root / "build_tools"
 spec_path = build_path / 'tmp' / 'spec'
 work_path = build_path / 'tmp' / 'work'
 dist_path = build_path / 'dist'
-
+test_build_path = dist_path / 'GameBoa.exe'
 
 
 if __name__ == "__main__":
@@ -59,3 +62,4 @@ if __name__ == "__main__":
         print(path)
         print(path.exists())
         print()
+
