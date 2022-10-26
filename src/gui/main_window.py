@@ -1,7 +1,8 @@
 import tkinter
 from tkinter.ttk import *
-from src.gui.widgets import MenuBarWidget, CartridgeDataWidget, RegistryView
+
 from src.system.paths import ico_path
+from src.gui.widgets import CartridgeDataWidget, MenuBarWidget, RegistryView
 
 
 class MainWindow(tkinter.Tk):
@@ -31,22 +32,40 @@ class MainWindow(tkinter.Tk):
         self.registry_view = RegistryView(self.left_bar)
         self.registry_view.pack(side=tkinter.LEFT, fill=tkinter.Y)
         self.left_bar.add(self.registry_view, text="Registers")
-        self.left_bar_collapse_button = Button(self, text="▶", command=self.toggle_left_bar, width=3)
+        self.left_bar_collapse_button = Button(
+            self, text="▶", command=self.toggle_left_bar, width=3
+        )
         self.left_bar_collapse_button.pack(side=tkinter.LEFT, fill=tkinter.Y)
-        self.left_bar.bind("<B1-Motion>", lambda e: self.left_bar.config(width=self.left_bar.winfo_width() - e.x))
-        self.left_bar.bind("<ButtonRelease-1>", lambda e: self.left_bar.config(width=self.left_bar.winfo_width() - e.x))
+        self.left_bar.bind(
+            "<B1-Motion>",
+            lambda e: self.left_bar.config(width=self.left_bar.winfo_width() - e.x),
+        )
+        self.left_bar.bind(
+            "<ButtonRelease-1>",
+            lambda e: self.left_bar.config(width=self.left_bar.winfo_width() - e.x),
+        )
 
     def make_bottom_bar(self):
         self.bottom_bar = Notebook(self)
         self.bottom_bar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
         self.cartridge_data_tab = CartridgeDataWidget(self.bottom_bar)
         self.bottom_bar.add(self.cartridge_data_tab, text="Cartridge Data")
-        self.bottom_bar_collapse_button = Button(self, text="▼", command=self.toggle_bottom_bar)
+        self.bottom_bar_collapse_button = Button(
+            self, text="▼", command=self.toggle_bottom_bar
+        )
         self.bottom_bar_collapse_button.pack(side=tkinter.BOTTOM, fill=tkinter.X)
-        self.bottom_bar.bind("<B1-Motion>",
-                             lambda e: self.bottom_bar.config(height=self.bottom_bar.winfo_height() - e.y))
-        self.bottom_bar.bind("<ButtonRelease-1>",
-                             lambda e: self.bottom_bar.config(height=self.bottom_bar.winfo_height() - e.y))
+        self.bottom_bar.bind(
+            "<B1-Motion>",
+            lambda e: self.bottom_bar.config(
+                height=self.bottom_bar.winfo_height() - e.y
+            ),
+        )
+        self.bottom_bar.bind(
+            "<ButtonRelease-1>",
+            lambda e: self.bottom_bar.config(
+                height=self.bottom_bar.winfo_height() - e.y
+            ),
+        )
 
     def toggle_bottom_bar(self):
         if self.bottom_bar.winfo_ismapped():
@@ -72,19 +91,3 @@ class MainWindow(tkinter.Tk):
 
     def run(self):
         self.mainloop()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

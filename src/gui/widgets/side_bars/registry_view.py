@@ -1,5 +1,8 @@
-from tkinter import *
+from tkinter import Frame, Text
+from tkinter.constants import BOTH, DISABLED, END, NORMAL, WORD
+
 from src.system import EventHandler, GuiEvents
+
 
 class RegistryView(Frame):
     def __init__(self, parent):
@@ -14,5 +17,3 @@ class RegistryView(Frame):
         self.text.delete(1.0, END)
         self.text.insert(END, data)
         self.text.config(state=DISABLED)
-
-
