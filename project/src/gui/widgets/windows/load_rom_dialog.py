@@ -1,10 +1,6 @@
 import gzip
 from tkinter import filedialog
-
-from src.system import EventHandler
-import gzip
-from tkinter import filedialog
-from src.system.config import get_value
+from project.src.system.config import get_value
 
 def open_load_rom_dialog():
     file = filedialog.askopenfilename(

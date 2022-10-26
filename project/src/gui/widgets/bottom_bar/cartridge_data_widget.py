@@ -1,4 +1,4 @@
-from src.structs.gb_header import HEADER_FORMAT
+from project.src.structs.gb_header import HEADER_FORMAT
 from tkinter import ttk
 
 class CartridgeDataWidget(ttk.Frame):

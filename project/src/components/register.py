@@ -1,8 +1,7 @@
 import array
 from enum import Enum
-from functools import singledispatchmethod
-from typing import NamedTuple, Any
-from src.system import EventHandler, SystemEvents, GuiEvents
+from typing import NamedTuple
+from project.src.system import EventHandler, GuiEvents
 
 class RegisterDefault(NamedTuple('RegisterDefaults', [
     ('af', int),

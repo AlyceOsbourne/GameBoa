@@ -1,5 +1,4 @@
 from tkinter.ttk import Notebook
-from Tkinter import BooleanVar, DoubleVar, IntVar, StringVar
 from tkinter import (
     Entry,
     Frame,
@@ -9,10 +8,15 @@ from tkinter import (
     Toplevel,
     filedialog,
     Checkbutton,
+    BooleanVar,
+    DoubleVar,
+    IntVar,
+    StringVar
 )
 
-from src.system import EventHandler, GuiEvents, SystemEvents
-from src.system.config import (
+from project.src.system.events import SystemEvents, GuiEvents, ComponentEvents
+from project.src.system.event_handler import EventHandler
+from project.src.system.config import (
     sections,
     get_value,
     set_value,
@@ -44,7 +48,7 @@ class SettingsWindow(Toplevel):
             label.grid(row=index, column=0, sticky="w")
             value_type = option_type(section, option)
 
-            if isinstance(value_type, bool):
+            if value_type == bool:
                 value = BooleanVar()
                 value.set(get_value(section, option))
                 value.trace(
@@ -54,7 +58,7 @@ class SettingsWindow(Toplevel):
                     ),
                 )
                 value = Checkbutton(tab, variable=value)
-            elif isinstance(value_type, str):
+            elif value_type == str:
                 value = StringVar()
                 value.set(get_value(section, option))
                 value.trace(
@@ -64,7 +68,7 @@ class SettingsWindow(Toplevel):
                     ),
                 )
                 value = Entry(tab, textvariable=value)
-            elif isinstance(value_type, int):
+            elif value_type == int:
                 value = IntVar()
                 value.set(get_value(section, option))
                 value.trace(
@@ -74,7 +78,7 @@ class SettingsWindow(Toplevel):
                     ),
                 )
                 value = Spinbox(tab, from_=0, to=100, textvariable=value)
-            elif isinstance(value_type, float):
+            elif value_type == float:
                 value = DoubleVar()
                 value.set(get_value(section, option))
                 value.trace(

@@ -62,3 +62,4 @@ for index, line in enumerate(metadata.splitlines()):
 
 print(metadata)
 print(__license_text__)
+

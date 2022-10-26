@@ -1,16 +1,8 @@
 import configparser
 import pathlib
+from __paths__ import local_path, config_folder_path, config_path
 
 config_parser = configparser.ConfigParser()
-
-root_path = pathlib.Path(__file__).parent.parent.parent.absolute()
-
-local_path = root_path / 'local'
-local_path.mkdir(exist_ok=True)
-
-config_folder_path = local_path / "config"
-config_folder_path.mkdir(exist_ok=True)
-config_path = config_folder_path / "gameboa.config"
 
 defaults = {
     "paths" : {
@@ -26,22 +18,24 @@ defaults = {
     'developer': {}
 }
 
+
 def load_config():
-    config_parser.read_dict({
-        section: {
-            key: value[0]
-            for key, value in defaults[section].items()
+    if not config_path.exists():
+        defaults_ = {
+            section: {
+                key: value[0]
+                for key, value in options.items()
+
+            }
+            for section, options in defaults.items()
         }
-        for section in defaults
-    })
-    config_parser.read(config_path)
-    for path in config_parser['paths'].values():
-        path = pathlib.Path(path)
-        path.mkdir(exist_ok=True)
-    config_parser.write(open(config_path, 'w'))
+        config_parser.read_dict(defaults_)
+        save_config()
+    else:
+        config_parser.read(config_path)
 
 def get_value(section, key):
-    if section not in config_parser:
+    if section not in config_parser.sections():
         raise KeyError(f'No section {section} in config')
     if key not in config_parser[section]:
         raise KeyError(f'No key {key} in section {section}')
@@ -78,5 +72,5 @@ def option_type(section, key):
 def save_config():
     config_parser.write(open(config_path, 'w'))
 
-
+load_config()
 

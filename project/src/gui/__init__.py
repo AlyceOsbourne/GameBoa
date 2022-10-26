@@ -1,34 +1,42 @@
 import tkinter
-from tkinter.ttk import *
-from .widgets import MenuBarWidget, CartridgeDataWidget, RegistryView
-from src.system.paths import ico_path
+from tkinter.ttk import Notebook
 
+from .widgets import *
+from .widgets import MenuBarWidget, CartridgeDataWidget, RegistryView
+from __paths__ import ico_path
 
 class MainWindow(tkinter.Tk):
-
-
     bottom_bar: Notebook
-    bottom_bar_collapse_button: Button
+    bottom_bar_collapse_button: tkinter.Button
 
     registry_view: RegistryView
     cartridge_data: CartridgeDataWidget
 
-    def __init__(self):
+    def __init__(
+            self,
+            load_rom_publisher,
+            unload_rom_publisher,
+            quit_program_publisher,
+            open_settings_dialog_publisher,
+            open_about_dialog_publisher
+            ):
         super().__init__()
         self.title("GameBoa")
         self.geometry("800x600")
-        self.iconphoto(True, tkinter.PhotoImage(file=ico_path))
-        self.menu_bar = MenuBarWidget(self)
+        self.iconbitmap(ico_path)
+        self.menu_bar = MenuBarWidget(
+            self, load_rom_publisher, unload_rom_publisher, quit_program_publisher, open_settings_dialog_publisher,
+            open_about_dialog_publisher
+        )
         self.make_bottom_bar()
-
 
     def make_bottom_bar(self):
         self.bottom_bar = Notebook(self, height=150)
         self.bottom_bar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
-        self.bottom_bar_collapse_button = Button(self, text="▼", command=self.toggle_bottom_bar)
+        self.bottom_bar_collapse_button = tkinter.Button(self, text="▼", command=self.toggle_bottom_bar)
         self.cartridge_data_tab = CartridgeDataWidget(self.bottom_bar)
         self.bottom_bar.add(self.cartridge_data_tab, text="Cartridge Data")
-        self.bottom_bar_collapse_button = Button(
+        self.bottom_bar_collapse_button = tkinter.Button(
             self, text="▼", command=self.toggle_bottom_bar
         )
         self.bottom_bar_collapse_button.pack(side=tkinter.BOTTOM, fill=tkinter.X)
@@ -60,19 +68,3 @@ class MainWindow(tkinter.Tk):
             self.bottom_bar_collapse_button.pack_forget()
             self.bottom_bar_collapse_button.pack(side=tkinter.BOTTOM, fill=tkinter.X)
             self.bottom_bar_collapse_button.config(text="▼")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

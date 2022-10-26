@@ -3,8 +3,6 @@ from enum import Flag, auto
 from types import MappingProxyType
 from array import array
 from collections import namedtuple
-from src.system.event_handler import EventHandler
-from src.system.events import SystemEvents
 
 
 class CartType(Flag):

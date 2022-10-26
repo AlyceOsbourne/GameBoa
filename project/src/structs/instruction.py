@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from typing import NamedTuple
 
-from src.system import EventHandler
+from project.src.system import EventHandler
 
 default_path = Path("../system/ops.bin")
 

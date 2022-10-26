@@ -1,8 +1,8 @@
 from tkinter import Frame, Text
 from tkinter.constants import BOTH, DISABLED, END, NORMAL, WORD
 
-from src.system import EventHandler, GuiEvents
-
+from project.src.system.events import SystemEvents, GuiEvents, ComponentEvents
+from project.src.system.event_handler import EventHandler
 
 class RegistryView(Frame):
     def __init__(self, parent):
