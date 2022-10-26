@@ -1,16 +1,24 @@
 import configparser
 import pathlib
-from __paths__ import local_path, config_folder_path, config_path
+import sys
+
+if hasattr(sys, '_MEIPASS'):
+    user_path = pathlib.Path.home() / "GameBoa"
+    user_path.mkdir(exist_ok=True)
+else:
+    user_path = pathlib.Path(pathlib.Path.cwd()) / "local"
+    user_path.mkdir(exist_ok=True)
+
 
 config_parser = configparser.ConfigParser()
 
 defaults = {
     "paths" : {
-        'roms' : (local_path / "roms", str),
-        'saves' : (local_path / "saves", str),
-        'save states': (local_path / "save_states", str),
-        'game configs': (config_folder_path / "game_configs", str),
-        'patch files': (local_path / "patches", str),
+        'roms' : (user_path / "roms", str),
+        'saves' : (user_path / "saves", str),
+        'save states': (user_path / "save_states", str),
+        'game configs': (user_path / "game_configs", str),
+        'patch files': (user_path / "patches", str),
     },
     "video" : {},
     "sound": {},
@@ -31,7 +39,7 @@ def load_config():
     for section, options in defaults.items()
 }
     config_parser.read_dict(defaults_)
-    config_parser.read(config_path)
+    config_parser.read(user_path / "gameboa.config")
     save_config()
 
     for path in config_parser['paths'].values():
@@ -73,7 +81,7 @@ def option_type(section, key):
     return defaults[section][key][1]
 
 def save_config():
-    config_parser.write(open(config_path, 'w'))
+    config_parser.write(open(user_path / "gameboa.config", 'w'))
 
 load_config()
 

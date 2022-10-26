@@ -3,7 +3,6 @@ import json
 from pathlib import Path
 from typing import NamedTuple
 
-from __paths__ import op_code_path
 
 class Instruction(
     NamedTuple(
@@ -24,7 +23,7 @@ class Instruction(
     """Instructions of the CPU."""
 
     @classmethod
-    def load(cls, file_path:Path = op_code_path) -> dict:
+    def load(cls, file_path:Path) -> dict:
         loaded_instructions: dict = {}
         try:
             json_data = json.loads(gzip.decompress(file_path.read_bytes()).decode())

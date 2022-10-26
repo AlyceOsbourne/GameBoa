@@ -3,7 +3,6 @@ from tkinter.ttk import Notebook
 import sys
 from .widgets import *
 from .widgets import MenuBarWidget, CartridgeDataWidget, RegistryView, open_load_rom_dialog, open_settings_dialog
-from __paths__ import ico_path
 from project.src.system.config import get_value
 from project.src.system.event_handler import EventHandler
 from project.src.system.events import SystemEvents, GuiEvents, ComponentEvents
@@ -19,8 +18,6 @@ class MainWindow(tkinter.Tk):
     def __init__(self):
         super().__init__()
         self.geometry("800x600")
-        if not hasattr(sys, '_MEIPASS'):
-            self.iconbitmap(ico_path)
         self.menu_bar = MenuBarWidget(self)
         self.make_bottom_bar()
         EventHandler.subscribe(SystemEvents.SettingsUpdated, self.update_dev_view)
