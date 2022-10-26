@@ -24,7 +24,7 @@ class MenuBarWidget(Frame):
         menubar.add_cascade(label="Edit", menu=edit_menu)
 
         help_menu = Menu(menubar, tearoff=0)
-        help_menu.add_command(label="About", command=lambda: EventHandler.publish(GuiEvents.OpenAboutDialog))
+        help_menu.add_command(label="About", command=lambda: EventHandler.publish(GuiEvents.OpenAboutDialog, self.parent))
         menubar.add_cascade(label="Help", menu=help_menu)
 
 

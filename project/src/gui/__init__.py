@@ -18,12 +18,13 @@ class MainWindow(tkinter.Tk):
 
     def __init__(self):
         super().__init__()
-        self.title("GameBoa")
         self.geometry("800x600")
         if not hasattr(sys, '_MEIPASS'):
             self.iconbitmap(ico_path)
         self.menu_bar = MenuBarWidget(self)
         self.make_bottom_bar()
+        EventHandler.subscribe(SystemEvents.SettingsUpdated, self.update_dev_view)
+        self.update_dev_view()
 
     def make_bottom_bar(self):
         self.bottom_bar = Notebook(self, height=150)
@@ -38,7 +39,6 @@ class MainWindow(tkinter.Tk):
         )
         self.bottom_bar_collapse_button.pack(side=tkinter.BOTTOM, fill=tkinter.X)
         self.toggle_bottom_bar()
-        EventHandler.subscribe(SystemEvents.SettingsUpdated, self.toggle_bottom_bar)
 
     def toggle_bottom_bar(self):
         if get_value('developer', 'debug'):
@@ -61,7 +61,16 @@ class MainWindow(tkinter.Tk):
             self.bottom_bar_collapse_button.pack(side=tkinter.BOTTOM, fill=tkinter.X)
             self.bottom_bar_collapse_button.config(text="▼")
 
+    def update_title_bar(self):
+        # if debug mode is enabled, set title bar to GameBoa (debug)
+        if get_value('developer', 'debug'):
+            self.title("GameBoa (debug)")
+        else:
+            self.title("GameBoa")
 
+    def update_dev_view(self):
+        self.update_title_bar()
+        self.toggle_bottom_bar()
 
     def show(self):
         self.mainloop()
