@@ -17,9 +17,10 @@ class SystemEvents(Event):
     SaveSettings = auto()
 
 class GuiEvents(Event):
+    UnloadRom = auto()
     OpenLoadRomDialog = auto()
-    OpenSettings = auto()
-    OpenAbout = auto()
+    OpenSettingsDialog = auto()
+    OpenAboutDialog = auto()
     RequestRegisterStatus = auto
     UpdateRegisterView = auto()
 
