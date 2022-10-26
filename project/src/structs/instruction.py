@@ -5,7 +5,7 @@ from typing import NamedTuple
 
 from project.src.system import EventHandler
 
-default_path = Path("../system/ops.bin")
+default_path = Path("../../resources/ops.bin")
 
 class Instruction(
     NamedTuple(

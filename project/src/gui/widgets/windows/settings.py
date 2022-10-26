@@ -22,6 +22,7 @@ from project.src.system.config import (
     set_value,
     option_type,
     save_config,
+    load_config,
     section_options,
 )
 
@@ -33,6 +34,10 @@ class SettingsWindow(Toplevel):
         self.geometry("500x500")
         self.tabs = Notebook(self)
         self.create_tabs(self.tabs)
+        self.save_button = Button(self, text="Save", command=self.save)
+        self.save_button.pack(side="right", padx=5, pady=5)
+        self.cancel_button = Button(self, text="Cancel", command=self.cancel)
+        self.cancel_button.pack(side="right", padx=5, pady=5)
 
     def create_tabs(self, tabs):
         for section in sections():
@@ -41,6 +46,7 @@ class SettingsWindow(Toplevel):
             tabs.add(tab, text=section)
 
         tabs.pack(expand=1, fill="both")
+        tabs.pack_configure(padx=5, pady=5, ipadx=5, ipady=5)
 
     def create_tab(self, tab, section):
         for index, option in enumerate(section_options(section)):
@@ -68,6 +74,7 @@ class SettingsWindow(Toplevel):
                     ),
                 )
                 value = Entry(tab, textvariable=value)
+                value.config(width=50)
             elif value_type == int:
                 value = IntVar()
                 value.set(get_value(section, option))
@@ -90,9 +97,8 @@ class SettingsWindow(Toplevel):
                 value = Spinbox(tab, from_=0.0, to=100.0, textvariable=value)
             else:
                 raise TypeError(f"Invalid type for option: {option}")
-
-            value.grid(row=index, column=1, columnspan=3, sticky="w", padx=5)
-
+            value.grid(row=index, column=1, columnspan=3, padx=5)
+            value.grid_configure(ipadx=20, ipady=10)
             if section == "paths":
                 button = Button(
                     tab,
@@ -103,22 +109,23 @@ class SettingsWindow(Toplevel):
                 )
                 button.grid(row=index, column=4, sticky="w", columnspan=2)
 
-    def browse(self, section, option, value):
+    def browse(self, section, option, value:Entry):
         if option == "roms":
             file = filedialog.askdirectory(initialdir=get_value(section, option))
         else:
             file = filedialog.askopenfilename(initialdir=get_value(section, option))
 
         if file:
-            value.set(file)
+            value.delete(0, "end")
+            value.insert(0, file)
             set_value(section, option, file)
 
     def save(self):
         save_config()
-        EventHandler.publish(SystemEvents.SaveSettings)
         self.destroy()
 
     def cancel(self):
+        load_config()
         self.destroy()
 
 

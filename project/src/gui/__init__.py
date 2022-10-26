@@ -1,6 +1,6 @@
 import tkinter
 from tkinter.ttk import Notebook
-
+import sys
 from .widgets import *
 from .widgets import MenuBarWidget, CartridgeDataWidget, RegistryView
 from __paths__ import ico_path
@@ -10,24 +10,15 @@ class MainWindow(tkinter.Tk):
     bottom_bar_collapse_button: tkinter.Button
 
     registry_view: RegistryView
-    cartridge_data: CartridgeDataWidget
+    cartridge_data_tab: CartridgeDataWidget
 
-    def __init__(
-            self,
-            load_rom_publisher,
-            unload_rom_publisher,
-            quit_program_publisher,
-            open_settings_dialog_publisher,
-            open_about_dialog_publisher
-            ):
+    def __init__(self, menu_bar_publishers):
         super().__init__()
         self.title("GameBoa")
         self.geometry("800x600")
-        self.iconbitmap(ico_path)
-        self.menu_bar = MenuBarWidget(
-            self, load_rom_publisher, unload_rom_publisher, quit_program_publisher, open_settings_dialog_publisher,
-            open_about_dialog_publisher
-        )
+        if not hasattr(sys, '_MEIPASS'):
+            self.iconbitmap(ico_path)
+        self.menu_bar = MenuBarWidget(self, *menu_bar_publishers)
         self.make_bottom_bar()
 
     def make_bottom_bar(self):

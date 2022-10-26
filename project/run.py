@@ -11,17 +11,20 @@ open_about_dialog_publisher = partial(EventHandler.publish, GuiEvents.OpenAboutD
 unload_rom_publisher = partial(EventHandler.publish, GuiEvents.UnloadRom)
 quit_program_publisher = partial(EventHandler.publish, SystemEvents.Quit)
 
+menu_bar_publishers = (open_load_rom_dialog_publisher,
+                        unload_rom_publisher,
+                        quit_program_publisher,
+                        open_settings_dialog_publisher,
+                        open_about_dialog_publisher)
+
 main_window = MainWindow(
-    open_load_rom_dialog_publisher,
-    unload_rom_publisher,
-    quit_program_publisher,
-    open_settings_dialog_publisher,
-    open_about_dialog_publisher
+    menu_bar_publishers
 )
 
 EventHandler.subscribe(SystemEvents.Quit, main_window.destroy)
 EventHandler.subscribe(GuiEvents.OpenLoadRomDialog, open_load_rom_dialog)
 EventHandler.subscribe(GuiEvents.OpenSettingsDialog, lambda: open_settings_dialog(main_window))
+EventHandler.subscribe(GuiEvents.UpdateRegisterView, main_window.registry_view.update_view)
 
 
 def main():

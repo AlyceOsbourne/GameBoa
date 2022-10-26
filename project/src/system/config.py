@@ -15,24 +15,27 @@ defaults = {
     "video" : {},
     "sound": {},
     'input': {},
-    'developer': {}
+    'developer': {
+        'debug': (False, bool),
+    }
 }
 
 
 def load_config():
-    if not config_path.exists():
-        defaults_ = {
-            section: {
-                key: value[0]
-                for key, value in options.items()
+    defaults_ = {
+    section: {
+        key: value[0]
+        for key, value in options.items()
 
-            }
-            for section, options in defaults.items()
-        }
-        config_parser.read_dict(defaults_)
-        save_config()
-    else:
-        config_parser.read(config_path)
+    }
+    for section, options in defaults.items()
+}
+    config_parser.read_dict(defaults_)
+    config_parser.read(config_path)
+    save_config()
+
+    for path in config_parser['paths'].values():
+        pathlib.Path(path).mkdir(parents=True, exist_ok=True)
 
 def get_value(section, key):
     if section not in config_parser.sections():

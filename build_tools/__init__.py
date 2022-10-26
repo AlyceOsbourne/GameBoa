@@ -10,19 +10,22 @@ def build():
     installer.run(
         [
             run_path.as_posix(),
-            f'--icon={str(ico_path)}',
-            f'--add-data={str(src_path)} ;src',
-            f'--add-data={str(resources)} ;resources',
-            f'--name=GameBoa v{__version__}',
+
+            f'--name=GameBoa',
+            f'--icon={str(ico_path.as_posix())}',
             f'--specpath={str(spec_path)}',
             f'--distpath={str(dist_path)}',
             f'--workpath={str(work_path)}',
-            '--log-level=DEBUG',
-            '--debug=all',
+            # '--log-level=DEBUG',
+            # '--debug=all',
             '--clean',
             '--noconfirm',
             '--onefile',
-            '--windowed',
+            # '--windowed',
+            *[
+                f'--add-data={path.as_posix()};{path.parent.name}'
+                for path in resources.rglob("*")
+            ]
         ]
     )
 
