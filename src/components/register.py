@@ -1,6 +1,8 @@
 import array
 from enum import Enum
-from typing import NamedTuple
+from functools import singledispatchmethod
+from typing import NamedTuple, Any
+from src.system import EventHandler, SystemEvents, GuiEvents
 
 RegisterDefault = NamedTuple('RegisterDefaults', [
     ('af', int),
@@ -32,12 +34,24 @@ class CGBModelRegisterDefaults(RegisterDefaults):
 
 
 class Register:
+    _registry: array.array
 
-    # works like a slimmed down, array backed dict,
-    # but the keys are also variables of the class kinda like a named tuple
+    @singledispatchmethod
+    def __init__(self, data):
+        raise NotImplementedError
 
-    def __init__(self, registry: array.array = None):
-        self._registry = registry if registry else array.array('B', [0] * 12)
+    @__init__.register(bytes)
+    def from_bytes(self, data):
+        """Creates a new register from the given bytes."""
+        self._registry = array.array('B', data)
+
+    @__init__.register(array.array)
+    def from_array(self, registry: array.array):
+        self._registry = registry
+
+    @__init__.register(RegisterDefaults)
+    def from_defaults(self, defaults: RegisterDefault):
+        self._registry = array.array('B', defaults)
 
 
     def __getitem__(self, item):
@@ -73,6 +87,7 @@ class Register:
                 raise ValueError(f"Value {value} is too large for {key}")
             case _:
                 raise KeyError(f"Invalid key: {key}")
+        EventHandler.publish(GuiEvents.UpdateRegisterView, str(self))
 
     def __getattr__(self, item):
         try:
@@ -108,15 +123,4 @@ class Register:
         """Converts the register to bytes."""
         return self._registry.tobytes()
 
-    @classmethod
-    def from_bytes(cls, data: bytes):
-        """Creates a new register from the given bytes."""
-        return cls(array.array('B', data))
 
-    @classmethod
-    def from_default(cls, default: RegisterDefaults):
-        """Creates a new register with default values."""
-        register = cls()
-        for k, v in default._asdict().items():
-            register[f"reg_16_{k}"] = v
-        return register

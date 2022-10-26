@@ -4,5 +4,5 @@ main_window = MainWindow()
 
 
 if __name__ == '__main__':
-    main_window.mainloop()
+    main_window.run()
 

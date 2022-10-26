@@ -21,3 +21,4 @@ class SystemEvents(Event):
 class GuiEvents(Event):
     OpenSettings = auto()
     OpenAbout = auto()
+    UpdateRegisterView = auto()
