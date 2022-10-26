@@ -1,51 +1,18 @@
 import array
-from enum import Enum
-from typing import NamedTuple
-from project.src.system import EventHandler, GuiEvents
 
-class RegisterDefault(NamedTuple('RegisterDefaults', [
-    ('af', int),
-    ('bc', int),
-    ('de', int),
-    ('hl', int),
-    ('sp', int),
-    ('pc', int),
-])):
-    def array(self):
-        byte_array = array.array('B')
-        for value in self:
-            byte_array.append(value >> 8)
-            byte_array.append(value & 0xFF)
-        return byte_array
-
-
-class RegisterDefaults(RegisterDefault, Enum):
-    ...
-
-
-class DMGModelRegisterDefaults(RegisterDefaults):
-    DMG = 0x01B0, 0x0013, 0x00D8, 0x014D, 0xFFFE, 0x0100
-    MGB = 0xFFB0, 0x0013, 0x00D8, 0x014D, 0xFFFE, 0x0100
-    SGB = 0x0100, 0x0014, 0x0000, 0x060C, 0xFFFE, 0x0100
-    CGB = 0x1180, 0x0000, 0x0008, 0x007C, 0xFFFE, 0x0100
-    AGB = 0x1100, 0x0100, 0x0008, 0x007C, 0xFFFE, 0x0100
-    AGS = 0x1100, 0x0100, 0x0008, 0x007C, 0xFFFE, 0x0100
-
-
-class CGBModelRegisterDefaults(RegisterDefaults):
-    CGB = 0x1180, 0x0000, 0xFF56, 0x000D, 0xFFFE, 0x0100
-    AGB = 0x1100, 0x0100, 0xFF56, 0x000D, 0xFFFE, 0x0100
-    AGS = 0x1100, 0x0100, 0xFF56, 0x000D, 0xFFFE, 0x0100
+from project.src.system.event_handler import EventHandler
+from project.src.system.events import ComponentEvents
 
 
 class Register:
     _registry: array.array
 
-    def __init__(self, data = None):
+    def __init__(self, data=None):
         if data is None:
-            data = DMGModelRegisterDefaults.DMG.array()
+            data = [0] * 12
         self._registry = array.array('B', data)
-        EventHandler.subscribe(GuiEvents.RequestRegisterStatus, self.update_register_view)
+        EventHandler.publish(ComponentEvents.RegisterWrite, self)
+
 
     def __getitem__(self, item):
         match item:
@@ -81,7 +48,7 @@ class Register:
             case _:
                 raise KeyError(f"Invalid key: {key}")
 
-        EventHandler.publish(GuiEvents.UpdateRegisterView, str(self))
+        EventHandler.publish(ComponentEvents.RegisterWrite, str(self))
 
     def __getattr__(self, item):
         try:
@@ -120,8 +87,5 @@ class Register:
         """Converts the register to bytes."""
         return self._registry.tobytes()
 
-
-    def update_register_view(self):
-        EventHandler.publish(GuiEvents.UpdateRegisterView)
 
 

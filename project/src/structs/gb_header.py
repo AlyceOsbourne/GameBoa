@@ -3,7 +3,8 @@ from enum import Flag, auto
 from types import MappingProxyType
 from array import array
 from collections import namedtuple
-
+from project.src.system.event_handler import EventHandler
+from project.src.system.events import SystemEvents, GuiEvents, ComponentEvents
 
 class CartType(Flag):
     RAM = auto()
@@ -334,7 +335,8 @@ def calculate_checksum(compare, rom):
         checksum = checksum - rom[i] - 1
     return checksum & 0xFF == compare
 
-
+@EventHandler.subscriber(SystemEvents.RomLoaded)
+@EventHandler.publisher(SystemEvents.HeaderLoaded)
 def get_header_data(rom: array):
     mapping = {
         k: v for k, v in zip(

@@ -12,14 +12,14 @@ def build():
             run_path.as_posix(),
 
             f'--name=GameBoa',
-            f'--icon={str(ico_path.as_posix())}',
+            f'--icon={ico_path.as_posix()}',
             f'--specpath={str(spec_path)}',
             f'--distpath={str(dist_path)}',
             f'--workpath={str(work_path)}',
             # '--log-level=DEBUG',
             # '--debug=all',
             '--clean',
-            '--noconfirm',
+            # '--noconfirm',
             '--onefile',
             # '--windowed',
             *[

@@ -1,5 +1,5 @@
-def CPU():
-    return None
+class CPU:
+    ...
 
 
 class CPUState:

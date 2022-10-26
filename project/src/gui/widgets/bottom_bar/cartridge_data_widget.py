@@ -1,5 +1,9 @@
-from project.src.structs.gb_header import HEADER_FORMAT
 from tkinter import ttk
+
+from project.src.structs.gb_header import HEADER_FORMAT
+from project.src.system.event_handler import EventHandler
+from project.src.system.events import SystemEvents
+
 
 class CartridgeDataWidget(ttk.Frame):
     def __init__(self, parent):
@@ -12,6 +16,8 @@ class CartridgeDataWidget(ttk.Frame):
             label.grid(row=i // 7 * 2, column=i % 7 * 2, sticky= 'w')
             value.grid(row=i // 7 * 2 + 1, column=i % 7 * 2, sticky= 'w')
             setattr(self, attr + "_value", value)
+
+        EventHandler.subscribe(SystemEvents.HeaderLoaded, self.update_data)
 
     def update_data(self, header_data):
         header_data = header_data._asdict()

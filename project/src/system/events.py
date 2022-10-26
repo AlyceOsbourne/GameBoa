@@ -28,7 +28,7 @@ class GuiEvents(Event):
     UpdateRegisterView = auto()
 
 class ComponentEvents(Event):
-    ...
+    RegisterWrite = auto()
 
 
 print(*Event.get_all_events(), sep="\n")

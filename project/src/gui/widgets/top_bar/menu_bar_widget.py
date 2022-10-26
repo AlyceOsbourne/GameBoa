@@ -1,37 +1,30 @@
 from tkinter import *
+from project.src.system.event_handler import EventHandler
+from project.src.system.events import GuiEvents, SystemEvents
 
 class MenuBarWidget(Frame):
     def __init__(
-            self,
-            parent,
-            load_rom_publisher,
-            unload_rom_publisher,
-            quit_program_publisher,
-            open_settings_dialog_publisher,
-            open_about_dialog_publisher
-    ):
+            self,parent,):
         Frame.__init__(self, parent)
         self.parent = parent
-        self.init_ui(load_rom_publisher, unload_rom_publisher, quit_program_publisher, open_settings_dialog_publisher,
-                     open_about_dialog_publisher)
+        self.init_ui()
 
-    def init_ui(self, load_rom_publisher, unload_rom_publisher, quit_program_publisher, open_settings_dialog_publisher,
-                open_about_dialog_publisher):
+    def init_ui(self):
         menubar = Menu(self.parent)
         self.parent.config(menu=menubar)
 
         file_menu = Menu(menubar, tearoff=0)
-        file_menu.add_command(label="Load Rom", command=load_rom_publisher)
-        file_menu.add_command(label="Unload Rom", command=unload_rom_publisher)
-        file_menu.add_command(label="Exit", command=quit_program_publisher)
+        file_menu.add_command(label="Load Rom", command=lambda: EventHandler.publish(GuiEvents.OpenLoadRomDialog))
+        file_menu.add_command(label="Unload Rom", command=lambda: EventHandler.publish(GuiEvents.UnloadRom))
+        file_menu.add_command(label="Exit", command=lambda: EventHandler.publish(SystemEvents.Quit))
         menubar.add_cascade(label="File", menu=file_menu)
 
         edit_menu = Menu(menubar, tearoff=0)
-        edit_menu.add_command(label="Settings", command=open_settings_dialog_publisher)
+        edit_menu.add_command(label="Settings", command=lambda: EventHandler.publish(GuiEvents.OpenSettingsDialog, self.parent))
         menubar.add_cascade(label="Edit", menu=edit_menu)
 
         help_menu = Menu(menubar, tearoff=0)
-        help_menu.add_command(label="About", command=open_about_dialog_publisher)
+        help_menu.add_command(label="About", command=lambda: EventHandler.publish(GuiEvents.OpenAboutDialog))
         menubar.add_cascade(label="Help", menu=help_menu)
 
 
