@@ -1,12 +1,6 @@
-from PySide6.QtWidgets import QApplication
-
-from src.gui.main_window import MainWindow
+from src import main_window
 
 
-if __name__ == "__main__":
-    app = QApplication()
+if __name__ == '__main__':
+    main_window.mainloop()
 
-    main_window = MainWindow()
-    main_window.show()
-
-    app.exec()

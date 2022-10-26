@@ -4,14 +4,20 @@ from functools import singledispatchmethod
 from typing import NamedTuple, Any
 from src.system import EventHandler, SystemEvents, GuiEvents
 
-RegisterDefault = NamedTuple('RegisterDefaults', [
+class RegisterDefault(NamedTuple('RegisterDefaults', [
     ('af', int),
     ('bc', int),
     ('de', int),
     ('hl', int),
     ('sp', int),
     ('pc', int),
-])
+])):
+    def array(self):
+        byte_array = array.array('B')
+        for value in self:
+            byte_array.append(value >> 8)
+            byte_array.append(value & 0xFF)
+        return byte_array
 
 
 class RegisterDefaults(RegisterDefault, Enum):
@@ -36,23 +42,11 @@ class CGBModelRegisterDefaults(RegisterDefaults):
 class Register:
     _registry: array.array
 
-    @singledispatchmethod
-    def __init__(self, data):
-        raise NotImplementedError
-
-    @__init__.register(bytes)
-    def from_bytes(self, data):
-        """Creates a new register from the given bytes."""
+    def __init__(self, data = None):
+        if data is None:
+            data = DMGModelRegisterDefaults.DMG.array()
         self._registry = array.array('B', data)
-
-    @__init__.register(array.array)
-    def from_array(self, registry: array.array):
-        self._registry = registry
-
-    @__init__.register(RegisterDefaults)
-    def from_defaults(self, defaults: RegisterDefault):
-        self._registry = array.array('B', defaults)
-
+        EventHandler.subscribe(GuiEvents.RequestRegisterStatus, self.update_register_view)
 
     def __getitem__(self, item):
         match item:
@@ -87,6 +81,7 @@ class Register:
                 raise ValueError(f"Value {value} is too large for {key}")
             case _:
                 raise KeyError(f"Invalid key: {key}")
+
         EventHandler.publish(GuiEvents.UpdateRegisterView, str(self))
 
     def __getattr__(self, item):
@@ -111,16 +106,23 @@ class Register:
 
     def __str__(self):
         output = "Register(\n"
-        output += f"    A: 0x{self['reg_8_a']:02x}, F: 0x{self['reg_8_d']:02x}, AF: 0x{self['reg_16_af']:04x}\n"
-        output += f"    B: 0x{self['reg_8_b']:02x}, C: 0x{self['reg_8_c']:02x}, BC: 0x{self['reg_16_bc']:04x}\n"
-        output += f"    D: 0x{self['reg_8_d']:02x}, E: 0x{self['reg_8_e']:02x}, DE: 0x{self['reg_16_de']:04x}\n"
-        output += f"    H: 0x{self['reg_8_h']:02x}, L: 0x{self['reg_8_l']:02x}, HL: 0x{self['reg_16_hl']:04x}\n"
-        output += f"    SP: 0x{self['reg_16_sp']:04x}, PC: 0x{self['reg_16_pc']:04x}\n"
-        output += f"    Z: {self['flag_z'] >> 7 & 1}, N: {self['flag_n'] >> 6 & 1}, H: {self['flag_h'] >> 5 & 1}, C: {self['flag_c'] >> 4 & 1}\n"
+        output += f"    A: 0x{self['A']:02x}, F: 0x{self['F']:02x}, AF: 0x{self['AF']:04x}\n"
+        output += f"    B: 0x{self['B']:02x}, C: 0x{self['C']:02x}, BC: 0x{self['BC']:04x}\n"
+        output += f"    D: 0x{self['D']:02x}, E: 0x{self['E']:02x}, DE: 0x{self['DE']:04x}\n"
+        output += f"    H: 0x{self['H']:02x}, L: 0x{self['L']:02x}, HL: 0x{self['HL']:04x}\n"
+        output += f"    SP: 0x{self['SP']:04x}, PC: 0x{self['PC']:04x}\n"
+        output += f"    Z: {self['FZ'] >> 7 & 1}, " \
+                  f"N: {self['FN'] >> 6 & 1}, " \
+                  f"H: {self['FH'] >> 5 & 1}, " \
+                  f"C: {self['FC'] >> 4 & 1}\n"
         return output + ")"
 
     def to_bytes(self) -> bytes:
         """Converts the register to bytes."""
         return self._registry.tobytes()
+
+
+    def update_register_view(self):
+        EventHandler.publish(GuiEvents.UpdateRegisterView)
 
 

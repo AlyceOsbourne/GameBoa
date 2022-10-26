@@ -1,7 +1,4 @@
-# main file bar for the window
 from tkinter import *
-from src.system.event_handler import EventHandler
-from src.system import SystemEvents, GuiEvents
 
 
 class MenuBarWidget(Frame):
@@ -15,17 +12,34 @@ class MenuBarWidget(Frame):
         self.parent.config(menu=menubar)
 
         file_menu = Menu(menubar, tearoff=0)
-        file_menu.add_command(label="Load Rom", command=lambda: EventHandler.publish(SystemEvents.LoadRom))
-        file_menu.add_command(label="Unload Rom", command=lambda: EventHandler.publish(SystemEvents.UnloadRom))
-        file_menu.add_command(label="Exit", command=lambda: EventHandler.publish(SystemEvents.Quit))
+        file_menu.add_command(label="Load Rom", command=self.on_load_rom)
+        file_menu.add_command(label="Unload Rom", command=lambda: self.on_unload_rom)
+        file_menu.add_command(label="Exit", command=lambda: self.on_exit)
         menubar.add_cascade(label="File", menu=file_menu)
 
         edit_menu = Menu(menubar, tearoff=0)
-        edit_menu.add_command(label="Settings", command=lambda: EventHandler.publish(GuiEvents.OpenSettings, self.parent))
+        edit_menu.add_command(label="Settings", command=lambda: self.on_settings)
         menubar.add_cascade(label="Edit", menu=edit_menu)
 
         help_menu = Menu(menubar, tearoff=0)
-        help_menu.add_command(label="About", command=lambda: EventHandler.publish('OpenAbout'))
+        help_menu.add_command(label="About", command=lambda: self.on_about)
         menubar.add_cascade(label="Help", menu=help_menu)
+
+    def on_load_rom(self):
+        print("load rom")
+
+    def on_unload_rom(self):
+        print("unload rom")
+
+    def on_exit(self):
+        print("exit")
+
+    def on_settings(self):
+        print("settings")
+
+    def on_about(self):
+        print("about")
+
+
 
 

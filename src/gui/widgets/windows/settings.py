@@ -118,6 +118,5 @@ class SettingsWindow(Toplevel):
         self.destroy()
 
 
-@EventHandler.subscriber(GuiEvents.OpenSettings)
-def open_settings(parent):
+def open_settings_dialog(parent):
     SettingsWindow(parent).mainloop()

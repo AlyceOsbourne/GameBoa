@@ -10,8 +10,6 @@ class Event(Flag):
 
 class SystemEvents(Event):
     Quit = auto()
-    LoadRom = auto()
-    UnloadRom = auto()
     RomLoaded = auto()
     RomUnloaded = auto()
     HeaderLoaded = auto()
@@ -19,6 +17,13 @@ class SystemEvents(Event):
     SaveSettings = auto()
 
 class GuiEvents(Event):
+    OpenLoadRomDialog = auto()
     OpenSettings = auto()
     OpenAbout = auto()
+    RequestRegisterStatus = auto
     UpdateRegisterView = auto()
+
+class ComponentEvents(Event):
+    UpdateRegister = auto()
+    UpdateMemory = auto()
+    UpdateStack = auto()
