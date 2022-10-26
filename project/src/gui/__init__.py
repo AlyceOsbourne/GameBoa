@@ -6,7 +6,7 @@ from .widgets import MenuBarWidget, CartridgeDataWidget, RegistryView, open_load
 from project.src.system.config import get_value
 from project.src.system.event_handler import EventHandler
 from project.src.system.events import SystemEvents, GuiEvents, ComponentEvents
-
+from project.src.system import ico_path
 
 class MainWindow(tkinter.Tk):
     bottom_bar: Notebook
@@ -18,6 +18,7 @@ class MainWindow(tkinter.Tk):
     def __init__(self):
         super().__init__()
         self.geometry("800x600")
+        self.iconbitmap(ico_path)
         self.menu_bar = MenuBarWidget(self)
         self.make_bottom_bar()
         EventHandler.subscribe(SystemEvents.SettingsUpdated, self.update_dev_view)
