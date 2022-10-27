@@ -1,6 +1,6 @@
 <p align="center"><img src="./project/resources/gui/icons/icon.png" width=20% align="center"></p><br>
 <h1 align="center">GameBoa</h1><br>
-___
+
 
 GameBoa is a heavily WIP Game Boy Emulator written in Python.
 
@@ -22,4 +22,3 @@ GameBoa is a heavily WIP Game Boy Emulator written in Python.
 - [ ] Save State Support
 - [ ] Link Cable Support
 - [ ] Neural Network Support
-___
