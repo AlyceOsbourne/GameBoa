@@ -48,7 +48,7 @@ class RomLibrary(Frame):
     def load_rom(self):
         if self.rom_list.curselection():
             rom = self.roms[self.rom_list.curselection()[0]]
-            EventHandler.publish(GuiEvents.LoadRomFromlibrary, rom)
+            EventHandler.publish(GuiEvents.LoadRomFromLibrary, rom)
 
     def delete_rom(self):# add confirmation
         if messagebox.askyesno("Delete rom", "Are you sure you want to delete this rom?"):

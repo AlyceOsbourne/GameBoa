@@ -1,7 +1,8 @@
 import tkinter
 from tkinter.ttk import Notebook
-from project.src.system import get_value, EventHandler, SystemEvents, ico_path
+from project.src.system import get_value, EventHandler, SystemEvents, GuiEvents, ico_path
 from .widgets import *
+
 
 
 class MainWindow(tkinter.Tk):
@@ -22,6 +23,7 @@ class MainWindow(tkinter.Tk):
         self.rom_listbox.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
         self.canvas = tkinter.Canvas(self, width=800, height=600)
 
+        EventHandler.subscribe(GuiEvents.WindowShow, self.show)
         EventHandler.subscribe(SystemEvents.SettingsUpdated, self.update_dev_view)
         EventHandler.subscribe(SystemEvents.Quit, self.destroy)
 
@@ -81,3 +83,6 @@ class MainWindow(tkinter.Tk):
             EventHandler.publish(SystemEvents.ExceptionRaised, e)
             raise e
 
+__all__ = [
+    'MainWindow'
+]

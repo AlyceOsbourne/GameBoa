@@ -19,6 +19,6 @@ def open_load_rom_dialog():
     )
 
     if file:
-        EventHandler.publish(GuiEvents.LoadRomFromlibrary, file)
+        EventHandler.publish(GuiEvents.LoadRomFromLibrary, file)
 
 

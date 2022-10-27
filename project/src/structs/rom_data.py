@@ -1,11 +1,15 @@
 import zipfile
 from pathlib import Path
 
-from project.src.system.event_handler import EventHandler
-from project.src.system.events import GuiEvents, SystemEvents
+from project.src.system import (
+    EventHandler,
+    GuiEvents,
+    SystemEvents,
+    ComponentEvents
+)
 
 
-@EventHandler.subscriber(GuiEvents.LoadRomFromlibrary)
+@EventHandler.subscriber(GuiEvents.LoadRomFromLibrary)
 def load_rom_data(file:Path|str):
     allowed_suffixes = (".gb", ".gbc", ".zip")
 
@@ -31,4 +35,4 @@ def load_rom_data(file:Path|str):
     else:
         with open(file, "rb") as rom_file:
             rom_data = rom_file.read()
-    EventHandler.publish(SystemEvents.RomLoaded, rom_data)
+    EventHandler.publish(ComponentEvents.RomLoaded, rom_data)

@@ -85,3 +85,12 @@ def save_config():
 
 load_config()
 
+__all__ = [
+    'load_config',
+    'get_value',
+    'set_value',
+    'save_config',
+    'sections',
+    'section_options',
+    'option_type',
+]

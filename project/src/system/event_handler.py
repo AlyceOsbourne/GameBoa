@@ -1,6 +1,5 @@
 from enum import IntFlag
 from typing import Callable, Any, List, Tuple, Dict
-
 Event = Any
 Callback = Callable[..., Any]
 CallbackList = List[Tuple[int, Callback]]
@@ -17,11 +16,12 @@ class EventHandler:
     publisher_subscribers: Callbacks = dict()
 
     @classmethod
+    def register(cls, event: Event):
+        return cls.publisher_subscribers.setdefault(event, [])
+
+    @classmethod
     def subscribe(cls, event: Event, callback: Callback, priority: Priority = Priority.MEDIUM) -> None:
-        # this feels very slow, though, shouldn't be called very often, I think, so it's probably fine
-        if event not in cls.publisher_subscribers:
-            cls.publisher_subscribers[event] = []
-        subs = cls.publisher_subscribers[event]
+        subs = cls.register(event)
         subs.append((priority, callback))
         subs.sort(key=lambda x: x[0], reverse=True)
 
@@ -30,10 +30,10 @@ class EventHandler:
         if event in cls.publisher_subscribers:
             subs = cls.publisher_subscribers[event]
             print(f"Publishing {event} to {len(subs)} subscribers")
-            for callback in subs:
-                callback[1](*args, **kwargs)
+            for _, callback in subs:
+                callback(*args, **kwargs)
         else:
-            print(f"Event {event} has no subscribers")
+            print(f"Event {event} not registered")
 
     @classmethod
     def unsubscribe(cls, event: Event, callback: Callback) -> None:

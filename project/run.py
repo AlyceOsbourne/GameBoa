@@ -1,4 +1,4 @@
-from project.src.gui import MainWindow
+from project import MainWindow
 
 
 def main():

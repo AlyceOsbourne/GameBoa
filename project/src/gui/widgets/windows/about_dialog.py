@@ -36,8 +36,6 @@ Github: {__github_link__}
         ).pack()
 
 
-
-
 @EventHandler.subscriber(GuiEvents.OpenAboutDialog)
 def open_about_dialog(parent):
     AboutWindow(parent).mainloop()

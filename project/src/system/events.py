@@ -15,15 +15,12 @@ class Event(Flag):
 
 class SystemEvents(Event):
     Quit = auto()
-    RomLoaded = auto()
-    RomUnloaded = auto()
-    HeaderLoaded = auto()
     SettingsUpdated = auto()
     ExceptionRaised = auto()
 
 class GuiEvents(Event):
-    LoadRomFromlibrary = auto()
-    UnloadRom = auto()
+    WindowShow = auto()
+    LoadRomFromLibrary = auto()
     OpenLoadRomDialog = auto()
     OpenSettingsDialog = auto()
     OpenAboutDialog = auto()
@@ -31,7 +28,18 @@ class GuiEvents(Event):
     UpdateRegisterView = auto()
 
 class ComponentEvents(Event):
-    RegisterWrite = auto()
+    RequestRegisterRead = auto()
+    RequestRegisterWrite = auto()
+    RequestMemoryRead = auto
+    RequestMemoryWrite = auto()
+    MemoryLoaded = auto()
+    RequestOpCode = auto()
+    RequestDecode = auto()
+    RequestExecute = auto()
+    RomLoaded = auto()
+    RomUnloaded = auto()
+    HeaderLoaded = auto()
+    RequestReset = auto()
 
 
 print("Loaded Events", *Event.get_all_events(), sep="\n", end="\n\n")

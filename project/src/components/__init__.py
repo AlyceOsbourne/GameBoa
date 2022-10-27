@@ -6,14 +6,23 @@ from .interrupts import Interrupts
 from .ppu import PixelProcessingUnit
 from .joypad import Joypad
 
+from threading import Thread
+
+register = Register()
+mmu = MemoryManagementUnit()
+cpu = CPU()
+timer = Timer()
+interrupts = Interrupts()
+ppu = PixelProcessingUnit()
+joypad = Joypad()
+
+
 __all__ = [
-    "Register",
-    "Memory",
-    "MemoryManagementUnit",
-    "CPU",
-    "CPUState",
-    "Timer",
-    "Interrupts",
-    "PixelProcessingUnit",
-    "Joypad",
+    "register",
+    "mmu",
+    "cpu",
+    "timer",
+    "interrupts",
+    "ppu",
+    "joypad",
 ]

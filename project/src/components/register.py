@@ -11,7 +11,6 @@ class Register:
         if data is None:
             data = [0] * 12
         self._registry = array.array('B', data)
-        EventHandler.publish(ComponentEvents.RegisterWrite, self)
 
     def __getitem__(self, item):
         match item:
@@ -48,7 +47,6 @@ class Register:
             case _:
                 raise KeyError(f"Invalid key: {key}")
 
-        EventHandler.publish(ComponentEvents.RegisterWrite, str(self))
 
     def __getattr__(self, item):
         try:
@@ -86,6 +84,18 @@ class Register:
     def to_bytes(self) -> bytes:
         """Converts the register to bytes."""
         return self._registry.tobytes()
+
+    @EventHandler.subscriber(ComponentEvents.RequestRegisterRead)
+    def requested_read(self, register: str, callback):
+        """Reads a value from the register."""
+        callback(self[register])
+
+
+    @EventHandler.subscriber(ComponentEvents.RequestRegisterWrite)
+    def requested_write(self, register:str, value: int):
+        """Writes a value to the register."""
+        self[register] = value
+
 
 
 

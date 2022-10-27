@@ -1,6 +1,7 @@
 from tkinter import *
 from project.src.system.event_handler import EventHandler
-from project.src.system.events import GuiEvents, SystemEvents
+from project.src.system.events import GuiEvents, SystemEvents, ComponentEvents
+
 
 class MenuBarWidget(Frame):
     def __init__(
@@ -15,7 +16,7 @@ class MenuBarWidget(Frame):
 
         file_menu = Menu(menubar, tearoff=0)
         file_menu.add_command(label="Load Rom", command=lambda: EventHandler.publish(GuiEvents.OpenLoadRomDialog))
-        file_menu.add_command(label="Unload Rom", command=lambda: EventHandler.publish(GuiEvents.UnloadRom))
+        file_menu.add_command(label="Unload Rom", command=lambda: EventHandler.publish(ComponentEvents.RequestReset))
         file_menu.add_command(label="Exit", command=lambda: EventHandler.publish(SystemEvents.Quit))
         menubar.add_cascade(label="File", menu=file_menu)
 

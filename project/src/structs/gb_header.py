@@ -335,8 +335,8 @@ def calculate_checksum(compare, rom):
         checksum = checksum - rom[i] - 1
     return checksum & 0xFF == compare
 
-@EventHandler.subscriber(SystemEvents.RomLoaded)
-@EventHandler.publisher(SystemEvents.HeaderLoaded)
+@EventHandler.subscriber(ComponentEvents.RomLoaded)
+@EventHandler.publisher(ComponentEvents.HeaderLoaded)
 def get_header_data(rom: array):
     mapping = {
         k: v for k, v in zip(
