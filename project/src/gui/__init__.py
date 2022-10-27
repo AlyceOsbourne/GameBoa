@@ -1,8 +1,8 @@
 import tkinter
 from tkinter.ttk import Notebook
-from project.src.system import get_value, EventHandler, SystemEvents, GuiEvents, ico_path
+from PIL import Image, ImageTk
+from project.src.system import get_value, EventHandler, SystemEvents, GuiEvents, ComponentEvents, ico_path, png_path
 from .widgets import *
-
 
 
 class MainWindow(tkinter.Tk):
@@ -24,11 +24,13 @@ class MainWindow(tkinter.Tk):
         self.rom_listbox = RomLibrary(self)
         self.rom_listbox.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
         self.canvas = tkinter.Canvas(self, width=800, height=600)
+        self.canvas.create_rectangle(0, 0, self.winfo_width(), self.winfo_height(), fill="black")
 
-        EventHandler.subscribe(GuiEvents.WindowShow, self.show)
         EventHandler.subscribe(SystemEvents.SettingsUpdated, self.update_dev_view)
         EventHandler.subscribe(SystemEvents.Quit, self.destroy)
 
+        EventHandler.subscribe(ComponentEvents.RomLoaded, self.switch_to_canvas)
+        EventHandler.subscribe(ComponentEvents.RequestReset, self.switch_to_library)
 
     def make_bottom_bar(self):
         self.bottom_bar = Notebook(self, height=150)
@@ -63,10 +65,15 @@ class MainWindow(tkinter.Tk):
             self.bottom_bar_collapse_button.pack(side=tkinter.BOTTOM, fill=tkinter.X)
             self.bottom_bar_collapse_button.config(text="▲")
         else:
-            self.bottom_bar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
+            was_canvas = self.canvas.winfo_ismapped()
+            if was_canvas:
+                self.canvas.pack_forget()
+            self.bottom_bar.pack(side=tkinter.BOTTOM, fill=tkinter.BOTH)
             self.bottom_bar_collapse_button.pack_forget()
             self.bottom_bar_collapse_button.pack(side=tkinter.BOTTOM, fill=tkinter.X)
             self.bottom_bar_collapse_button.config(text="▼")
+            if was_canvas:
+                self.canvas.pack(side=tkinter.TOP, fill=tkinter.BOTH)
 
     def update_title_bar(self):
         # if debug mode is enabled, set title bar to GameBoa (debug)
@@ -74,6 +81,14 @@ class MainWindow(tkinter.Tk):
             self.title("GameBoa (debug)")
         else:
             self.title("GameBoa")
+
+    def switch_to_canvas(self, _):
+        self.rom_listbox.pack_forget()
+        self.canvas.pack(side=tkinter.TOP, fill=tkinter.BOTH)
+
+    def switch_to_library(self):
+        self.canvas.pack_forget()
+        self.rom_listbox.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
     def update_dev_view(self):
         self.update_title_bar()

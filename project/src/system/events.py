@@ -20,7 +20,6 @@ class SystemEvents(Event):
 
 class GuiEvents(Event):
     Update = auto()
-    WindowShow = auto()
     LoadRomFromLibrary = auto()
     DeleteRomFromLibrary = auto()
     UpdateRomLibrary = auto()
