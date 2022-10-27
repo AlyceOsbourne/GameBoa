@@ -1,4 +1,4 @@
-[GameBoaLogo](/project/resources/gui/icons/icon.png)
+[GameBoaLogo](/project/resources/gui/icons/icon.png | width=100)
 ##Welcome to GameBoa
 GameBoa is a heavily WIP Game Boy Emulator written in Python.
 ___
