@@ -1,6 +1,5 @@
 <p align="center"><img src="./project/resources/gui/icons/icon.png" width=40% align="center"></p><br>
-<h1 align="center">GameBoa</h1><br>
-
+___
 
 GameBoa is a heavily WIP Game Boy Emulator written in Python.
 
