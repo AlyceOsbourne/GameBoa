@@ -10,7 +10,7 @@ def build():
             '__main__.py',
             '--name=GameBoa',
             f'--icon={Path(__file__).parent.parent / "project" / "resources" / "gui" / "icons" / "icon.ico"}',
-            f'--distpath={Path(__file__).parent}',
+            f'--distpath={Path(__file__).parent.parent / "dist" / "windows"}',
             # '--windowed',
             '--onefile',
             '--clean',

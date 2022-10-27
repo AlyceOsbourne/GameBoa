@@ -21,13 +21,10 @@ def _sweep(directory: pathlib.Path):
 
 def _cleanup_build():
     _sweep(pathlib.Path(__file__).parent / 'build')
-    spec = pathlib.Path(__file__).parent / 'Gameboa.spec'
-    if spec.exists():
-        spec.unlink()
 
 def _cleanup_all():
     _cleanup_build()
-    exe =  pathlib.Path(__file__).parent / 'build_tools' / 'Gameboa.exe'
+    exe =  pathlib.Path(__file__).parent / 'dist'/ 'windows' / 'Gameboa.exe'
     if exe.exists():
         exe.unlink()
 
@@ -44,7 +41,7 @@ if args.build:
 
 elif args.test_build:
     from subprocess import call
-    test_build_path = pathlib.Path(__file__).parent / 'build_tools' / 'GameBoa.exe'
+    test_build_path = pathlib.Path(__file__).parent / 'dist' / 'windows' / 'Gameboa.exe'
     print(f'Testing build at {test_build_path}')
     if not test_build_path.exists() or args.reset_build:
         _build()

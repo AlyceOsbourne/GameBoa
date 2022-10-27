@@ -33,10 +33,7 @@ class RomLibrary(Frame):
         self.refresh_roms()
 
     def refresh_roms(self):
-        self.roms = []
-        for rom in rom_path.iterdir():
-            if rom.suffix in [".gb", ".gbc", ".zip"]:
-                self.roms.append(rom)
+        self.roms = [rom for rom in filter(lambda p: p.suffix in {".gb", '.gbc', '.zip'}, rom_path.rglob("*"))]
         self.update_rom_list()
 
     def update_rom_list(self):
