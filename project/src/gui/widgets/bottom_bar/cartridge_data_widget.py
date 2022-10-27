@@ -5,6 +5,7 @@ from project.src.system.event_handler import EventHandler
 from project.src.system.events import SystemEvents, ComponentEvents
 
 
+
 class CartridgeDataWidget(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -18,6 +19,7 @@ class CartridgeDataWidget(ttk.Frame):
             setattr(self, attr + "_value", value)
 
         EventHandler.subscribe(ComponentEvents.HeaderLoaded, self.update_data)
+        EventHandler.subscribe(ComponentEvents.RequestReset, self.clear)
 
     def update_data(self, header_data):
         header_data = header_data._asdict()

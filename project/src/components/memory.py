@@ -74,18 +74,18 @@ class MemoryManagementUnit:
         EventHandler.subscribe(ComponentEvents.RequestMemoryRead, self.read_memory_address)
         EventHandler.subscribe(ComponentEvents.RequestMemoryWrite, self.write_memory_address)
         EventHandler.subscribe(GuiEvents.RequestMemoryStatus, self.requested_status)
+        EventHandler.subscribe(ComponentEvents.RequestReset, self.reset)
 
     def reset(self):
         self.hram = Memory(127)
         self.wram = Memory(8192)
         self.vram = Memory(8192)
         self.oam = Memory(160)
-        self.cart = Memory(33554432)
-        EventHandler.publish(ComponentEvents.MemoryLoaded)
+        self.cart = None
 
     def load_rom(self, rom: Path):
         self.cart = Memory(rom)
-        EventHandler.publish(ComponentEvents.MemoryLoaded)
+
 
     def write_memory_address(self, address: int, value: bytes):
         match address:

@@ -36,7 +36,6 @@ class ComponentEvents(Event):
     RequestRegisterWrite = auto()
     RequestMemoryRead = auto
     RequestMemoryWrite = auto()
-    MemoryLoaded = auto()
     RequestOpCode = auto()
     RequestDecode = auto()
     RequestExecute = auto()

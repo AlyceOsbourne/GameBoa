@@ -1,10 +1,10 @@
 from pathlib import Path
 from tkinter import *
-from tkinter import messagebox
 from tkinter.ttk import *
+
 from project.src.system.config import get_value
 from project.src.system.event_handler import EventHandler
-from project.src.system.events import GuiEvents, SystemEvents, ComponentEvents
+from project.src.system.events import GuiEvents
 
 rom_path = Path(get_value("paths", "roms"))
 
