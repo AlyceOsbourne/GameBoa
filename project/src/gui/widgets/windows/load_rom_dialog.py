@@ -1,5 +1,6 @@
-import gzip
 from tkinter import filedialog
+
+from project.src.structs.rom_data import load_rom_data
 from project.src.system.config import get_value
 from project.src.system.event_handler import EventHandler
 from project.src.system.events import GuiEvents, SystemEvents
@@ -10,6 +11,7 @@ def open_load_rom_dialog():
         initialdir=get_value("paths", "roms"),
         title="Load ROM file",
         filetypes=(
+            ("All files", "*.gb *.gbc *.zip"),
             ("Game Boy Classic", "*.gb"),
             ("Game Boy Color", "*.gbc"),
             ("ZIP file", "*.zip"),
@@ -17,11 +19,6 @@ def open_load_rom_dialog():
     )
 
     if file:
-        if file.endswith(".zip"):
-            with gzip.open(file, "rb") as zip_file:
-                rom_data = zip_file.read()
-        else:
-            with open(file, "rb") as rom_file:
-                rom_data = rom_file.read()
+        EventHandler.publish(GuiEvents.LoadRomFromlibrary, file)
 
-        EventHandler.publish(SystemEvents.RomLoaded, rom_data)
+

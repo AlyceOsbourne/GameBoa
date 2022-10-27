@@ -42,7 +42,7 @@ if args.build:
 
 elif args.test_build:
     from subprocess import call
-    test_build_path = pathlib.Path(__file__).parent / 'dist' / 'GameBoa.exe'
+    test_build_path = pathlib.Path(__file__).parent / 'build_tools' / 'GameBoa.exe'
     print(f'Testing build at {test_build_path}')
     if not test_build_path.exists() or args.reset_build:
         _build()

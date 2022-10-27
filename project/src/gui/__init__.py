@@ -1,11 +1,9 @@
 import tkinter
 from tkinter.ttk import Notebook
-import sys
-from .widgets import *
-from .widgets import MenuBarWidget, CartridgeDataWidget, RegistryView, open_load_rom_dialog, open_settings_dialog
+from .widgets import MenuBarWidget, CartridgeDataWidget, RegistryView, open_load_rom_dialog, open_settings_dialog, RomLibrary
 from project.src.system.config import get_value
 from project.src.system.event_handler import EventHandler
-from project.src.system.events import SystemEvents, GuiEvents, ComponentEvents
+from project.src.system.events import SystemEvents
 from project.src.system import ico_path
 
 class MainWindow(tkinter.Tk):
@@ -23,6 +21,10 @@ class MainWindow(tkinter.Tk):
         self.make_bottom_bar()
         EventHandler.subscribe(SystemEvents.SettingsUpdated, self.update_dev_view)
         self.update_dev_view()
+        self.rom_listbox = RomLibrary(self)
+        self.rom_listbox.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+        self.canvas = tkinter.Canvas(self, width=800, height=600)
+
 
     def make_bottom_bar(self):
         self.bottom_bar = Notebook(self, height=150)

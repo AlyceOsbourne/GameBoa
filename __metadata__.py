@@ -1,7 +1,5 @@
 from datetime import date
 
-import colorama
-
 
 __version__ = "0.0.1"
 __license__ = "MIT License"
@@ -37,28 +35,6 @@ Authors: {__authors__}
 License: {__license__}
 GitHub: {__github_link__}
 """
-
-for index, line in enumerate(metadata.splitlines()):
-    metadata = metadata.replace(
-        line, colorama.Fore.LIGHTMAGENTA_EX + line + colorama.Fore.RESET
-    )
-
-    if index == 1:
-        metadata = metadata.replace(
-            line, colorama.Fore.LIGHTBLUE_EX + line + colorama.Fore.RESET
-        )
-    elif index == 2:
-        metadata = metadata.replace(
-            line, colorama.Fore.LIGHTGREEN_EX + line + colorama.Fore.RESET
-        )
-    elif index == 3:
-        metadata = metadata.replace(
-            line, colorama.Fore.LIGHTYELLOW_EX + line + colorama.Fore.RESET
-        )
-    elif index == 4:
-        metadata = metadata.replace(
-            line, colorama.Fore.LIGHTCYAN_EX + line + colorama.Fore.RESET
-        )
 
 print(metadata)
 print(__license_text__)

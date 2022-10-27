@@ -21,6 +21,7 @@ class SystemEvents(Event):
     SettingsUpdated = auto()
 
 class GuiEvents(Event):
+    LoadRomFromlibrary = auto()
     UnloadRom = auto()
     OpenLoadRomDialog = auto()
     OpenSettingsDialog = auto()
