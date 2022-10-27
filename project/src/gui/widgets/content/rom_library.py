@@ -1,19 +1,19 @@
 from pathlib import Path
 from tkinter import *
+from tkinter import messagebox
 from tkinter.ttk import *
 from project.src.system.config import get_value
 from project.src.system.event_handler import EventHandler
 from project.src.system.events import GuiEvents, SystemEvents, ComponentEvents
-# a list that reads the filenames of the files in a directory and allows us to select them to load
 
 rom_path = Path(get_value("paths", "roms"))
 
-# we have a list of rom paths, a button to load them, and a botton to delete rhem as entries in the list
-# this is a list of Frame objects, each of which contains a label and a button
+
 class RomLibrary(Frame):
     rom_list: Listbox
     load_button: Button
     delete_button: Button
+    update_rom_list_button: Button
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -27,9 +27,13 @@ class RomLibrary(Frame):
         self.rom_list = Listbox(self)
         self.rom_list.pack(fill=BOTH, expand=True)
         self.load_button = Button(self, text="Load", command=self.load_rom)
-        self.load_button.pack(fill=X)
         self.delete_button = Button(self, text="Delete", command=self.delete_rom)
-        self.delete_button.pack(fill=X)
+        self.update_rom_list_button = Button(self, text="Refresh", command=self.refresh_roms)
+        # paack buttons side by side
+        self.load_button.pack(side=LEFT)
+        self.delete_button.pack(side=LEFT)
+        self.update_rom_list_button.pack(side=LEFT)
+
         self.refresh_roms()
 
     def refresh_roms(self):
@@ -42,13 +46,16 @@ class RomLibrary(Frame):
             self.rom_list.insert(END, rom.name)
 
     def load_rom(self):
-        rom = self.roms[self.rom_list.curselection()[0]]
-        EventHandler.publish(GuiEvents.LoadRomFromlibrary, rom)
+        if self.rom_list.curselection():
+            rom = self.roms[self.rom_list.curselection()[0]]
+            EventHandler.publish(GuiEvents.LoadRomFromlibrary, rom)
 
-    def delete_rom(self):
-        rom = self.roms[self.rom_list.curselection()[0]]
-        rom.unlink()
-        self.refresh_roms()
+    def delete_rom(self):# add confirmation
+        if messagebox.askyesno("Delete rom", "Are you sure you want to delete this rom?"):
+            rom = self.roms[self.rom_list.curselection()[0]]
+            rom.unlink()
+            self.refresh_roms()
+
 
 
 

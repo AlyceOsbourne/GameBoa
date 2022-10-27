@@ -1,9 +1,10 @@
-import array, struct
-from collections import namedtuple
-from enum import Enum
+import array
 from functools import singledispatchmethod
 from pathlib import Path
 from typing import Any
+
+from project.src.system.event_handler import EventHandler
+from project.src.system.events import SystemEvents, GuiEvents, ComponentEvents
 
 class Memory:
     data: array.array
@@ -47,12 +48,10 @@ class Memory:
         self.data[i:j] = sequence
 
 class MemoryManagementUnit:
-    # cart cane be of varying sizes, we buffer with null bytes
     HRAM = Memory(127)
     WRAM = Memory(8192)
     VRAM = Memory(8192)
     OAM = Memory(160)
-    # cart rom big enough to account for all possible sizes of carts aka 32mb
     cart = Memory(33554432)
 
 

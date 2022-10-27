@@ -1,6 +1,12 @@
 from .gui import MainWindow
-from .system import EventHandler, SystemEvents, GuiEvents, ComponentEvents, load_config, get_value, set_value, save_config
-from .components import register
+from .system import EventHandler, SystemEvents, GuiEvents, ComponentEvents
+from .components import *
 
-
+register = Register()
+mmu = MemoryManagementUnit()
+cpu = CPU()
+timer = Timer()
+interrupts = Interrupts()
+ppu = PixelProcessingUnit()
+joypad = Joypad()
 

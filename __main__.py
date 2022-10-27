@@ -1,17 +1,19 @@
+from argparse import ArgumentParser
 from pathlib import Path
 from subprocess import call
+
 from project.run import main
-from argparse import ArgumentParser
 
+PARENT_PATH = Path(__file__).parent
+DIST_PATH = PARENT_PATH / "dist"
+WINDOWS_DIST_PATH = DIST_PATH / "windows"
+EXE_PATH = WINDOWS_DIST_PATH / "GameBoa.exe"
 
-DIST_PATH = Path(__file__).parent / "dist"
-BUILD_PATH = Path(__file__).parent / "build"
-EXE_PATH = Path(__file__).parent / "dist" / "windows" / "Gameboa.exe"
+BUILD_PATH =PARENT_PATH / "build"
 
 
 argument_parser = ArgumentParser()
 argument_parser.add_argument("--build", action="store_true")
-argument_parser.add_argument("--sweep", action="store_true")
 argument_parser.add_argument("--test-build", action="store_true")
 argument_parser.add_argument("--reset-build", action="store_true")
 arguments = argument_parser.parse_args()
@@ -47,7 +49,6 @@ def _cleanup_all():
 
 def _build():
     from build_tools import build
-
     _sweep(DIST_PATH)
     print("Building...")
     build()
@@ -68,10 +69,6 @@ elif arguments.test_build:
     print("Running...")
     call(test_build_path, shell=True)
 
-elif arguments.sweep:
-    print("Sweeping...")
-    _cleanup_all()
-    print("Done.")
 
 else:
     print("Running...")

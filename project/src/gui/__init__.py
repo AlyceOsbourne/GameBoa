@@ -1,10 +1,8 @@
 import tkinter
 from tkinter.ttk import Notebook
-from .widgets import MenuBarWidget, CartridgeDataWidget, RegistryView, open_load_rom_dialog, open_settings_dialog, RomLibrary
-from project.src.system.config import get_value
-from project.src.system.event_handler import EventHandler
-from project.src.system.events import SystemEvents
-from project.src.system import ico_path
+from project.src.system import get_value, EventHandler, SystemEvents, ico_path
+from .widgets import *
+
 
 class MainWindow(tkinter.Tk):
     bottom_bar: Notebook
@@ -19,11 +17,13 @@ class MainWindow(tkinter.Tk):
         self.iconbitmap(ico_path)
         self.menu_bar = MenuBarWidget(self)
         self.make_bottom_bar()
-        EventHandler.subscribe(SystemEvents.SettingsUpdated, self.update_dev_view)
         self.update_dev_view()
         self.rom_listbox = RomLibrary(self)
         self.rom_listbox.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
         self.canvas = tkinter.Canvas(self, width=800, height=600)
+
+        EventHandler.subscribe(SystemEvents.SettingsUpdated, self.update_dev_view)
+        EventHandler.subscribe(SystemEvents.Quit, self.destroy)
 
 
     def make_bottom_bar(self):
@@ -73,4 +73,11 @@ class MainWindow(tkinter.Tk):
         self.toggle_bottom_bar()
 
     def show(self):
-        self.mainloop()
+        try:
+            self.mainloop()
+        except KeyboardInterrupt:
+            EventHandler.publish(SystemEvents.Quit)
+        except Exception as e:
+            EventHandler.publish(SystemEvents.ExceptionRaised, e)
+            raise e
+

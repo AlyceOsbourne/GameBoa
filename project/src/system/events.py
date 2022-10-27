@@ -19,6 +19,7 @@ class SystemEvents(Event):
     RomUnloaded = auto()
     HeaderLoaded = auto()
     SettingsUpdated = auto()
+    ExceptionRaised = auto()
 
 class GuiEvents(Event):
     LoadRomFromlibrary = auto()
