@@ -1,7 +1,7 @@
 import array
 
 from project.src.system.event_handler import EventHandler
-from project.src.system.events import ComponentEvents
+from project.src.system.events import ComponentEvents, GuiEvents
 
 
 class Register:
@@ -11,6 +11,9 @@ class Register:
         if data is None:
             data = [0] * 12
         self._registry = array.array('B', data)
+        EventHandler.subscribe(ComponentEvents.RequestRegisterRead, self.requested_read)
+        EventHandler.subscribe(ComponentEvents.RequestRegisterWrite, self.requested_write)
+        EventHandler.subscribe(GuiEvents.RequestRegistryStatus, self.requested_status)
 
     def __getitem__(self, item):
         match item:
@@ -85,16 +88,18 @@ class Register:
         """Converts the register to bytes."""
         return self._registry.tobytes()
 
-    @EventHandler.subscriber(ComponentEvents.RequestRegisterRead)
+
     def requested_read(self, register: str, callback):
         """Reads a value from the register."""
         callback(self[register])
 
-
-    @EventHandler.subscriber(ComponentEvents.RequestRegisterWrite)
     def requested_write(self, register:str, value: int):
         """Writes a value to the register."""
         self[register] = value
+
+    def requested_status(self, callback):
+        """Reads a value from the register."""
+        callback(str(self))
 
 
 

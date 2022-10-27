@@ -6,7 +6,7 @@ from .windows import *
 __all__ = [
     'MenuBarWidget',
     'CartridgeDataWidget',
-    'RegistryView',
+    'DataView',
     'RomLibrary',
     'open_load_rom_dialog',
     'open_settings_dialog',

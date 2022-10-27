@@ -1,5 +1,6 @@
 import zipfile
 from pathlib import Path
+from tkinter import messagebox
 
 from project.src.system import (
     EventHandler,
@@ -36,3 +37,16 @@ def load_rom_data(file:Path|str):
         with open(file, "rb") as rom_file:
             rom_data = rom_file.read()
     EventHandler.publish(ComponentEvents.RomLoaded, rom_data)
+
+
+@EventHandler.subscriber(GuiEvents.DeleteRomFromLibrary)
+def delete_rom(file:Path|str):
+    if not isinstance(file, Path) and isinstance(file, str):
+        file = Path(file)
+
+    if not file.exists():
+        raise FileNotFoundError(f"File {file} does not exist.")
+
+    if messagebox.askyesno("Delete rom", f"Are you sure you want to delete {file}?"):
+        file.unlink()
+        EventHandler.publish(GuiEvents.UpdateRomLibrary)

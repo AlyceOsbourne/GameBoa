@@ -8,53 +8,45 @@ from project.src.system.events import GuiEvents, SystemEvents, ComponentEvents
 
 rom_path = Path(get_value("paths", "roms"))
 
+class RomEntry(Frame):
+    # has a label of the rom name and a button to launch the rom
+    def __init__(self, parent, rom_path):
+        super().__init__(parent)
+        self.rom_path = rom_path
+        self.rom_name = rom_path.name
+        self.label = Label(self, text=self.rom_name)
+        self.load_rom = Button(self, text="Launch", command=lambda: EventHandler.publish(GuiEvents.LoadRomFromLibrary, self.rom_path))
+        self.delete_rom = Button(self, text="Delete", command=lambda: EventHandler.publish(GuiEvents.DeleteRomFromLibrary, self.rom_path))
+        self.label.grid(row=0, column=0, sticky="nsew")
+        self.load_rom.grid(row=0, column=1, sticky="nsew")
+        self.delete_rom.grid(row=0, column=2, sticky="nsew")
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=0)
+        self.columnconfigure(2, weight=0)
 
 class RomLibrary(Frame):
-    rom_list: Listbox
-    load_button: Button
-    delete_button: Button
-    update_rom_list_button: Button
-
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
         self.pack(fill=BOTH, expand=True)
-        self.roms = []
-        self.rom_frames = []
-        self.make_widgets()
-
-    def make_widgets(self):
-        self.rom_list = Listbox(self)
-        self.rom_list.pack(fill=BOTH, expand=True)
-        self.load_button = Button(self, text="Load", command=self.load_rom)
-        self.delete_button = Button(self, text="Delete", command=self.delete_rom)
-        self.update_rom_list_button = Button(self, text="Refresh", command=self.refresh_roms)
-        # paack buttons side by side
-        self.load_button.pack(side=LEFT)
-        self.delete_button.pack(side=LEFT)
-        self.update_rom_list_button.pack(side=LEFT)
-
-        self.refresh_roms()
-
-    def refresh_roms(self):
-        self.roms = [rom for rom in filter(lambda p: p.suffix in {".gb", '.gbc', '.zip'}, rom_path.rglob("*"))]
+        self.rom_list = Frame(self)
+        self.rom_list.pack(fill=BOTH, expand=True, padx=10, pady=10)
         self.update_rom_list()
+        EventHandler.subscribe(GuiEvents.UpdateRomLibrary, self.update_rom_list)
+
+
+    @staticmethod
+    def refresh_roms():
+        return [rom for rom in filter(lambda p: p.suffix in {".gb", '.gbc', '.zip'}, rom_path.rglob("*"))]
+
 
     def update_rom_list(self):
-        self.rom_list.delete(0, END)
-        for rom in self.roms:
-            self.rom_list.insert(END, rom.name)
+        for child in self.rom_list.winfo_children():
+            child.destroy()
+        for rom in self.refresh_roms():
+            RomEntry(self.rom_list, rom).pack(fill=X)
 
-    def load_rom(self):
-        if self.rom_list.curselection():
-            rom = self.roms[self.rom_list.curselection()[0]]
-            EventHandler.publish(GuiEvents.LoadRomFromLibrary, rom)
 
-    def delete_rom(self):# add confirmation
-        if messagebox.askyesno("Delete rom", "Are you sure you want to delete this rom?"):
-            rom = self.roms[self.rom_list.curselection()[0]]
-            rom.unlink()
-            self.refresh_roms()
 
 
 

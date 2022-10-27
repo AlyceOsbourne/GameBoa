@@ -9,7 +9,9 @@ class MainWindow(tkinter.Tk):
     bottom_bar: Notebook
     bottom_bar_collapse_button: tkinter.Button
 
-    registry_view: RegistryView
+    registry_view: DataView
+    memory_view: DataView
+
     cartridge_data_tab: CartridgeDataWidget
 
     def __init__(self):
@@ -33,9 +35,12 @@ class MainWindow(tkinter.Tk):
         self.bottom_bar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
         self.bottom_bar_collapse_button = tkinter.Button(self, text="▼", command=self.collapse_bottom_bar)
         self.cartridge_data_tab = CartridgeDataWidget(self.bottom_bar)
-        self.registry_view = RegistryView(self.bottom_bar)
+        self.registry_view = DataView(self.bottom_bar, GuiEvents.RequestRegistryStatus)
+        self.memory_view = DataView(self.bottom_bar, GuiEvents.RequestMemoryStatus)
+
         self.bottom_bar.add(self.cartridge_data_tab, text="Cartridge Data")
         self.bottom_bar.add(self.registry_view, text="Registry")
+        self.bottom_bar.add(self.memory_view, text="Memory")
         self.bottom_bar_collapse_button = tkinter.Button(
             self, text="▼", command=self.collapse_bottom_bar
         )
@@ -75,13 +80,13 @@ class MainWindow(tkinter.Tk):
         self.toggle_bottom_bar()
 
     def show(self):
-        try:
-            self.mainloop()
-        except KeyboardInterrupt:
-            EventHandler.publish(SystemEvents.Quit)
-        except Exception as e:
-            EventHandler.publish(SystemEvents.ExceptionRaised, e)
-            raise e
+        self.update_loop()
+        self.mainloop()
+
+    def update_loop(self):
+        self.after(1000, self.update_loop)
+        EventHandler.publish(GuiEvents.Update)
+
 
 __all__ = [
     'MainWindow'

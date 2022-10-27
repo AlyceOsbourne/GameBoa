@@ -336,7 +336,6 @@ def calculate_checksum(compare, rom):
     return checksum & 0xFF == compare
 
 @EventHandler.subscriber(ComponentEvents.RomLoaded)
-@EventHandler.publisher(ComponentEvents.HeaderLoaded)
 def get_header_data(rom: array):
     mapping = {
         k: v for k, v in zip(
@@ -354,5 +353,5 @@ def get_header_data(rom: array):
     # header checksum is add all of the header bytes together except the checksum bytes
     mapping['header_checksum'] = calculate_checksum(mapping['header_checksum'], rom)
     header_data = HeaderData(**mapping)
-    return header_data
+    EventHandler.publish(ComponentEvents.HeaderLoaded, header_data)
 

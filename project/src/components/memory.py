@@ -71,6 +71,9 @@ class MemoryManagementUnit:
         self.cart = None
         EventHandler.subscribe(ComponentEvents.RomUnloaded, self.reset)
         EventHandler.subscribe(ComponentEvents.RomLoaded, self.load_rom)
+        EventHandler.subscribe(ComponentEvents.RequestMemoryRead, self.read_memory_address)
+        EventHandler.subscribe(ComponentEvents.RequestMemoryWrite, self.write_memory_address)
+        EventHandler.subscribe(GuiEvents.RequestMemoryStatus, self.requested_status)
 
     def reset(self):
         self.hram = Memory(127)
@@ -124,13 +127,20 @@ class MemoryManagementUnit:
         end = offset + size
         return  mem[offset:end]
 
-    @EventHandler.subscriber(ComponentEvents.RequestMemoryRead)
-    def requested_read(self, address: int, size: int, callback):
-        callback(self.read_memory_address(address, size))
+    def requested_status(self, callback):
+        callback(str(self))
 
-    @EventHandler.subscriber(ComponentEvents.RequestMemoryWrite)
-    def rerquested_write(self, address: int, value: bytes):
-        self.write_memory_address(address, value)
+    def __str__(self):
+        out = ""
+        if cart := self.cart:
+            out += f"Cart: {len(cart)} bytes\n"
+        else:
+            out += f"Cart: {'None':>7}\n"
+        out += f"VRAM: {len(self.vram):7} bytes\n"
+        out += f"WRAM: {len(self.wram):7} bytes\n"
+        out += f"HRAM: {len(self.hram):7} bytes\n"
+        out += f"OAM:  {len(self.oam):7} bytes\n"
+        return out
 
 
 

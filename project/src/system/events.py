@@ -19,13 +19,17 @@ class SystemEvents(Event):
     ExceptionRaised = auto()
 
 class GuiEvents(Event):
+    Update = auto()
     WindowShow = auto()
     LoadRomFromLibrary = auto()
+    DeleteRomFromLibrary = auto()
+    UpdateRomLibrary = auto()
     OpenLoadRomDialog = auto()
     OpenSettingsDialog = auto()
     OpenAboutDialog = auto()
-    RequestRegisterStatus = auto()
-    UpdateRegisterView = auto()
+    RequestRegistryStatus = auto()
+    RequestMemoryStatus = auto()
+
 
 class ComponentEvents(Event):
     RequestRegisterRead = auto()

@@ -48,12 +48,3 @@ class EventHandler:
             return func
         return decorator
 
-    @classmethod
-    def publisher(cls, event: Event) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            def wrapper(*args, **kwargs) -> Any:
-                result = func(*args, **kwargs)
-                cls.publish(event, result)
-                return result
-            return wrapper
-        return decorator
