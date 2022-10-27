@@ -27,7 +27,9 @@ def _cleanup_build():
 
 def _cleanup_all():
     _cleanup_build()
-    _sweep(pathlib.Path(__file__).parent / 'dist')
+    exe =  pathlib.Path(__file__).parent / 'build_tools' / 'Gameboa.exe'
+    if exe.exists():
+        exe.unlink()
 
 def _build():
     from build_tools import build
@@ -52,8 +54,10 @@ elif args.test_build:
 elif args.sweep:
     print('Sweeping...')
     _cleanup_all()
+    print('Done.')
 
 else:
     from project.run import main
     print('Running...')
     main()
+
