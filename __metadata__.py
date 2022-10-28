@@ -3,11 +3,19 @@ from datetime import date
 
 __version__ = "0.0.1"
 __license__ = "MIT License"
-__copyright_year__ = date.today().year
+__year__ = date.today().year
 __authors__ = "Alyce Osbourne, Boštjan Mejak"
 __github_link__ = "https://github.com/AlyceOsbourne/GameBoa"
-__license_text__ = f"""
-Copyright {__copyright_year__} {__authors__}
+
+__repr__ = f"""
+GameBoa {__version__}
+Authors: {__authors__}
+License: {__license__}
+GitHub: {__github_link__}
+"""
+
+__notice__ = f"""
+Copyright {__year__} {__authors__}
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
@@ -29,12 +37,5 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-metadata = f"""
-GameBoa {__version__}
-Authors: {__authors__}
-License: {__license__}
-GitHub: {__github_link__}
-"""
-
-print(metadata)
-print(__license_text__)
+print(__repr__)
+print(__notice__)
