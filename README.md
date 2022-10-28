@@ -1,4 +1,4 @@
-<img src="./project/resources/gui/icons/icon.png" align="center" width=90%>
+<img src="./project/resources/gui/icons/icon.png" align="center">
 
 ___
 
