@@ -1,4 +1,3 @@
-import __metadata__
 from pathlib import Path
 from argparse import ArgumentParser
 
@@ -69,6 +68,3 @@ else:
     from project.run import main
 
     main()
-
-
-__all__ = ["__metadata__"]
