@@ -1,51 +1,57 @@
-from .gb_logger import logger
+from enum import auto, Flag
 from itertools import count
-from enum import Flag, auto
+from .gb_logger import logger
 
-event_ids = count()
+
+EVENT_IDS = count()
+
 
 class Event(Flag):
     @staticmethod
     def _generate_next_value_(name, start, count, last_values):
-        return next(event_ids)
+        return next(EVENT_IDS)
 
     @staticmethod
     def get_all_events():
-        return {member.name: member for subcls in Event.__subclasses__() for member in subcls.__members__.values()}
+        return {
+            member.name: member
+            for subcls in Event.__subclasses__()
+            for member in subcls.__members__.values()
+        }
 
 
 class SystemEvents(Event):
     Log = auto()
-    Logged = auto()
     Quit = auto()
-    SettingsUpdated = auto()
+    Logged = auto()
     ExceptionRaised = auto()
+    SettingsUpdated = auto()
 
 
 class GuiEvents(Event):
     Update = auto()
-    LoadRomFromLibrary = auto()
-    DeleteRomFromLibrary = auto()
+    OpenAboutDialog = auto()
     UpdateRomLibrary = auto()
     OpenLoadRomDialog = auto()
+    LoadRomFromLibrary = auto()
     OpenSettingsDialog = auto()
-    OpenAboutDialog = auto()
-    RequestRegistryStatus = auto()
     RequestMemoryStatus = auto()
+    DeleteRomFromLibrary = auto()
+    RequestRegistryStatus = auto()
 
 
 class ComponentEvents(Event):
-    RequestRegisterRead = auto()
-    RequestRegisterWrite = auto()
-    RequestMemoryRead = auto
-    RequestMemoryWrite = auto()
-    RequestOpCode = auto()
-    RequestDecode = auto()
-    RequestExecute = auto()
     RomLoaded = auto()
     RomUnloaded = auto()
     HeaderLoaded = auto()
     RequestReset = auto()
+    RequestDecode = auto()
+    RequestOpCode = auto()
+    RequestExecute = auto()
+    RequestMemoryRead = auto()
+    RequestMemoryWrite = auto()
+    RequestRegisterRead = auto()
+    RequestRegisterWrite = auto()
 
 
-logger.debug(f"Loaded {len(Event.get_all_events())} events")
+logger.debug(f"Loaded {len(Event.get_all_events())} events.")
