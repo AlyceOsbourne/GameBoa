@@ -1,4 +1,4 @@
-<img src="./project/resources/gui/icons/icon.png" width="50%">
+<img src="./project/resources/gui/icons/icon.png" alt="GameBoa" width="40%" align="center">
 
 ___
 
