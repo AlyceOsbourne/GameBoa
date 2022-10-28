@@ -1,14 +1,14 @@
 import __metadata__
-from argparse import ArgumentParser
 from pathlib import Path
+from argparse import ArgumentParser
 
 
 PARENT_PATH = Path(__file__).parent
+
 DIST_PATH = PARENT_PATH / "dist"
+BUILD_PATH = PARENT_PATH / "build"
 WINDOWS_DIST_PATH = DIST_PATH / "windows"
 EXE_PATH = WINDOWS_DIST_PATH / "GameBoa.exe"
-
-BUILD_PATH =PARENT_PATH / "build"
 
 
 argument_parser = ArgumentParser()
@@ -48,6 +48,7 @@ def _cleanup_all():
 
 def _build():
     from build_tools import build
+
     _sweep(DIST_PATH)
     build()
     _cleanup_build()
@@ -58,17 +59,16 @@ if arguments.build:
 
 elif arguments.test_build:
     from subprocess import call
+
     test_build_path = str(EXE_PATH)
     if not EXE_PATH.exists() or arguments.reset_build:
         _build()
     call(test_build_path, shell=True)
 
-
 else:
     from project.run import main
+
     main()
 
 
-__all__ = [
-    "__metadata__",
-]
+__all__ = ["__metadata__"]

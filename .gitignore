@@ -1,7 +1,7 @@
 /.idea
-/local/
 /dist/
 /build/
-/build_tools/dist/
-/build_tools/tmp/
+/local/
 /GameBoa.spec
+/build_tools/tmp/
+/build_tools/dist/
