@@ -1,15 +1,16 @@
-from .top_bar import *
-from .bottom_bar import *
 from .content import *
+from .top_bar import *
 from .windows import *
+from .bottom_bar import *
+
 
 __all__ = [
-    'MenuBarWidget',
-    'CartridgeDataWidget',
-    'DataView',
-    'RomLibrary',
-    'open_load_rom_dialog',
-    'open_settings_dialog',
-    'open_about_dialog',
-    'handle_exception',
+    "DataView",
+    "RomLibrary",
+    "MenuBarWidget",
+    "handle_exception",
+    "open_about_dialog",
+    "CartridgeDataWidget",
+    "open_load_rom_dialog",
+    "open_settings_dialog",
 ]

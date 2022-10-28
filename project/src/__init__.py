@@ -1,12 +1,12 @@
-from .gui import MainWindow
-from .system import EventHandler, SystemEvents, GuiEvents, ComponentEvents
 from .components import *
+from .gui import MainWindow
+from .system import ComponentEvents, EventHandler, GuiEvents, SystemEvents
 
 
 __all__ = [
-    'EventHandler',
-    'SystemEvents',
-    'GuiEvents',
-    'ComponentEvents',
-    'MainWindow'
+    "GuiEvents",
+    "MainWindow",
+    "EventHandler",
+    "SystemEvents",
+    "ComponentEvents",
 ]
