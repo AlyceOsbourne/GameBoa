@@ -1,4 +1,4 @@
-<p align="center"><img src="./project/resources/gui/icons/icon.png" width=70% align="center"></p><br>
+<p align="center"><img src="./project/resources/gui/icons/icon.png" width=50% align="center"></p><br>
 
 ___
 GameBoa is a heavily WIP Game Boy emulator written in Python.
