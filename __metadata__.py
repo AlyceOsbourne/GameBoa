@@ -38,4 +38,3 @@ GitHub: {__github_link__}
 
 print(metadata)
 print(__license_text__)
-
