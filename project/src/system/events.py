@@ -1,3 +1,4 @@
+from .gb_logger import logger
 from itertools import count
 from enum import Flag, auto
 
@@ -14,9 +15,12 @@ class Event(Flag):
 
 
 class SystemEvents(Event):
+    Log = auto()
+    Logged = auto()
     Quit = auto()
     SettingsUpdated = auto()
     ExceptionRaised = auto()
+
 
 class GuiEvents(Event):
     Update = auto()
@@ -44,4 +48,4 @@ class ComponentEvents(Event):
     RequestReset = auto()
 
 
-print("Loaded Events", *Event.get_all_events(), sep="\n", end="\n\n")
+logger.debug(f"Loaded {len(Event.get_all_events())} events")

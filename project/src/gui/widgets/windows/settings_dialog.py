@@ -24,6 +24,7 @@ from project.src.system.config import (
     save_config,
     load_config,
     section_options,
+    reset_to_defaults
 )
 
 
@@ -34,9 +35,18 @@ class SettingsWindow(Toplevel):
         self.geometry("500x500")
         self.tabs = Notebook(self)
         self.create_tabs(self.tabs)
+        self.make_buttons()
+        self.reset = None
+        self.save_button = None
+        self.cancel_button = None
+
+
+    def make_buttons(self):
+        self.reset = Button(self, text="Reset to Defaults", command=self.reset)
         self.save_button = Button(self, text="Save", command=self.save)
-        self.save_button.pack(side="right", padx=5, pady=5)
         self.cancel_button = Button(self, text="Cancel", command=self.cancel)
+        self.reset.pack(side="left", padx=5, pady=5)
+        self.save_button.pack(side="right", padx=5, pady=5)
         self.cancel_button.pack(side="right", padx=5, pady=5)
 
     def create_tabs(self, tabs):
@@ -128,6 +138,19 @@ class SettingsWindow(Toplevel):
     def cancel(self):
         load_config()
         self.destroy()
+
+    def reset(self):
+        reset_to_defaults()
+        for tab in self.tabs.winfo_children():
+            for child in tab.winfo_children():
+                child.destroy()
+            tab.destroy()
+        self.create_tabs(self.tabs)
+
+
+
+
+
 
 @EventHandler.subscriber(GuiEvents.OpenSettingsDialog)
 def open_settings_dialog(parent):

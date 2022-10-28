@@ -1,3 +1,4 @@
+from .gb_logger import logger
 from enum import IntFlag
 from typing import Callable, Any, List, Tuple, Dict
 Event = Any
@@ -17,6 +18,7 @@ class EventHandler:
 
     @classmethod
     def register(cls, event: Event):
+        logger.debug(f"Registering event {event}")
         return cls.publisher_subscribers.setdefault(event, [])
 
     @classmethod
@@ -27,17 +29,16 @@ class EventHandler:
 
     @classmethod
     def publish(cls, event: Event, *args, **kwargs) -> None:
+        logger.debug(f"Publishing event {event}")
         if event in cls.publisher_subscribers:
             subs = cls.publisher_subscribers[event]
-            print(f"Publishing {event} to {len(subs)} subscribers")
             for _, callback in subs:
                 callback(*args, **kwargs)
-        else:
-            print(f"Event {event} not registered")
+
 
     @classmethod
     def unsubscribe(cls, event: Event, callback: Callback) -> None:
-        # I feel like instead of an iter, this should be a lookup?
+        logger.debug(f"Unsubscribing event {event}")
         if event in cls.publisher_subscribers:
             cls.publisher_subscribers[event] = [x for x in cls.publisher_subscribers[event] if x[1] != callback]
 

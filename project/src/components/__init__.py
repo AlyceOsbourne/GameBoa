@@ -6,8 +6,6 @@ from .interrupts import Interrupts
 from .ppu import PixelProcessingUnit
 from .joypad import Joypad
 
-from threading import Thread
-
 register = Register()
 mmu = MemoryManagementUnit()
 cpu = CPU()

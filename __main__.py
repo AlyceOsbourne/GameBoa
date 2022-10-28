@@ -1,8 +1,7 @@
+import __metadata__
 from argparse import ArgumentParser
 from pathlib import Path
-from subprocess import call
 
-from project.run import main
 
 PARENT_PATH = Path(__file__).parent
 DIST_PATH = PARENT_PATH / "dist"
@@ -50,26 +49,26 @@ def _cleanup_all():
 def _build():
     from build_tools import build
     _sweep(DIST_PATH)
-    print("Building...")
     build()
     _cleanup_build()
-    print("Done.")
 
 
 if arguments.build:
     _build()
 
 elif arguments.test_build:
+    from subprocess import call
     test_build_path = str(EXE_PATH)
-    print(f"Testing build at {test_build_path}")
-
     if not EXE_PATH.exists() or arguments.reset_build:
         _build()
-
-    print("Running...")
     call(test_build_path, shell=True)
 
 
 else:
-    print("Running...")
+    from project.run import main
     main()
+
+
+__all__ = [
+    "__metadata__",
+]

@@ -47,7 +47,6 @@ class Instruction(
                     op_code_settings.get("operand1", None),
                     op_code_settings.get("operand2", None),
                 )
-        print(f"Loaded {sum([len(inst) for inst in loaded_instructions.values()])} instructions.")
         return loaded_instructions
 
     def __str__(self) -> str:

@@ -19,12 +19,14 @@ defaults = {
         'save states': (user_path / "save_states", str),
         'game configs': (user_path / "game_configs", str),
         'patch files': (user_path / "patches", str),
+        'logs': (user_path / "logs", str),
     },
     "video" : {},
     "sound": {},
     'input': {},
     'developer': {
         'debug': (False, bool),
+        'debug logging (requires restart)': (False, bool),
     }
 }
 
@@ -34,7 +36,6 @@ def load_config():
     section: {
         key: value[0]
         for key, value in options.items()
-
     }
     for section, options in defaults.items()
 }
@@ -59,8 +60,7 @@ def get_value(section, key):
         return config_parser[section].getfloat(key)
     elif opt_type == bool:
         return config_parser[section].getboolean(key)
-    else:
-        raise TypeError(f'Unknown option type {opt_type}')
+    raise TypeError(f'Unknown option type {opt_type}')
 
 def set_value(section, key, value):
     if section not in config_parser:
@@ -82,6 +82,12 @@ def option_type(section, key):
 
 def save_config():
     config_parser.write(open(user_path / "gameboa.config", 'w'))
+
+def reset_to_defaults():
+    for section, options in defaults.items():
+        for key, value in options.items():
+            config_parser[section][key] = str(value[0])
+
 
 load_config()
 

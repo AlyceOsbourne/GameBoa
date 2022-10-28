@@ -23,12 +23,13 @@ class MainWindow(tkinter.Tk):
         self.update_dev_view()
         self.rom_listbox = RomLibrary(self)
         self.rom_listbox.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
-        self.canvas = tkinter.Canvas(self, width=800, height=600)
-        self.canvas.create_rectangle(0, 0, self.winfo_width(), self.winfo_height(), fill="black")
+        self.canvas = tkinter.Canvas(self, width=self.winfo_screenwidth(), height=self.winfo_screenheight())
+        self.canvas.create_rectangle(0, 0, self.winfo_screenwidth(), self.winfo_screenheight(), fill="black")
+
+        self.canvas.bind("<Configure>", lambda e: self.canvas.config(width=e.width, height=e.height))
 
         EventHandler.subscribe(SystemEvents.SettingsUpdated, self.update_dev_view)
         EventHandler.subscribe(SystemEvents.Quit, self.destroy)
-
         EventHandler.subscribe(ComponentEvents.RomLoaded, self.switch_to_canvas)
         EventHandler.subscribe(ComponentEvents.RequestReset, self.switch_to_library)
 

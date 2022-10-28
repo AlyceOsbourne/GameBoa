@@ -4,7 +4,7 @@ from tkinter.ttk import *
 
 from project.src.system.config import get_value
 from project.src.system.event_handler import EventHandler
-from project.src.system.events import GuiEvents
+from project.src.system.events import GuiEvents, SystemEvents
 
 rom_path = Path(get_value("paths", "roms"))
 
@@ -32,6 +32,7 @@ class RomLibrary(Frame):
         self.rom_list.pack(fill=BOTH, expand=True, padx=10, pady=10)
         self.update_rom_list()
         EventHandler.subscribe(GuiEvents.UpdateRomLibrary, self.update_rom_list)
+        EventHandler.subscribe(SystemEvents.SettingsUpdated, self.update_rom_list)
 
     @staticmethod
     def refresh_roms():

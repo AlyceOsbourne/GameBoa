@@ -3,8 +3,7 @@ from enum import Flag, auto
 from types import MappingProxyType
 from array import array
 from collections import namedtuple
-from project.src.system.event_handler import EventHandler
-from project.src.system.events import SystemEvents, GuiEvents, ComponentEvents
+from project.src.system import EventHandler, SystemEvents, GuiEvents, ComponentEvents, logger
 
 class CartType(Flag):
     RAM = auto()
@@ -353,5 +352,6 @@ def get_header_data(rom: array):
     # header checksum is add all of the header bytes together except the checksum bytes
     mapping['header_checksum'] = calculate_checksum(mapping['header_checksum'], rom)
     header_data = HeaderData(**mapping)
+    logger.info('Header data: %s', header_data)
     EventHandler.publish(ComponentEvents.HeaderLoaded, header_data)
 
