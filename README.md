@@ -1,6 +1,8 @@
-<img src="./project/resources/gui/icons/icon.png" alt="GameBoa" width=40% align="center">
+<div align="center">
+  <img src="./project/resources/gui/icons/icon.png" alt="GameBoa" width=45%>
+</div>
 
-___
+---
 
 #### What is this project?
 GameBoa is a Game Boy emulator written in Python.
