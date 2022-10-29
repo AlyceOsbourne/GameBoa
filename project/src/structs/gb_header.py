@@ -349,7 +349,7 @@ def get_header_data(rom: array):
     mapping['destination_code'] = DESTINATION_CODES[mapping['destination_code']]
     mapping['old_licensee_code'] = OLD_LICENSEE_CODES.get(mapping['old_licensee_code'], 'Unknown')
     mapping['new_licensee_code'] = NEW_LICENSEE_CODES.get(mapping['new_licensee_code'], 'Unknown')
-    # header checksum is add all of the header bytes together except the checksum bytes
+    # header checksum is sum all the header bytes together except the checksum bytes
     mapping['header_checksum'] = calculate_checksum(mapping['header_checksum'], rom)
     header_data = HeaderData(**mapping)
     logger.info('Header data: %s', header_data)

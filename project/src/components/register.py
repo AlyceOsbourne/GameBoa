@@ -12,13 +12,13 @@ class Register:
             data = [0] * 12
         self._registry = array.array('B', data)
         EventHandler.subscribe(ComponentEvents.RequestRegisterRead, self.requested_read)
-        EventHandler.subscribe(ComponentEvents.RequestRegisterWrite, self.requested_write)
+        EventHandler.subscribe(ComponentEvents.RequestRegisterWrite, self.__setitem__)
         EventHandler.subscribe(GuiEvents.RequestRegistryStatus, self.requested_status)
 
     def __getitem__(self, item):
         match item:
             case "A" | "F" | "B" | "C" | "D" | "E" | "H" | "L":
-                return self._registry["ABCDEFHL".index(item)]
+                return self._registry["AFBCDEHL".index(item)]
             case "AF" | "BC" | "DE" | "HL" | "SP" | "PC":
                 idx = "AFBCDEHLSPPC".index(item)
                 return (self._registry[idx] << 8) | self._registry[idx + 1]
@@ -27,29 +27,27 @@ class Register:
             case _:
                 raise KeyError(f"Invalid key: {item}")
 
-
     def __setitem__(self, key, value):
         match key:
             case "A" | "F" | "B" | "C" | "D" | "E" | "H" | "L" if value <= 0xff:
-                self._registry["ABCDEFHL".index(key)] = value
+                self._registry["AFBCDEHL".index(key)] = value
 
             case "AF" | "BC" | "DE" | "HL" | "SP" | "PC" if value <= 0xffff:
                 idx = "AFBCDEHLSPPC".index(key)
                 self._registry[idx] = value >> 8
                 self._registry[idx + 1] = value & 0xff
 
-            case "flag_z" | "flag_n" | "flag_h" | "flag_c" if value <= 1:
-                self._registry[1] = (self._registry[1] & ~(1 << (7 - "znhc".index(key[-1])))) | (
-                            value << (7 - "znhc".index(key[-1])))
+            case "FZ" | "FN" | "FH" | "FC" if value <= 1:
+                self._registry[1] = (self._registry[1] & ~(
+                        1 << (7 - 'ZNCH'.index(key[-1])))) | (value << (7 - 'ZNCH'.index(key[-1])))
 
             case (
-            'flag_z' | 'flag_n' | 'flag_h' | 'flag_c' |
+            'FZ' | 'FN' | 'FH' | 'FC' |
             "A" | "F" | "B" | "C" | "D" | "E" | "H" | "L" |
             "AF" | "BC" | "DE" | "HL" | "SP" | "PC"):
                 raise ValueError(f"Value {value} is too large for {key}")
             case _:
                 raise KeyError(f"Invalid key: {key}")
-
 
     def __getattr__(self, item):
         try:
@@ -92,10 +90,6 @@ class Register:
     def requested_read(self, register: str, callback):
         """Reads a value from the register."""
         callback(self[register])
-
-    def requested_write(self, register:str, value: int):
-        """Writes a value to the register."""
-        self[register] = value
 
     def requested_status(self, callback):
         """Reads a value from the register."""

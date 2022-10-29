@@ -14,10 +14,18 @@ class _MemoryRange(namedtuple("MemoryRange", "start end")):
         return self.start <= item < self.end
 
 class MemoryRange(_MemoryRange, Enum):
+    CART = 0x0000, 0x8000
     HRAM = 0xFF80, 0xFFFF
     ECHO = 0xE000, 0xFE00
     VRAM = 0x8000, 0xA000
     WRAM = 0xC000, 0xE000
+
+    @classmethod
+    def get_from_addr(cls, addr):
+        for memory_range in cls:
+            if addr in memory_range:
+                return memory_range
+        raise ValueError(f"Address {addr} not in any memory range")
 
 class Memory:
     data: array.array
@@ -42,36 +50,24 @@ class Memory:
     def _from_bytes(self, data: bytes):
         self.data = array.array("B", data)
 
-    def __len__(self):
-        return len(self.data)
+    def write_addr(self, addr: int, data: bytes):
+        self.data[addr : addr + len(data)] = array.array("B", data)
 
-    def __iter__(self):
-        return iter(self.data)
-
-
-    def __getitem__(self, item: int | slice) -> int | array.array:
-        if isinstance(item, slice):
-            return array.array("B", self.data[item])
-        return self.data[item]
-
-    def __setitem__(self, key: int, value: int):
-        self.data[key] = value
-
-    def __setslice__(self, i, j, sequence):
-        self.data[i:j] = sequence
+    def read_addr(self, addr: int, size: int) -> bytes:
+        return bytes(self.data[addr : addr + size])
 
 class MemoryManagementUnit:
-
 
     def __init__(self):
         self.hram = Memory(127)
         self.wram = Memory(8192)
+        self.echo = self.wram
         self.vram = Memory(8192)
         self.oam = Memory(160)
-        self.cart = None
+        self.cart = Memory(0x8000)
         EventHandler.subscribe(ComponentEvents.RomUnloaded, self.reset)
         EventHandler.subscribe(ComponentEvents.RomLoaded, self.load_rom)
-        EventHandler.subscribe(ComponentEvents.RequestMemoryRead, self.read_memory_address)
+        EventHandler.subscribe(ComponentEvents.RequestMemoryRead, self.requested_read_memory_address)
         EventHandler.subscribe(ComponentEvents.RequestMemoryWrite, self.write_memory_address)
         EventHandler.subscribe(GuiEvents.RequestMemoryStatus, self.requested_status)
         EventHandler.subscribe(ComponentEvents.RequestReset, self.reset)
@@ -83,64 +79,26 @@ class MemoryManagementUnit:
         self.oam = Memory(160)
         self.cart = None
 
-    def load_rom(self, rom: Path):
+    def load_rom(self, rom):
         self.cart = Memory(rom)
 
+    def write_memory_address(self, address: int, data: bytes):
+        rng = MemoryRange.get_from_addr(address)
+        if not rng:
+            raise ValueError(f"Address {address} not in any memory range")
+        getattr(self, rng.name.lower()).write_addr(address, data)
 
-    def write_memory_address(self, address: int, value: bytes):
-        match address:
-            case MemoryRange.HRAM:
-                rng = MemoryRange.HRAM
-                mem = self.hram
-            case MemoryRange.ECHO:
-                rng = MemoryRange.WRAM
-                mem = self.wram
-            case MemoryRange.VRAM:
-                rng = MemoryRange.VRAM
-                mem = self.vram
-            case MemoryRange.WRAM:
-                rng = MemoryRange.WRAM
-                mem = self.wram
-            case _:
-                raise NotImplementedError(f"Cannot write to address {address}")
-        offset = address - rng.start
-        end = offset + len(value)
-        mem[offset:end] = value
+    def read_memory_address(self, address: int, length):
+        rng = MemoryRange.get_from_addr(address)
+        if not rng:
+            raise ValueError(f"Address {address} not in any memory range")
+        return getattr(self, rng.name.lower()).read_addr(address, length)
 
-    def read_memory_address(self, address: int, size) -> int:
-        match address:
-            case MemoryRange.HRAM:
-                rng = MemoryRange.HRAM
-                mem = self.hram
-            case MemoryRange.ECHO:
-                rng = MemoryRange.WRAM
-                mem = self.wram
-            case MemoryRange.VRAM:
-                rng = MemoryRange.VRAM
-                mem = self.vram
-            case MemoryRange.WRAM:
-                rng = MemoryRange.WRAM
-                mem = self.wram
-            case _:
-                raise NotImplementedError(f"Cannot read from address {address}")
-        offset = address - rng.start
-        end = offset + size
-        return  mem[offset:end]
+    def requested_read_memory_address(self, address: int, length: int, callback):
+        callback(self.read_memory_address(address, length))
 
     def requested_status(self, callback):
         callback(str(self))
-
-    def __str__(self):
-        out = ""
-        if cart := self.cart:
-            out += f"Cart: {len(cart)} bytes\n"
-        else:
-            out += f"Cart: {'None':>7}\n"
-        out += f"VRAM: {len(self.vram):7} bytes\n"
-        out += f"WRAM: {len(self.wram):7} bytes\n"
-        out += f"HRAM: {len(self.hram):7} bytes\n"
-        out += f"OAM:  {len(self.oam):7} bytes\n"
-        return out
 
 
 
