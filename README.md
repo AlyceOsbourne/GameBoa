@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./project/resources/gui/icons/icon.png" alt="GameBoa" width=45%>
+  <img src="./project/resources/gui/icons/icon.png" alt="GameBoa" width=50%>
 </div>
 
 ---
