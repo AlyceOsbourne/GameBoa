@@ -1,14 +1,15 @@
 from datetime import date
 
 
-__version__ = "0.0.1"
+__app_name__ = "GameBoa"
+__app_version__ = "0.0.1"
 __license__ = "MIT License"
 __year__ = date.today().year
 __authors__ = "Alyce Osbourne, Boštjan Mejak"
 __github_link__ = "https://github.com/AlyceOsbourne/GameBoa"
 
-__repr__ = f"""
-GameBoa {__version__}
+__about__ = f"""
+{__app_name__} {__app_version__}
 Authors: {__authors__}
 License: {__license__}
 GitHub: {__github_link__}
@@ -37,5 +38,6 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-print(__repr__)
+
+print(__about__)
 print(__notice__)
