@@ -1,27 +1,26 @@
-# we want a class that lets us look at values that have been registered to it, such as memory addresses or registers
-import weakref
-from typing import Callable
+from functools import wraps
+from weakref import WeakValueDictionary
+from typing import Any, Callable, Hashable
 
 
 class Observer:
-    observed: dict[str: Callable] = weakref.WeakValueDictionary()
+    observed_collection: WeakValueDictionary = WeakValueDictionary()
 
     @classmethod
-    def observe(cls, key: str, observed_func: Callable):
-        cls.observed[key] = observed_func
+    def observe(cls, observed_key: Hashable, observed_function: Callable) -> None:
+        cls.observed_collection[observed_key] = observed_function
 
     @classmethod
-    def observable(cls, key):
-        def decorator(func):
-            cls.observe(key, func)
-            return func
+    def observable(cls, observable_key: Hashable) -> Callable:
+        @wraps
+        def decorator(observable_function: Callable) -> Callable:
+            cls.observe(observable_key, observable_function)
+            return observable_function
+
         return decorator
 
-    def request_observation(self, key: str, *args, **kwargs):
-        if key in self.observed:
-            return self.observed[key](*args, **kwargs)
-        else:
-            raise KeyError(f'No observer found for key: {key}')
+    def request_observation(self, requested_key: str, *args, **kwargs) -> Any:
+        if requested_key in self.observed_collection:
+            return self.observed_collection[requested_key](*args, **kwargs)
 
-
-
+        raise KeyError(f"No observer found for key {requested_key}.")
