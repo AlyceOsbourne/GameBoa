@@ -1,4 +1,24 @@
 from datetime import date
+__egg__ = r"""
+ _n_________________
+|_|_______________|_|
+|  ,-------------.  |
+| |  .---------.  | |
+| |  |         |  | |
+| |  | GAMEBOA |  | |
+| |  |         |  | |
+| |  |         |  | |
+| |  `---------'  | |
+| `---------------' |
+|   _               |
+| _| |_         ,-. |
+||_ O _|   ,-. "._,"|
+|  |_|    "._,"   A |
+|    _  _    B      |
+|   // //           |
+|  // //    \\\\\\  |
+|  `  `      \\\\\\ ,
+|________...______,"""
 
 __version__ = __major__, __minor__, __micro__ = 0, 0, 1
 __app_name__ = "GameBoa"
@@ -38,6 +58,6 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-
+print(__egg__)
 print(__about__)
 print(__notice__)

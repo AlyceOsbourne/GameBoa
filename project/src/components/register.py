@@ -4,6 +4,7 @@ from functools import partial
 from project.src.system.event_handler import EventHandler
 from project.src.system.observer import Observer
 from project.src.system.events import ComponentEvents, GuiEvents, SystemEvents
+
 registry = array.array('B', [0] * 16)
 
 _set_8 = lambda i, v: registry.__setitem__(i, v)

@@ -7,6 +7,7 @@ __all__ = [
     "GuiEvents",
     "MainWindow",
     "EventHandler",
+    'Observer',
     "SystemEvents",
     "ComponentEvents",
 ]
