@@ -4,10 +4,10 @@ from typing import Callable
 
 
 class Observer:
-    observed: dict[str: Callable] = weakref.WeakValueDictionary()
+    observed: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
 
     @classmethod
-    def observe(cls, key: str, observed_func: Callable):
+    def observe(cls, key: object, observed_func: Callable):
         cls.observed[key] = observed_func
 
     @classmethod
@@ -17,7 +17,7 @@ class Observer:
             return func
         return decorator
 
-    def request_observation(self, key: str, *args, **kwargs):
+    def request_observation(self, key: object, *args, **kwargs):
         if key in self.observed:
             return self.observed[key](*args, **kwargs)
         else:
