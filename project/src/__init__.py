@@ -1,6 +1,6 @@
 from .components import *
 from .gui import MainWindow
-from .system import ComponentEvents, EventHandler, GuiEvents, SystemEvents
+from .system import ComponentEvents, EventHandler, GuiEvents, SystemEvents, Observer
 
 
 __all__ = [

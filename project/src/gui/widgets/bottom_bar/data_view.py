@@ -1,7 +1,7 @@
 from tkinter import Frame, Text
 from tkinter.constants import BOTH, DISABLED, END, NORMAL, WORD
 
-from project.src.system import EventHandler, GuiEvents
+from project.src.system import EventHandler, GuiEvents, Observer
 
 
 class DataView(Frame):
@@ -11,14 +11,12 @@ class DataView(Frame):
         self.text.pack(fill=BOTH, expand=1)
         self.text.config(state=DISABLED)
         self.publish_event = publish_event
-        EventHandler.subscribe(GuiEvents.Update, self.fetch_data)
+        EventHandler.subscribe(GuiEvents.Update, self.update_view)
 
-    def update_view(self, data):
+    def update_view(self):
         self.text.config(state=NORMAL)
         self.text.delete(1.0, END)
-        self.text.insert(END, data)
+        self.text.insert(END, Observer.peep(self.publish_event))
         self.text.config(state=DISABLED)
 
-    def fetch_data(self):
-        EventHandler.publish(self.publish_event, self.update_view)
 

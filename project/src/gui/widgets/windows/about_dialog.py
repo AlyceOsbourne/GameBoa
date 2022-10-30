@@ -2,8 +2,8 @@ from tkinter import Label, Toplevel
 
 from PIL import Image, ImageTk
 
-from project.src.system.events import GuiEvents
 from project.src.system import ico_path, png_path
+from project.src.system.events import GuiEvents
 from project.src.system.event_handler import EventHandler
 from __metadata__ import __authors__, __github_link__, __license__, __version__
 

@@ -1,10 +1,7 @@
 from enum import auto, Flag
 from itertools import count
-from .gb_logger import logger
-
 
 EVENT_IDS = count()
-
 
 class Event(Flag):
     @staticmethod
@@ -23,7 +20,6 @@ class Event(Flag):
 class SystemEvents(Event):
     Log = auto()
     Quit = auto()
-    Logged = auto()
     ExceptionRaised = auto()
     SettingsUpdated = auto()
 
@@ -58,4 +54,3 @@ class ComponentEvents(Event):
     RequestRegisterWrite = auto()
 
 
-logger.debug(f"Loaded {len(Event.get_all_events())} events.")

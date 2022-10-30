@@ -1,8 +1,8 @@
 from datetime import date
 
-
+__version__ = __major__, __minor__, __micro__ = 0, 0, 1
 __app_name__ = "GameBoa"
-__app_version__ = "0.0.1"
+__app_version__ = "{}.{}.{}".format(*__version__)
 __license__ = "MIT License"
 __year__ = date.today().year
 __authors__ = "Alyce Osbourne, Boštjan Mejak"

@@ -1,12 +1,10 @@
-from .gb_logger import logger
 from enum import auto, IntFlag
-from typing import Any, Callable, Dict, List, Tuple
-
+from typing import Any, Callable, Dict, List, Tuple, Hashable
 
 Event = Any
 Callback = Callable[..., Any]
 CallbackList = List[Tuple[int, Callback]]
-Callbacks = Dict[Any, CallbackList]
+Callbacks = Dict[Hashable, CallbackList]
 
 
 class Priority(IntFlag):
@@ -22,7 +20,6 @@ class EventHandler:
 
     @classmethod
     def register(cls, event: Event):
-        logger.debug(f"Registering event {event}...")
         return cls.publisher_subscribers.setdefault(event, [])
 
     @classmethod
@@ -35,7 +32,6 @@ class EventHandler:
 
     @classmethod
     def publish(cls, event: Event, *args, **kwargs) -> None:
-        logger.debug(f"Publishing event {event}")
         if event in cls.publisher_subscribers:
             subs = cls.publisher_subscribers[event]
             for _, callback in subs:
@@ -43,7 +39,6 @@ class EventHandler:
 
     @classmethod
     def unsubscribe(cls, event: Event, callback: Callback) -> None:
-        logger.debug(f"Unsubscribing event {event}")
         if event in cls.publisher_subscribers:
             cls.publisher_subscribers[event] = [
                 x for x in cls.publisher_subscribers[event] if x[1] != callback
@@ -51,8 +46,8 @@ class EventHandler:
 
     @classmethod
     def subscriber(cls, event: Event, priority: Priority = Priority.MEDIUM) -> Callable:
+        print(f'subscribing {event}')
         def decorator(func: Callable) -> Callable:
             cls.subscribe(event, func, priority)
             return func
-
         return decorator

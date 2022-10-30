@@ -20,6 +20,7 @@ argument_parser = ArgumentParser()
 argument_parser.add_argument("--build", action="store_true")
 argument_parser.add_argument("--test-build", action="store_true")
 argument_parser.add_argument("--reset-build", action="store_true")
+argument_parser.add_argument("--run-unit_tests", action="store_true")
 arguments = argument_parser.parse_args()
 
 
@@ -68,20 +69,26 @@ def _test_build():
     call(str(EXE_PATH), shell=True)
 
 
-def main():
-    if arguments.build:
-        _build()
-    elif arguments.test_build:
-        _test_build()
-    else:
-        _run_src()
-
-
 def _run_src():
     from project import MainWindow
 
     main_window = MainWindow()
     main_window.mainloop()
+
+def _run_unit_tests():
+    from tests import run
+    run()
+
+def main():
+    if arguments.build:
+        _build()
+    elif arguments.test_build:
+        _test_build()
+    elif arguments.run_unit_tests:
+        _run_unit_tests()
+    else:
+        _run_src()
+
 
 
 if __name__ == "__main__":

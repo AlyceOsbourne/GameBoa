@@ -5,8 +5,8 @@ from typing import NamedTuple
 
 from project.src.system.event_handler import EventHandler
 from project.src.system.events import ComponentEvents
+from project.src.system.system_paths import opcode_path
 
-instruction_path = Path(__file__).parent.parent.parent / 'resources' / 'ops.bin'
 
 class Instruction(
     NamedTuple(
@@ -57,7 +57,7 @@ class Instruction(
         return f"{self.mnemonic}({self.operand1}, {self.operand2})"
 
 
-instructions, cb_instructions = Instruction.load(instruction_path)
+instructions, cb_instructions = Instruction.load(opcode_path)
 
 EventHandler.subscribe(
     ComponentEvents.RequestDecode,
