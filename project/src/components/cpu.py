@@ -1,15 +1,18 @@
-from project.src.system.event_handler import EventHandler
 from project.src.system.observer import Observer
 from project.src.system.events import ComponentEvents
+from project.src.system.event_handler import EventHandler
 from project.src.components.instruction import Instruction
+
 
 def write_operand(operand, value):
     ...
 
+
 def read_operand(operand):
     ...
 
-def execute( instruction: Instruction):
+
+def execute(instruction: Instruction):
 
     match instruction.mnemonic:
         case "LD" | "LDH" | "LDHL" | "LDI" | "LDD":
@@ -33,34 +36,44 @@ def execute( instruction: Instruction):
         case "STOP" | "HALT" | "DI" | "EI":
             misc(instruction)
         case _:
-            raise ValueError(f"Invalid instruction: {instruction}")
+            raise ValueError(f"Invalid instruction {instruction}.")
+
 
 def load(instruction: Instruction):
     ...
 
+
 def push_pop(instruction: Instruction):
     ...
+
 
 def add_sub(instruction: Instruction):
     ...
 
+
 def inc_dec(instruction: Instruction):
     ...
+
 
 def rotate(instruction: Instruction):
     ...
 
+
 def bit(instruction: Instruction):
     ...
+
 
 def jump(instruction: Instruction):
     ...
 
+
 def call(instruction: Instruction):
     ...
 
+
 def ret(instruction: Instruction):
     ...
+
 
 def misc(instruction: Instruction):
     ...
