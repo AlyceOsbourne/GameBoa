@@ -1,6 +1,7 @@
 from enum import auto, IntFlag
-from queue import PriorityQueue
+from queue import Queue
 from typing import Any, Callable, Dict, List, Tuple, Hashable
+
 
 Event = Any
 Callback = Callable[..., Any]
@@ -18,7 +19,6 @@ class Priority(IntFlag):
 
 class EventHandler:
     publisher_subscribers: Callbacks = dict()
-    priority_queue: PriorityQueue = PriorityQueue()
 
     @classmethod
     def register(cls, event: Event):
@@ -53,3 +53,10 @@ class EventHandler:
             return func
 
         return decorator
+
+
+
+
+
+
+

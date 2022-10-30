@@ -20,7 +20,7 @@ argument_parser = ArgumentParser()
 argument_parser.add_argument("--build", action="store_true")
 argument_parser.add_argument("--test-build", action="store_true")
 argument_parser.add_argument("--reset-build", action="store_true")
-argument_parser.add_argument("--run-unit_tests", action="store_true")
+argument_parser.add_argument("--run-unit-tests", action="store_true")
 arguments = argument_parser.parse_args()
 
 
