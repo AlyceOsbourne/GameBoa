@@ -8,3 +8,4 @@
 /tests/.hypothesis/
 /tests/local/
 /tests/.pytest_cache/
+/.hypothesis/examples/

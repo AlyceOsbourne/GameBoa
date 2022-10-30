@@ -1,4 +1,5 @@
 from enum import auto, IntFlag
+from queue import PriorityQueue
 from typing import Any, Callable, Dict, List, Tuple, Hashable
 
 Event = Any
@@ -17,6 +18,7 @@ class Priority(IntFlag):
 
 class EventHandler:
     publisher_subscribers: Callbacks = dict()
+    priority_queue: PriorityQueue = PriorityQueue()
 
     @classmethod
     def register(cls, event: Event):
@@ -46,7 +48,6 @@ class EventHandler:
 
     @classmethod
     def subscriber(cls, event: Event, priority: Priority = Priority.MEDIUM) -> Callable:
-        print(f'subscribing {event}')
         def decorator(func: Callable) -> Callable:
             cls.subscribe(event, func, priority)
             return func

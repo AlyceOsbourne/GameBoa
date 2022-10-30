@@ -11,3 +11,4 @@ OAM: array = array("B", [0] * 160)
 HRAM: array = array("B", [0] * 127)
 VRAM: array = array("B", [0] * 8192)
 WRAM: array = array("B", [0] * 8192)
+
