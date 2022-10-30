@@ -5,9 +5,4 @@ from .config import *
 from .system_paths import *
 from .gb_logger import *
 
-__all__ = [
-    'EventHandler',
-    'SystemEvents',
-    'GuiEvents',
-    'ComponentEvents'
-]
+__all__ = ["EventHandler", "SystemEvents", "GuiEvents", "ComponentEvents"]

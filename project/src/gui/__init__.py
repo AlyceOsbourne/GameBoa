@@ -1,7 +1,15 @@
 import tkinter
 from tkinter.ttk import Notebook
 from PIL import Image, ImageTk
-from project.src.system import get_value, EventHandler, SystemEvents, GuiEvents, ComponentEvents, ico_path, png_path
+from project.src.system import (
+    get_value,
+    EventHandler,
+    SystemEvents,
+    GuiEvents,
+    ComponentEvents,
+    ico_path,
+    png_path,
+)
 from .widgets import *
 
 
@@ -23,10 +31,16 @@ class MainWindow(tkinter.Tk):
         self.update_dev_view()
         self.rom_listbox = RomLibrary(self)
         self.rom_listbox.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
-        self.canvas = tkinter.Canvas(self, width=self.winfo_screenwidth(), height=self.winfo_screenheight())
-        self.canvas.create_rectangle(0, 0, self.winfo_screenwidth(), self.winfo_screenheight(), fill="black")
+        self.canvas = tkinter.Canvas(
+            self, width=self.winfo_screenwidth(), height=self.winfo_screenheight()
+        )
+        self.canvas.create_rectangle(
+            0, 0, self.winfo_screenwidth(), self.winfo_screenheight(), fill="black"
+        )
 
-        self.canvas.bind("<Configure>", lambda e: self.canvas.config(width=e.width, height=e.height))
+        self.canvas.bind(
+            "<Configure>", lambda e: self.canvas.config(width=e.width, height=e.height)
+        )
 
         EventHandler.subscribe(SystemEvents.SettingsUpdated, self.update_dev_view)
         EventHandler.subscribe(SystemEvents.Quit, self.destroy)
@@ -36,7 +50,9 @@ class MainWindow(tkinter.Tk):
     def make_bottom_bar(self):
         self.bottom_bar = Notebook(self, height=150)
         self.bottom_bar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
-        self.bottom_bar_collapse_button = tkinter.Button(self, text="▼", command=self.collapse_bottom_bar)
+        self.bottom_bar_collapse_button = tkinter.Button(
+            self, text="▼", command=self.collapse_bottom_bar
+        )
         self.cartridge_data_tab = CartridgeDataWidget(self.bottom_bar)
         self.registry_view = DataView(self.bottom_bar, GuiEvents.RequestRegistryStatus)
         self.memory_view = DataView(self.bottom_bar, GuiEvents.RequestMemoryStatus)
@@ -51,7 +67,7 @@ class MainWindow(tkinter.Tk):
         self.toggle_bottom_bar()
 
     def toggle_bottom_bar(self):
-        if get_value('developer', 'debug'):
+        if get_value("developer", "debug"):
             self.bottom_bar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
             self.bottom_bar_collapse_button.pack_forget()
             self.bottom_bar_collapse_button.pack(side=tkinter.BOTTOM, fill=tkinter.X)
@@ -78,7 +94,7 @@ class MainWindow(tkinter.Tk):
 
     def update_title_bar(self):
         # if debug mode is enabled, set title bar to GameBoa (debug)
-        if get_value('developer', 'debug'):
+        if get_value("developer", "debug"):
             self.title("GameBoa (debug)")
         else:
             self.title("GameBoa")
@@ -104,6 +120,4 @@ class MainWindow(tkinter.Tk):
         EventHandler.publish(GuiEvents.Update)
 
 
-__all__ = [
-    'MainWindow'
-]
+__all__ = ["MainWindow"]

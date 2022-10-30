@@ -1,4 +1,5 @@
 from datetime import date
+
 __egg__ = r"""
  _n_________________
 |_|_______________|_|

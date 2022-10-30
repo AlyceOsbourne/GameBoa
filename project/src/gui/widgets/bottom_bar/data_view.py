@@ -18,5 +18,3 @@ class DataView(Frame):
         self.text.delete(1.0, END)
         self.text.insert(END, Observer.peep(self.publish_event))
         self.text.config(state=DISABLED)
-
-

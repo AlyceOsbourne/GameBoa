@@ -51,4 +51,5 @@ class EventHandler:
         def decorator(func: Callable) -> Callable:
             cls.subscribe(event, func, priority)
             return func
+
         return decorator

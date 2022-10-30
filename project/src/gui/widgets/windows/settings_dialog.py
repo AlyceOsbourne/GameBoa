@@ -11,7 +11,7 @@ from tkinter import (
     BooleanVar,
     DoubleVar,
     IntVar,
-    StringVar
+    StringVar,
 )
 
 from project.src.system.events import SystemEvents, GuiEvents, ComponentEvents
@@ -24,7 +24,7 @@ from project.src.system.config import (
     save_config,
     load_config,
     section_options,
-    reset_to_defaults
+    reset_to_defaults,
 )
 
 
@@ -39,7 +39,6 @@ class SettingsWindow(Toplevel):
         self.reset = None
         self.save_button = None
         self.cancel_button = None
-
 
     def make_buttons(self):
         self.reset = Button(self, text="Reset to Defaults", command=self.reset)
@@ -119,7 +118,7 @@ class SettingsWindow(Toplevel):
                 )
                 button.grid(row=index, column=4, sticky="w", columnspan=2)
 
-    def browse(self, section, option, value:Entry):
+    def browse(self, section, option, value: Entry):
         if option == "roms":
             file = filedialog.askdirectory(initialdir=get_value(section, option))
         else:
@@ -146,10 +145,6 @@ class SettingsWindow(Toplevel):
                 child.destroy()
             tab.destroy()
         self.create_tabs(self.tabs)
-
-
-
-
 
 
 @EventHandler.subscriber(GuiEvents.OpenSettingsDialog)

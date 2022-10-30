@@ -27,7 +27,7 @@ class Instruction(
     """Instructions of the CPU."""
 
     @classmethod
-    def load(cls, file_path:Path) -> dict:
+    def load(cls, file_path: Path) -> dict:
         loaded_instructions: dict = {}
         try:
             json_data = json.loads(gzip.decompress(file_path.read_bytes()).decode())
@@ -61,10 +61,8 @@ instructions, cb_instructions = Instruction.load(opcode_path)
 
 EventHandler.subscribe(
     ComponentEvents.RequestDecode,
-    lambda op_code, is_cb_instruction:
-    EventHandler.publish(
-        ComponentEvents.RequestExecute, cb_instructions[op_code]
-        if is_cb_instruction
-        else instructions[op_code])
+    lambda op_code, is_cb_instruction: EventHandler.publish(
+        ComponentEvents.RequestExecute,
+        cb_instructions[op_code] if is_cb_instruction else instructions[op_code],
+    ),
 )
-

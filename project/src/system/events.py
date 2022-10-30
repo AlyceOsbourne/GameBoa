@@ -3,6 +3,7 @@ from itertools import count
 
 EVENT_IDS = count()
 
+
 class Event(Flag):
     @staticmethod
     def _generate_next_value_(name, start, count, last_values):
@@ -52,5 +53,3 @@ class ComponentEvents(Event):
 
     RequestRegisterRead = auto()
     RequestRegisterWrite = auto()
-
-

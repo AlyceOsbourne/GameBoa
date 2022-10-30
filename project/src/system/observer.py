@@ -15,6 +15,7 @@ class Observer:
         def decorator(func: Callable) -> Callable:
             cls.observe(observable_key, func)
             return func
+
         return decorator
 
     @classmethod
@@ -22,4 +23,3 @@ class Observer:
         if requested_key in cls.observed_collection:
             return cls.observed_collection[requested_key](*args, **kwargs)
         raise KeyError(f"No observer found for key {requested_key}.")
-
