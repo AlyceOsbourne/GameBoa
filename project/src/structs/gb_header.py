@@ -324,15 +324,16 @@ ROM_BANK_END = 0x8000
 RAM_BANK_START = 0xA000
 RAM_BANK_END = 0xC000
 
-HeaderData = namedtuple('header_struct', [f[0] for f in HEADER_FORMAT])
+HeaderData = namedtuple('HeaderData', [f[0] for f in HEADER_FORMAT])
 
 
-def calculate_checksum(compare, rom):
+def calculate_checksum(compare:int, rom):
     """Calculate the checksum for the given ROM."""
-    checksum = 0
+    sum = 0
     for i in range(0x134, 0x14D):
-        checksum = checksum - rom[i] - 1
-    return checksum & 0xFF == compare
+        sum -= rom[i] + 1
+    return sum & 0xFF == compare
+
 
 @EventHandler.subscriber(ComponentEvents.RomLoaded)
 def get_header_data(rom: array):

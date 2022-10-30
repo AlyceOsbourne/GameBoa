@@ -1,20 +1,12 @@
-from .register import Register
-from .memory import Memory, MemoryManagementUnit
-from .cpu import CPU, CPUState
-from .timer import Timer
-from .interrupts import Interrupts
-from .ppu import PixelProcessingUnit
-from .joypad import Joypad
+
+from . import register, cpu, instruction, memory, ppu
+
 
 
 __all__ = [
-    "Register",
-    "Memory",
-    "MemoryManagementUnit",
-    "CPU",
-    "CPUState",
-    "Timer",
-    "Interrupts",
-    "PixelProcessingUnit",
-    "Joypad",
-]
+    'register',
+    'cpu',
+    'instruction',
+    'memory',
+    'ppu',
+    ]

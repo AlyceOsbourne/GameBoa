@@ -39,11 +39,11 @@ def load_rom_data(file: Path | str):
 @EventHandler.subscriber(GuiEvents.DeleteRomFromLibrary)
 def delete_rom(file_path: Path | str):
     if not isinstance(file_path, Path) and isinstance(file_path, str):
-        rom_file_path = Path(file_path)
+        file_path = Path(file_path)
 
-    if not rom_file_path.exists():
+    if not file_path.exists():
         raise FileNotFoundError(f"ROM file {file_path} does not exist.")
 
     if messagebox.askyesno("Confirmation", f"Are you sure to delete {file_path}?"):
-        rom_file_path.unlink()
+        file_path.unlink()
         EventHandler.publish(GuiEvents.UpdateRomLibrary)

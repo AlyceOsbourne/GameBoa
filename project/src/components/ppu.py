@@ -1,2 +1,0 @@
-class PixelProcessingUnit:
-    pass

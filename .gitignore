@@ -5,3 +5,6 @@
 /GameBoa.spec
 /build_tools/tmp/
 /build_tools/dist/
+/tests/.hypothesis/
+/tests/local/
+/tests/.pytest_cache/

@@ -43,13 +43,17 @@ class GuiEvents(Event):
 class ComponentEvents(Event):
     RomLoaded = auto()
     RomUnloaded = auto()
+
     HeaderLoaded = auto()
     RequestReset = auto()
-    RequestDecode = auto()
+
     RequestOpCode = auto()
+    RequestDecode = auto()
     RequestExecute = auto()
+
     RequestMemoryRead = auto()
     RequestMemoryWrite = auto()
+
     RequestRegisterRead = auto()
     RequestRegisterWrite = auto()
 

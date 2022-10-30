@@ -3,6 +3,10 @@ import json
 from pathlib import Path
 from typing import NamedTuple
 
+from project.src.system.event_handler import EventHandler
+from project.src.system.events import ComponentEvents
+
+instruction_path = Path(__file__).parent.parent.parent / 'resources' / 'ops.bin'
 
 class Instruction(
     NamedTuple(
@@ -53,15 +57,14 @@ class Instruction(
         return f"{self.mnemonic}({self.operand1}, {self.operand2})"
 
 
-class Decoder:
-    """ simply handles the decoding of the opcodes """
+instructions, cb_instructions = Instruction.load(instruction_path)
 
-    def __init__(self, instruction_set):
-        self.instructions, self.cb_instructions = instruction_set
+EventHandler.subscribe(
+    ComponentEvents.RequestDecode,
+    lambda op_code, is_cb_instruction:
+    EventHandler.publish(
+        ComponentEvents.RequestExecute, cb_instructions[op_code]
+        if is_cb_instruction
+        else instructions[op_code])
+)
 
-    def decode(self, op_code: int, is_cb: bool) -> Instruction:
-        """Decodes the given op_code into an instruction."""
-        return getattr(self, ("cb_" if is_cb else "") + "instructions").get(op_code, None)
-
-    def __str__(self):
-        return f"{self.instructions} {self.cb_instructions}"
