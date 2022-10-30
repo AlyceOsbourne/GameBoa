@@ -9,9 +9,11 @@ from typing import Any
 from project.src.system.event_handler import EventHandler
 from project.src.system.events import SystemEvents, GuiEvents, ComponentEvents
 
+
 class _MemoryRange(namedtuple("MemoryRange", "start end")):
     def __contains__(self, item):
         return self.start <= item < self.end
+
 
 class MemoryRange(_MemoryRange, Enum):
     CART = 0x0000, 0x8000
@@ -26,6 +28,7 @@ class MemoryRange(_MemoryRange, Enum):
             if addr in memory_range:
                 return memory_range
         raise ValueError(f"Address {addr} not in any memory range")
+
 
 class Memory:
     data: array.array
@@ -50,14 +53,14 @@ class Memory:
     def _from_bytes(self, data: bytes):
         self.data = array.array("B", data)
 
-    def write_addr(self, addr: int, data: bytes):
-        self.data[addr : addr + len(data)] = array.array("B", data)
+    def write_address(self, address: int, data: bytes):
+        self.data[address : address + len(data)] = array.array("B", data)
 
-    def read_addr(self, addr: int, size: int) -> bytes:
-        return bytes(self.data[addr : addr + size])
+    def read_address(self, address: int, size: int) -> bytes:
+        return bytes(self.data[address : address + size])
+
 
 class MemoryManagementUnit:
-
     def __init__(self):
         self.hram = Memory(127)
         self.wram = Memory(8192)
@@ -67,8 +70,12 @@ class MemoryManagementUnit:
         self.cart = Memory(0x8000)
         EventHandler.subscribe(ComponentEvents.RomUnloaded, self.reset)
         EventHandler.subscribe(ComponentEvents.RomLoaded, self.load_rom)
-        EventHandler.subscribe(ComponentEvents.RequestMemoryRead, self.requested_read_memory_address)
-        EventHandler.subscribe(ComponentEvents.RequestMemoryWrite, self.write_memory_address)
+        EventHandler.subscribe(
+            ComponentEvents.RequestMemoryRead, self.requested_read_memory_address
+        )
+        EventHandler.subscribe(
+            ComponentEvents.RequestMemoryWrite, self.write_memory_address
+        )
         EventHandler.subscribe(GuiEvents.RequestMemoryStatus, self.requested_status)
         EventHandler.subscribe(ComponentEvents.RequestReset, self.reset)
 
@@ -99,12 +106,3 @@ class MemoryManagementUnit:
 
     def requested_status(self, callback):
         callback(str(self))
-
-
-
-
-
-
-
-
-
