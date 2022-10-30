@@ -75,9 +75,12 @@ def _run_src():
     main_window = MainWindow()
     main_window.mainloop()
 
+
 def _run_unit_tests():
     from tests import run
+
     run()
+
 
 def main():
     if arguments.build:
@@ -88,7 +91,6 @@ def main():
         _run_unit_tests()
     else:
         _run_src()
-
 
 
 if __name__ == "__main__":
