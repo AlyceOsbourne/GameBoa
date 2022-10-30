@@ -1,14 +1,13 @@
 from project.src.system.event_handler import EventHandler
+from project.src.system.observer import Observer
 from project.src.system.events import ComponentEvents
 from project.src.components.instruction import Instruction
-
 
 def write_operand(operand, value):
     ...
 
 def read_operand(operand):
     ...
-
 
 def execute( instruction: Instruction):
 

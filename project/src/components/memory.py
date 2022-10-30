@@ -1,6 +1,7 @@
 import array
 
 from project.src.system.event_handler import EventHandler
+from project.src.system.observer import Observer
 from project.src.system.events import SystemEvents, GuiEvents, ComponentEvents
 
 
