@@ -66,7 +66,7 @@ oam = array("B", [0] * len(MemoryMap.OAM))
 hram = array("B", [0] * len(MemoryMap.HRAM))
 interrupt_enable = array("B", [0] * len(MemoryMap.INTERRUPT_ENABLE))
 
-@EventHandler.register(ComponentEvents.RequestMemoryWrite)
+@EventHandler.subscriber(ComponentEvents.RequestMemoryWrite)
 def write_memory(address, value):
     match address:
         case MemoryMap.WRAM:
