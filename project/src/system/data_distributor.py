@@ -6,7 +6,7 @@ from weakref import WeakValueDictionary
 from enum import auto, Flag
 from itertools import count
 from .gb_logger import logger
-
+from .config import get_value
 EVENT_IDS = count()
 
 
@@ -79,8 +79,11 @@ allowed_requests: WeakValueDictionary = WeakValueDictionary()
 event_queue = deque()
 
 def broadcast(event: Event, *args, **kwargs) -> None:
-    for [callback] in (broadcasts.get(event, {}).get(priority, []) for priority in Priority):
-        event_queue.append((callback, args, kwargs))
+    event_queue.extend(
+        (func, args, kwargs)
+        for priority in Priority
+        for func in broadcasts.get(event, {}).get(priority, [])
+    )
 
 def subscribe(event: Event, callback: Callback, priority: Priority = Priority.MEDIUM):
     broadcasts.setdefault(event, {}).setdefault(priority, []).append(callback)
@@ -105,8 +108,7 @@ def update():
         callback(*args, **kwargs)
 
 
-subscribe(SystemEvents.Log, logger.debug)
-subscribe(SystemEvents.ExceptionRaised, logger.exception)
+
 
 __all__ = [
     "Event", "SystemEvents", "GuiEvents", "ComponentEvents", "Priority",

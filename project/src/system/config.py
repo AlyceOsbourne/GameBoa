@@ -10,7 +10,6 @@ else:
     user_path.mkdir(exist_ok=True)
 
 
-config_parser = configparser.ConfigParser()
 
 defaults = {
     "paths": {
@@ -26,10 +25,11 @@ defaults = {
     "input": {},
     "developer": {
         "debug": (False, bool),
-        "debug logging (requires restart)": (False, bool),
+        "debug logging": (False, bool),
     },
 }
 
+config_parser = configparser.ConfigParser()
 
 def load_config():
     defaults_ = {
@@ -38,10 +38,17 @@ def load_config():
     }
     config_parser.read_dict(defaults_)
     config_parser.read(user_path / "gameboa.config")
+    for section in config_parser.sections():
+        if section not in defaults:
+            config_parser.remove_section(section)
+        else:
+            for key in config_parser[section]:
+                if key not in defaults_[section]:
+                    config_parser[section].pop(key)
     save_config()
-
     for path in config_parser["paths"].values():
         pathlib.Path(path).mkdir(parents=True, exist_ok=True)
+
 
 
 def get_value(section, key):

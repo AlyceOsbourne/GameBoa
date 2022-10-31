@@ -13,7 +13,7 @@ file_handler.setLevel(DEBUG)
 
 stream_handler = StreamHandler()
 stream_handler.setLevel(
-    DEBUG if get_value("developer", "debug logging (requires restart)") else INFO
+    DEBUG if get_value("developer", "debug logging") else INFO
 )
 
 formatter = Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
