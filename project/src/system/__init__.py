@@ -1,8 +1,6 @@
-from .event_handler import EventHandler
-from .observer import Observer
-from .events import *
 from .config import *
 from .system_paths import *
 from .gb_logger import *
+from . import data_distributor
 
-__all__ = ["EventHandler", "SystemEvents", "GuiEvents", "ComponentEvents"]
+__all__ = ["data_distributor", 'system_paths', 'config', 'gb_logger']

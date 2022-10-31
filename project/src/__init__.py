@@ -1,13 +1,9 @@
+from .system import data_distributor
 from .components import *
 from .gui import MainWindow
-from .system import ComponentEvents, EventHandler, GuiEvents, SystemEvents, Observer
+from . import structs
 
 
 __all__ = [
-    "GuiEvents",
     "MainWindow",
-    "EventHandler",
-    "Observer",
-    "SystemEvents",
-    "ComponentEvents",
 ]

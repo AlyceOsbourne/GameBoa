@@ -14,8 +14,7 @@ from tkinter import (
     StringVar,
 )
 
-from project.src.system.events import SystemEvents, GuiEvents, ComponentEvents
-from project.src.system.event_handler import EventHandler
+from project.src.system import data_distributor as dd
 from project.src.system.config import (
     sections,
     get_value,
@@ -131,7 +130,7 @@ class SettingsWindow(Toplevel):
 
     def save(self):
         save_config()
-        EventHandler.publish(SystemEvents.SettingsUpdated)
+        dd.broadcast(dd.SystemEvents.SettingsUpdated)
         self.destroy()
 
     def cancel(self):
@@ -147,6 +146,6 @@ class SettingsWindow(Toplevel):
         self.create_tabs(self.tabs)
 
 
-@EventHandler.subscriber(GuiEvents.OpenSettingsDialog)
+@dd.subscribes_to(dd.GuiEvents.OpenSettingsDialog)
 def open_settings_dialog(parent):
-    SettingsWindow(parent).mainloop()
+    SettingsWindow(parent).grab_set()

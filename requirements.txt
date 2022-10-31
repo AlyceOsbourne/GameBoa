@@ -1,3 +1,6 @@
-Pillow ~= 9.3.0
+Pillow~=9.2.0
 hypothesis ~= 6.56.4
 pyinstaller ~= 5.6.1
+
+future~=0.18.2
+tkthread~=0.5.2

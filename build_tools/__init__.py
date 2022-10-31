@@ -14,13 +14,13 @@ ICON_PATH = (
 )
 
 
-def build():
+def build(exe_name):
     installer.run(
         [
             "__main__.py",
             "--clean",
             "--onefile",
-            "--name=GameBoa",
+            f"--name={exe_name}",
             f"--icon={ICON_PATH}",
             f"--distpath={WINDOWS_PATH}",
             "--add-data=project/resources;resources",
@@ -28,5 +28,4 @@ def build():
     )
 
 
-if __name__ == "__main__":
-    build()
+

@@ -19,9 +19,10 @@ __egg__ = r"""
 |   // //           |
 |  // //    \\\\\\  |
 |  `  `      \\\\\\ ,
-|________...______,"""
+|________...______,
+"""
 
-__version__ = __major__, __minor__, __micro__ = 0, 0, 1
+__version__ = __major__, __minor__, __micro__ = 0, 0, 2
 __app_name__ = "GameBoa"
 __app_version__ = "{}.{}.{}".format(*__version__)
 __license__ = "MIT License"
@@ -58,7 +59,6 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-
-print(__egg__)
+print(__egg__, end='\n\n')
 print(__about__)
 print(__notice__)

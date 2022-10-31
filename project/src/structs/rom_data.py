@@ -2,10 +2,10 @@ import zipfile
 from pathlib import Path
 from tkinter import messagebox
 
-from project.src.system import ComponentEvents, EventHandler, GuiEvents, SystemEvents
+from project.src.system import data_distributor as dd
 
 
-@EventHandler.subscriber(GuiEvents.LoadRomFromLibrary)
+@dd.subscribes_to(dd.GuiEvents.LoadRomFromLibrary)
 def load_rom_data(file: Path | str):
     allowed_suffixes = (".gb", ".gbc", ".zip")
 
@@ -33,10 +33,10 @@ def load_rom_data(file: Path | str):
         with open(file, "rb") as rom_file:
             rom_data = rom_file.read()
 
-    EventHandler.publish(ComponentEvents.RomLoaded, rom_data)
+    dd.broadcast(dd.ComponentEvents.RomLoaded, rom_data)
 
 
-@EventHandler.subscriber(GuiEvents.DeleteRomFromLibrary)
+@dd.subscribes_to(dd.GuiEvents.DeleteRomFromLibrary)
 def delete_rom(file_path: Path | str):
     if not isinstance(file_path, Path) and isinstance(file_path, str):
         file_path = Path(file_path)
@@ -46,4 +46,4 @@ def delete_rom(file_path: Path | str):
 
     if messagebox.askyesno("Confirmation", f"Are you sure to delete {file_path}?"):
         file_path.unlink()
-        EventHandler.publish(GuiEvents.UpdateRomLibrary)
+        dd.broadcast(dd.GuiEvents.UpdateRomLibrary)

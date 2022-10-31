@@ -1,8 +1,5 @@
-from project.src.system.observer import Observer
-from project.src.system.events import ComponentEvents
-from project.src.system.event_handler import EventHandler
 from project.src.components.instruction import Instruction
-
+from project.src.system import data_distributor as dd
 
 def write_operand(operand, value):
     ...

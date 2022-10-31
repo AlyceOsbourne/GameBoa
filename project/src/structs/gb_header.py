@@ -4,11 +4,7 @@ from types import MappingProxyType
 from array import array
 from collections import namedtuple
 from project.src.system import (
-    EventHandler,
-    SystemEvents,
-    GuiEvents,
-    ComponentEvents,
-    logger,
+    data_distributor as dd
 )
 
 
@@ -348,7 +344,7 @@ def calculate_checksum(compare: int, rom):
     return sum & 0xFF == compare
 
 
-@EventHandler.subscriber(ComponentEvents.RomLoaded)
+@dd.subscribes_to(dd.ComponentEvents.RomLoaded)
 def get_header_data(rom: array):
     mapping = {
         k: v
@@ -373,5 +369,5 @@ def get_header_data(rom: array):
     # header checksum is sum all the header bytes together except the checksum bytes
     mapping["header_checksum"] = calculate_checksum(mapping["header_checksum"], rom)
     header_data = HeaderData(**mapping)
-    logger.info("Header data: %s", header_data)
-    EventHandler.publish(ComponentEvents.HeaderLoaded, header_data)
+    dd.broadcast(dd.SystemEvents.Log, f"Header data: {header_data}")
+    dd.broadcast(dd.ComponentEvents.HeaderLoaded, header_data)

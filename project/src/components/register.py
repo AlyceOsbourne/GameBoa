@@ -1,9 +1,6 @@
 import array
 from functools import partial
-
-from project.src.system.event_handler import EventHandler
-from project.src.system.observer import Observer
-from project.src.system.events import ComponentEvents, GuiEvents, SystemEvents
+from project.src.system import data_distributor as dd
 
 registry = array.array("B", [0] * 16)
 
@@ -27,9 +24,9 @@ _8_bit_regs = _make_regs(["A", "F", "B", "C", "D", "E", "H", "L"])
 _18_bit_regs = _make_regs(["AF", "BC", "DE", "HL"])
 
 
-@EventHandler.subscriber(ComponentEvents.RequestRegisterWrite)
+@dd.subscribes_to(dd.ComponentEvents.RequestRegisterWrite)
 def set_register(register, value):
-    EventHandler.publish(SystemEvents.Log, f"Writing {value} to {register}")
+    dd.broadcast(dd.SystemEvents.Log, f"Writing {value} to {register}")
     match register:
         case "A" | "F" | "B" | "C" | "D" | "E" | "H" | "L":
             _8_bit_regs[register][0](value)
@@ -43,9 +40,9 @@ def set_register(register, value):
             raise KeyError(f"Unknown register for given key {register}")
 
 
-@Observer.observable(ComponentEvents.RequestRegisterRead)
+@dd.allows_requests(dd.ComponentEvents.RequestRegisterRead)
 def get_register(register):
-    EventHandler.publish(SystemEvents.Log, f"Reading {register}")
+    dd.broadcast(dd.SystemEvents.Log, f"Reading {register}")
     match register:
         case "A" | "F" | "B" | "C" | "D" | "E" | "H" | "L":
             return _8_bit_regs[register][1]()
@@ -57,7 +54,7 @@ def get_register(register):
             return _get_16(10)
 
 
-@Observer.observable(GuiEvents.RequestRegistryStatus)
+@dd.allows_requests(dd.GuiEvents.RequestRegistryStatus)
 def get_registry_status():
     return_string = ""
     for i, reg in enumerate(["AF", "BC", "DE", "HL", "SP", "PC"]):
@@ -67,7 +64,7 @@ def get_registry_status():
     return return_string
 
 
-@EventHandler.subscriber(ComponentEvents.RequestReset)
+@dd.subscribes_to(dd.ComponentEvents.RequestReset)
 def reset():
     for i in range(12):
         registry[i] = 0

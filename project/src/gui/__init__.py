@@ -1,14 +1,10 @@
 import tkinter
 from tkinter.ttk import Notebook
-from PIL import Image, ImageTk
+
 from project.src.system import (
     get_value,
-    EventHandler,
-    SystemEvents,
-    GuiEvents,
-    ComponentEvents,
     ico_path,
-    png_path,
+    data_distributor as dd
 )
 from .widgets import *
 
@@ -42,10 +38,11 @@ class MainWindow(tkinter.Tk):
             "<Configure>", lambda e: self.canvas.config(width=e.width, height=e.height)
         )
 
-        EventHandler.subscribe(SystemEvents.SettingsUpdated, self.update_dev_view)
-        EventHandler.subscribe(SystemEvents.Quit, self.destroy)
-        EventHandler.subscribe(ComponentEvents.RomLoaded, self.switch_to_canvas)
-        EventHandler.subscribe(ComponentEvents.RequestReset, self.switch_to_library)
+        dd.subscribe(dd.SystemEvents.SettingsUpdated, self.update_dev_view)
+        dd.subscribe(dd.SystemEvents.Quit, self.destroy)
+        dd.subscribe(dd.ComponentEvents.RomLoaded, self.switch_to_canvas)
+        dd.subscribe(dd.ComponentEvents.RequestReset, self.switch_to_library)
+
 
     def make_bottom_bar(self):
         self.bottom_bar = Notebook(self, height=150)
@@ -54,8 +51,8 @@ class MainWindow(tkinter.Tk):
             self, text="▼", command=self.collapse_bottom_bar
         )
         self.cartridge_data_tab = CartridgeDataWidget(self.bottom_bar)
-        self.registry_view = DataView(self.bottom_bar, GuiEvents.RequestRegistryStatus)
-        self.memory_view = DataView(self.bottom_bar, GuiEvents.RequestMemoryStatus)
+        self.registry_view = DataView(self.bottom_bar, dd.GuiEvents.RequestRegistryStatus)
+        self.memory_view = DataView(self.bottom_bar, dd.GuiEvents.RequestMemoryStatus)
 
         self.bottom_bar.add(self.cartridge_data_tab, text="Cartridge Data")
         self.bottom_bar.add(self.registry_view, text="Registry")
@@ -117,7 +114,7 @@ class MainWindow(tkinter.Tk):
 
     def update_loop(self):
         self.after(1000, self.update_loop)
-        EventHandler.publish(GuiEvents.Update)
+        dd.broadcast(dd.GuiEvents.Update)
 
 
 __all__ = ["MainWindow"]

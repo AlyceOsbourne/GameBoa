@@ -2,8 +2,7 @@ import pprint
 import traceback
 from tkinter import messagebox
 
-from project.src.system.event_handler import EventHandler
-from project.src.system.events import SystemEvents
+from project.src.system import data_distributor as dd
 
 
 LINK_TO_ISSUES_ON_GITHUB = (
@@ -11,7 +10,7 @@ LINK_TO_ISSUES_ON_GITHUB = (
 )
 
 
-@EventHandler.subscriber(SystemEvents.ExceptionRaised)
+@dd.subscribes_to(dd.SystemEvents.ExceptionRaised)
 def handle_exception(exception):
     report_issue_confirmed = messagebox.askyesno(
         "Report Issue Confirmation",

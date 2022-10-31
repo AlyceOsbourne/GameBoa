@@ -8,15 +8,15 @@
 GameBoa is a Game Boy emulator written in Python.
 
 #### Project goals
-- [ ] GUI
-- [ ] Debugger
+- [ ] GUI (WIP)
+- [ ] Debugger 
 - [X] ROM loading
 - [ ] ROM patching
-- [ ] CPU emulation
-- [ ] GPU emulation
-- [ ] Input emulation
+- [ ] CPU emulation (WIP)
+- [ ] GPU emulation (WIP)
+- [ ] Input emulation (WIP)
 - [ ] Sound emulation
-- [X] Memory emulation
+- [ ] Memory emulation (WIP)
 - [ ] Link cable support
 - [ ] Save state support
 - [ ] Neural network support

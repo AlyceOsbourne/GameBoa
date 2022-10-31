@@ -6,14 +6,13 @@ import __metadata__
 
 __all__ = ["main", "__metadata__"]
 
-WRITE_PERMISSION = 0o777
 PARENT_PATH = Path(__file__).parent
 
 DIST_PATH = PARENT_PATH / "dist"
 BUILD_PATH = PARENT_PATH / "build"
 WINDOWS_DIST_PATH = DIST_PATH / "windows"
 SPEC_PATH = PARENT_PATH / f"{__metadata__.__app_name__}.spec"
-EXE_PATH = WINDOWS_DIST_PATH / f"{__metadata__.__app_name__}.exe"
+EXE_PATH = WINDOWS_DIST_PATH / f"{__metadata__.__app_name__} Build [{__metadata__.__app_version__}].exe"
 
 
 argument_parser = ArgumentParser()
@@ -24,25 +23,28 @@ argument_parser.add_argument("--run-unit-tests", action="store_true")
 arguments = argument_parser.parse_args()
 
 
-def _sweep(directory: Path):
-    if not directory.exists():
+def _sweep(to_sweep: Path):
+    if not to_sweep.exists():
         return
 
-    directory.chmod(WRITE_PERMISSION)
 
-    for item in directory.iterdir():
-        item.chmod(WRITE_PERMISSION)
+    if to_sweep.is_dir():
+        for item in to_sweep.iterdir():
 
-        if item.is_dir():
-            _sweep(item)
-        else:
-            item.unlink()
+            if item.is_dir():
+                _sweep(item)
+            else:
+                item.unlink()
 
-    directory.rmdir()
+        to_sweep.rmdir()
+    else:
+        to_sweep.unlink()
 
 
 def _cleanup_build():
     _sweep(BUILD_PATH)
+    _sweep(SPEC_PATH)
+
 
 
 def _cleanup_all():
@@ -56,7 +58,7 @@ def _build():
     from build_tools import build
 
     _sweep(DIST_PATH)
-    build()
+    build(EXE_PATH.name)
     _cleanup_build()
 
 
@@ -70,10 +72,8 @@ def _test_build():
 
 
 def _run_src():
-    from project import MainWindow
-
-    main_window = MainWindow()
-    main_window.mainloop()
+    from project import run
+    run()
 
 
 def _run_unit_tests():
@@ -89,6 +89,7 @@ def main():
         _test_build()
     elif arguments.run_unit_tests:
         _run_unit_tests()
+        _sweep(PARENT_PATH / ".hypothesis")
     else:
         _run_src()
 

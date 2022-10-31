@@ -2,8 +2,6 @@ from pathlib import Path
 from logging.handlers import RotatingFileHandler
 from logging import DEBUG, Formatter, getLogger, INFO, StreamHandler
 from .config import get_value
-from .event_handler import EventHandler
-from .events import SystemEvents
 
 logger = getLogger("gb_logger")
 logger.setLevel(DEBUG)
@@ -25,5 +23,3 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
-EventHandler.subscribe(SystemEvents.Log, logger.debug)
-EventHandler.subscribe(SystemEvents.ExceptionRaised, logger.exception)

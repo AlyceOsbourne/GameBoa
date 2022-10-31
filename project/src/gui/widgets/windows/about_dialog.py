@@ -2,9 +2,8 @@ from tkinter import Label, Toplevel
 
 from PIL import Image, ImageTk
 
-from project.src.system import ico_path, png_path
-from project.src.system.events import GuiEvents
-from project.src.system.event_handler import EventHandler
+from project.src.system.system_paths import ico_path, png_path
+from project.src.system import data_distributor as dd
 from __metadata__ import __authors__, __github_link__, __license__, __version__
 
 
@@ -42,6 +41,6 @@ class AboutWindow(Toplevel):
         ).pack()
 
 
-@EventHandler.subscriber(GuiEvents.OpenAboutDialog)
+@dd.subscribes_to(dd.GuiEvents.OpenAboutDialog)
 def open_about_dialog(parent):
-    AboutWindow(parent).mainloop()
+    AboutWindow(parent).grab_set()

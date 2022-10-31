@@ -1,6 +1,5 @@
 from tkinter import *
-from project.src.system.event_handler import EventHandler
-from project.src.system.events import GuiEvents, SystemEvents, ComponentEvents
+from project.src.system import data_distributor as dd
 
 
 class MenuBarWidget(Frame):
@@ -19,22 +18,22 @@ class MenuBarWidget(Frame):
         file_menu = Menu(menubar, tearoff=0)
         file_menu.add_command(
             label="Load Rom",
-            command=lambda: EventHandler.publish(GuiEvents.OpenLoadRomDialog),
+            command=lambda: dd.broadcast(dd.GuiEvents.OpenLoadRomDialog),
         )
         file_menu.add_command(
             label="Unload Rom",
-            command=lambda: EventHandler.publish(ComponentEvents.RequestReset),
+            command=lambda: dd.broadcast(dd.ComponentEvents.RequestReset),
         )
         file_menu.add_command(
-            label="Exit", command=lambda: EventHandler.publish(SystemEvents.Quit)
+            label="Exit", command=lambda: dd.broadcast(dd.SystemEvents.Quit)
         )
         menubar.add_cascade(label="File", menu=file_menu)
 
         edit_menu = Menu(menubar, tearoff=0)
         edit_menu.add_command(
             label="Settings",
-            command=lambda: EventHandler.publish(
-                GuiEvents.OpenSettingsDialog, self.parent
+            command=lambda: dd.broadcast(
+                dd.GuiEvents.OpenSettingsDialog, self.parent
             ),
         )
         menubar.add_cascade(label="Edit", menu=edit_menu)
@@ -42,8 +41,8 @@ class MenuBarWidget(Frame):
         help_menu = Menu(menubar, tearoff=0)
         help_menu.add_command(
             label="About",
-            command=lambda: EventHandler.publish(
-                GuiEvents.OpenAboutDialog, self.parent
+            command=lambda: dd.broadcast(
+                dd.GuiEvents.OpenAboutDialog, self.parent
             ),
         )
         menubar.add_cascade(label="Help", menu=help_menu)

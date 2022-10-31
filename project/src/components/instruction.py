@@ -3,8 +3,7 @@ import json
 from pathlib import Path
 from typing import NamedTuple
 
-from project.src.system.event_handler import EventHandler
-from project.src.system.events import ComponentEvents
+from project.src.system import data_distributor as dd
 from project.src.system.system_paths import opcode_path
 
 
@@ -59,10 +58,10 @@ class Instruction(
 
 instructions, cb_instructions = Instruction.load(opcode_path)
 
-EventHandler.subscribe(
-    ComponentEvents.RequestDecode,
-    lambda op_code, is_cb_instruction: EventHandler.publish(
-        ComponentEvents.RequestExecute,
+dd.subscribe(
+    dd.ComponentEvents.RequestDecode,
+    lambda op_code, is_cb_instruction: dd.broadcast(
+        dd.ComponentEvents.RequestExecute,
         cb_instructions[op_code] if is_cb_instruction else instructions[op_code],
     ),
 )
