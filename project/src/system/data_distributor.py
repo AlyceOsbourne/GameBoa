@@ -6,17 +6,16 @@ from weakref import WeakValueDictionary
 from enum import auto, Flag
 from itertools import count
 from .gb_logger import logger
-from time import sleep
 
 EVENT_IDS = count()
 
 
 class Priority(IntFlag):
-    LOW = auto()
-    LOWEST = auto()
-    MEDIUM = auto()
-    URGENT = auto()
     CRITICAL = auto()
+    URGENT = auto()
+    MEDIUM = auto()
+    LOWEST = auto()
+    LOW = auto()
 
 
 class Event(Flag):
@@ -74,46 +73,31 @@ Callback = Callable[..., Any]
 CallbackList = List[Callback]
 Callbacks = Dict[Hashable, dict[Priority, CallbackList]]
 
-publisher_subscribers: Callbacks = dict()
-observed_collection: WeakValueDictionary = WeakValueDictionary()
+broadcasts: Callbacks = dict()
+allowed_requests: WeakValueDictionary = WeakValueDictionary()
 
 event_queue = deque()
 
 def broadcast(event: Event, *args, **kwargs) -> None:
-    for priority, callback_list in publisher_subscribers.get(event, {}).items():
-        for callback in callback_list:
-            event_queue.append((callback, args, kwargs))
+    for [callback] in (broadcasts.get(event, {}).get(priority, []) for priority in Priority):
+        event_queue.append((callback, args, kwargs))
 
-def subscribe(
-        event: Event, callback: Callback, priority: Priority = Priority.MEDIUM
-) -> None:
-    publisher_subscribers.setdefault(event, {}).setdefault(priority, []).append(callback)
-
+def subscribe(event: Event, callback: Callback, priority: Priority = Priority.MEDIUM):
+    broadcasts.setdefault(event, {}).setdefault(priority, []).append(callback)
 
 def subscribes_to(event: Event, priority: Priority = Priority.MEDIUM) -> Callable:
-    def decorator(func: Callable) -> Callable:
-        subscribe(event, func, priority)
-        return func
-
-    return decorator
+    return lambda func: subscribe(event, func, priority) or func
 
 def allow_requests(observed_key: Hashable, observed_function: Callable) -> None:
-    observed_collection[observed_key] = observed_function
+    allowed_requests[observed_key] = observed_function
 
 def allows_requests(observable_key: Hashable) -> Callable:
     return lambda f: allow_requests(observable_key, f) or f
 
 def request_data(requested_key: Hashable, *args, **kwargs) -> Any:
-    if requested_key in observed_collection:
-        return observed_collection[requested_key](*args, **kwargs)
+    if requested_key in allowed_requests:
+        return allowed_requests[requested_key](*args, **kwargs)
     raise KeyError(f"No observer found for key {requested_key}.")
-
-subscribe(SystemEvents.Log, logger.debug)
-subscribe(SystemEvents.ExceptionRaised, logger.exception)
-
-# we want a event loop that runs in the background in a separate thread
-# this will allow us to run the gui in the main thread
-
 
 def update():
     if event_queue:
@@ -121,6 +105,8 @@ def update():
         callback(*args, **kwargs)
 
 
+subscribe(SystemEvents.Log, logger.debug)
+subscribe(SystemEvents.ExceptionRaised, logger.exception)
 
 __all__ = [
     "Event", "SystemEvents", "GuiEvents", "ComponentEvents", "Priority",
