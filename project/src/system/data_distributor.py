@@ -1,13 +1,13 @@
+import inspect
 from collections import deque
 from enum import IntFlag
+from enum import auto, Flag
+from itertools import count
 from typing import Any, Callable, Hashable
 from typing import Dict, List
 from weakref import WeakValueDictionary
-from enum import auto, Flag
-from itertools import count
-from .gb_logger import logger
-from .config import get_value
-EVENT_IDS = count()
+
+event_ids = count()
 
 
 class Priority(IntFlag):
@@ -21,7 +21,7 @@ class Priority(IntFlag):
 class Event(Flag):
     @staticmethod
     def _generate_next_value_(name, start, count, last_values):
-        return next(EVENT_IDS)
+        return next(event_ids)
 
     @staticmethod
     def get_all_events():
@@ -78,18 +78,24 @@ allowed_requests: WeakValueDictionary = WeakValueDictionary()
 
 event_queue = deque()
 
-def broadcast(event: Event, *args, **kwargs) -> None:
-    event_queue.extend(
-        (func, args, kwargs)
-        for priority in Priority
-        for func in broadcasts.get(event, {}).get(priority, [])
-    )
+def update():
+    if event_queue:
+        callback, args, kwargs = event_queue.popleft()
+        callback(*args, **kwargs)
 
-def subscribe(event: Event, callback: Callback, priority: Priority = Priority.MEDIUM):
+def broadcast(event: Hashable, *args, **kwargs):
+    for priority in Priority:
+        for func in broadcasts.get(event, {}).get(priority, []):
+            func(*args, **kwargs)
+
+def subscribe(event: Hashable, callback: Callback, priority: Priority = Priority.MEDIUM):
     broadcasts.setdefault(event, {}).setdefault(priority, []).append(callback)
 
-def subscribes_to(event: Event, priority: Priority = Priority.MEDIUM) -> Callable:
-    return lambda func: subscribe(event, func, priority) or func
+def subscribes_to(event: Hashable, priority: Priority = Priority.MEDIUM) -> Callable:
+    def decorator(f):
+        subscribe(event, f, priority)
+        return f
+    return decorator
 
 def allow_requests(observed_key: Hashable, observed_function: Callable) -> None:
     allowed_requests[observed_key] = observed_function
@@ -97,18 +103,11 @@ def allow_requests(observed_key: Hashable, observed_function: Callable) -> None:
 def allows_requests(observable_key: Hashable) -> Callable:
     return lambda f: allow_requests(observable_key, f) or f
 
-def request_data(requested_key: Hashable, *args, **kwargs) -> Any:
-    if requested_key in allowed_requests:
-        return allowed_requests[requested_key](*args, **kwargs)
-    raise KeyError(f"No observer found for key {requested_key}.")
-
-def update():
-    if event_queue:
-        callback, args, kwargs = event_queue.popleft()
-        callback(*args, **kwargs)
-
-
-
+def request_data(event: Hashable, *args, **kwargs) -> Any:
+    if event in allowed_requests:
+        return allowed_requests[event](*args, **kwargs)
+    else:
+        raise ValueError(f"Event {event} not allowed to be requested")
 
 __all__ = [
     "Event", "SystemEvents", "GuiEvents", "ComponentEvents", "Priority",
