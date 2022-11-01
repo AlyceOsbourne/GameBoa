@@ -71,22 +71,26 @@ class ComponentEvents(Event):
 
 Callback = Callable[..., Any]
 CallbackList = List[Callback]
-Callbacks = Dict[Hashable, dict[Priority, CallbackList]]
+Callbacks = Dict[Hashable, Dict[Priority, CallbackList]]
 
 broadcasts: Callbacks = dict()
-allowed_requests: WeakValueDictionary = WeakValueDictionary()
+allowed_requests: Dict[Hashable, Callable] = dict()
 
-event_queue = deque()
-
-def update():
-    if event_queue:
-        callback, args, kwargs = event_queue.popleft()
-        callback(*args, **kwargs)
 
 def broadcast(event: Hashable, *args, **kwargs):
-    for priority in Priority:
-        for func in broadcasts.get(event, {}).get(priority, []):
-            func(*args, **kwargs)
+    for func in [
+        func
+        for priority
+        in Priority
+        for func
+        in broadcasts.get(
+            event, {}
+        ).get(
+            priority, [
+        lambda *_args, **_kwargs: print(
+            f"Event {event} not handled"
+        )])]:
+        func(*args, **kwargs)
 
 def subscribe(event: Hashable, callback: Callback, priority: Priority = Priority.MEDIUM):
     broadcasts.setdefault(event, {}).setdefault(priority, []).append(callback)

@@ -4,7 +4,7 @@ from types import MappingProxyType
 from array import array
 from collections import namedtuple
 from project.src.system import (
-    data_distributor as dd
+    bus as dd
 )
 
 

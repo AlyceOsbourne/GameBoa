@@ -2,7 +2,7 @@ import tkinter.ttk
 from pathlib import Path
 from tkinter import BOTH, X
 
-from project.src.system import data_distributor as dd
+from project.src.system import bus as dd
 from project.src.system.config import get_value
 
 ROM_PATH = Path(get_value("paths", "roms"))

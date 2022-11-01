@@ -1,5 +1,5 @@
-from project.src.components.instruction import Instruction
-from project.src.system import data_distributor as dd
+from .instruction import Instruction
+from project.src.system import bus as dd
 
 def write_operand(operand, value):
     match operand:

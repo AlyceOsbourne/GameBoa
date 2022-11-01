@@ -1,6 +1,6 @@
-from .system import data_distributor
+from .system import bus
 from .components import *
-from .gui import MainWindow
+from .gui.windows import
 from . import structs
 
 

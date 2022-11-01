@@ -3,7 +3,7 @@ from tkinter import Label, Toplevel
 from PIL import Image, ImageTk
 
 from project.src.system.system_paths import ico_path, png_path
-from project.src.system import data_distributor as dd
+from project.src.system import bus as dd
 from __metadata__ import __authors__, __github_link__, __license__, __version__
 
 

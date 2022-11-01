@@ -1,6 +1,6 @@
 import array
 from functools import partial
-from project.src.system import data_distributor as dd
+from project.src.system import bus as dd
 
 registry = array.array("B", [0] * 16)
 

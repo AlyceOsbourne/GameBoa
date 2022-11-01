@@ -1,7 +1,7 @@
 from tkinter import ttk
 
 from project.src.structs.gb_header import HEADER_FORMAT
-from project.src.system import data_distributor as dd
+from project.src.system import bus as dd
 
 
 class CartridgeDataWidget(ttk.Frame):

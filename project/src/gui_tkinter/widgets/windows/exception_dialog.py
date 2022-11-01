@@ -2,7 +2,7 @@ import pprint
 import traceback
 from tkinter import messagebox
 
-from project.src.system import data_distributor as dd
+from project.src.system import bus as dd
 
 
 LINK_TO_ISSUES_ON_GITHUB = (

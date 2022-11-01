@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from typing import NamedTuple
 
-from project.src.system import data_distributor as dd
+from project.src.system import bus as dd
 from project.src.system.system_paths import opcode_path
 
 

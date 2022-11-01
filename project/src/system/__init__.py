@@ -1,24 +1,26 @@
 from .config import *
 from .system_paths import *
 from .gb_logger import *
-from . import data_distributor
+from . import bus
 
-data_distributor.subscribe(data_distributor.SystemEvents.Log, logger.debug)
-data_distributor.subscribe(data_distributor.SystemEvents.ExceptionRaised, logger.exception)
-data_distributor.subscribe(
-    data_distributor.SystemEvents.SettingsUpdated,
+
+bus.subscribe(bus.SystemEvents.Log, logger.debug)
+bus.subscribe(bus.SystemEvents.ExceptionRaised, logger.exception)
+bus.subscribe(
+    bus.SystemEvents.SettingsUpdated,
     lambda:
         stream_handler.setLevel(
             "DEBUG"
             if get_value("developer", "debug logging")
             else "INFO")
-        or data_distributor.broadcast(
-            data_distributor.SystemEvents.Log,
+        or bus.broadcast(
+            bus.SystemEvents.Log,
             "Debug logging set to {}".format(
                 get_value("developer", "debug logging"))),
-    data_distributor.Priority.CRITICAL
+    bus.Priority.CRITICAL
 )
 
 
 
-__all__ = ["data_distributor", 'system_paths', 'config', 'gb_logger']
+
+__all__ = ["bus", 'system_paths', 'config', 'gb_logger']

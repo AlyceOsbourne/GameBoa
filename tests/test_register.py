@@ -1,4 +1,4 @@
-from project.src import data_distributor as dd
+from project.src import bus as dd
 from hypothesis import given, strategies as st
 import unittest
 

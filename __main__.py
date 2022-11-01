@@ -71,14 +71,23 @@ def _test_build():
     call(str(EXE_PATH), shell=True)
 
 
-def _run_src():
-    from project import run
-    run()
+def _view_dependency_graph():
+    import json
+    import pydeps.pydeps as pydeps
+    print(json.dumps(pydeps.py2depgraph.RawDependencies(Path(__file__) / "project" / "__init__.py"), indent=4))
 
 
 def _run_unit_tests():
+    from coverage import Coverage
     from tests import run
+    coverage = Coverage()
+    coverage.load()
+    coverage.report()
+    run()
 
+
+def _run_src():
+    from project import run
     run()
 
 

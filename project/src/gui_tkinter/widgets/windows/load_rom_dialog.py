@@ -1,6 +1,6 @@
 from tkinter import filedialog
 
-from project.src.system import data_distributor as dd
+from project.src.system import bus as dd
 from project.src.system.config import get_value
 
 

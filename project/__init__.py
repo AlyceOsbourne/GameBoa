@@ -1,16 +1,9 @@
-from .src import MainWindow, data_distributor
+from project.src import MainWindow, bus
 
-main_window = MainWindow()
-
-def data_distributor_loop():
-    data_distributor.update()
-    main_window.after(
-        1000 // 60, data_distributor_loop
-    )
 
 def run():
-    main_window.after(
-        1000 // 60, data_distributor_loop
-    )
+    main_window = MainWindow()
     main_window.mainloop()
 
+if __name__ == "__main__":
+    run()

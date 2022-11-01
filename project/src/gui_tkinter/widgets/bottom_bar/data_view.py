@@ -1,7 +1,7 @@
 from tkinter import Frame, Text
 from tkinter.constants import BOTH, DISABLED, END, NORMAL, WORD
 
-from project.src.system import data_distributor as dd
+from project.src.system import bus as dd
 
 
 class DataView(Frame):

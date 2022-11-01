@@ -2,7 +2,7 @@ import zipfile
 from pathlib import Path
 from tkinter import messagebox
 
-from project.src.system import data_distributor as dd
+from project.src.system import bus as dd
 
 
 @dd.subscribes_to(dd.GuiEvents.LoadRomFromLibrary)

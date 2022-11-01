@@ -14,7 +14,7 @@ from tkinter import (
     StringVar,
 )
 
-from project.src.system import data_distributor as dd
+from project.src.system import bus as dd
 from project.src.system.config import (
     sections,
     get_value,
