@@ -70,36 +70,21 @@ def _test_build():
     call(str(EXE_PATH), shell=True)
 
 
-def _view_dependency_graph():
-    import json
-    import pydeps.pydeps as pydeps
-    print(json.dumps(pydeps.py2depgraph.RawDependencies(Path(__file__) / "project" / "__init__.py"), indent=4))
-
 
 def _run_unit_tests():
-    from coverage import Coverage
-    from tests import run
-    coverage = Coverage()
-    coverage.load()
-    coverage.report()
-    run()
+    from tests import run; run()
 
 
 def _run_src():
-    from project import run
-    run()
+    from project import run; run()
 
 
 def main():
-    if arguments.build:
-        _build()
-    elif arguments.test_build:
-        _test_build()
-    elif arguments.run_unit_tests:
-        _run_unit_tests()
-        _sweep(PARENT_PATH / ".hypothesis")
-    else:
-        _run_src()
+    match arguments:
+        case arguments.build: _build()
+        case arguments.test_build: _test_build()
+        case arguments.run_unit_tests: _run_unit_tests()
+        case _: _run_src()
 
 
 if __name__ == "__main__":
