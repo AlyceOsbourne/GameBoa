@@ -1,8 +1,10 @@
+from pathlib import Path
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QMenuBar, QStatusBar, QFileDialog
 from project.src.system import bus
 from .settings import SettingsDialog
-
+import zipfile
 
 LOGO_ICON = QIcon("gui/icons/logo.svg")
 QUIT_ICON = QIcon("gui/icons/quit.svg")
@@ -124,6 +126,7 @@ class MainWindow(QMainWindow):
         self.settings_dialog = SettingsDialog()
         self.settings_dialog.exec()
 
+
     def closeEvent(self, event) -> None:
         """Offers to quit GameBoa."""
         parent = self
@@ -138,9 +141,6 @@ class MainWindow(QMainWindow):
 
     def load_rom(self):
         """Loads a ROM file."""
-        # open file dialog
-        # load ROM if extension is .gb, .gbc, or .zip
-        # show error message if extension is not .gb, .gbc, or .zip
         file_dialog = QFileDialog()
         file_dialog.setFileMode(QFileDialog.ExistingFile)
         file_dialog.setNameFilter("*GB; *GBC; *ZIP")
@@ -151,10 +151,38 @@ class MainWindow(QMainWindow):
         file_dialog.setLabelText(QFileDialog.Reject, "Cancel")
 
         if file_dialog.exec():
-            file_path = file_dialog.selectedFiles()[0]
+            file = file_dialog.selectedFiles()[0]
+            allowed_suffixes = (".gb", ".gbc", ".zip")
 
+            if not isinstance(file, Path) and isinstance(file, str):
+                file = Path(file)
+
+            if not file.exists():
+                raise FileNotFoundError(f"File {file} does not exist.")
+
+            file_suffix = file.suffix.lower()
+
+            if file_suffix not in allowed_suffixes:
+                raise ValueError(f"File {file} is not a valid ROM file.")
+
+            if file.suffix == ".zip":
+                with zipfile.ZipFile(file) as zip_file:
+                    for name in zip_file.namelist():
+                        if name.endswith(allowed_suffixes):
+                            file_contents = zip_file.open(name)
+                            rom_data = file_contents.read()
+                            break
+                    else:
+                        raise ValueError("No valid ROM file found in ZIP file.")
+            else:
+                with open(file, "rb") as rom_file:
+                    rom_data = rom_file.read()
+
+            bus.broadcast(bus.ComponentEvents.RomLoaded, rom_data)
 
         else:
-            print("Cancelled")
+            bus.broadcast(bus.SystemEvents.Log, "No ROM file selected.")
+
+
 
 

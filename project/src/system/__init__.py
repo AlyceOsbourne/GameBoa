@@ -20,7 +20,4 @@ bus.subscribe(
     bus.Priority.CRITICAL
 )
 
-
-
-
 __all__ = ["bus", 'system_paths', 'config', 'gb_logger']
