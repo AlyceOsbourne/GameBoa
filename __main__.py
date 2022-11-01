@@ -46,7 +46,6 @@ def _cleanup_build():
     _sweep(SPEC_PATH)
 
 
-
 def _cleanup_all():
     _cleanup_build()
 

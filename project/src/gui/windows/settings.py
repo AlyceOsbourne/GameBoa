@@ -7,13 +7,21 @@ from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
-    QSpinBox, QLineEdit, QLabel,
+    QSpinBox,
+    QLineEdit,
+    QLabel,
 )
 
-from core.config import config
-
-OK_BUTTON = QDialogButtonBox.StandardButton.Ok
-CANCEL_BUTTON = QDialogButtonBox.StandardButton.Cancel
+from project.src.system import (
+    get_value,
+    set_value,
+    sections,
+    section_options,
+    option_type,
+    save_config,
+    load_config,
+    bus
+)
 
 
 class SettingsTab:
@@ -30,8 +38,8 @@ class SettingsTab:
     def add_checkbox(self, text: str, option: str) -> QCheckBox:
         """Adds a checkbox to the tab."""
         checkbox = QCheckBox(text)
-        checkbox.setChecked(config.get_boolean(self.name, option))
-        checkbox.stateChanged.connect(lambda: config.set(self.name, option, str(checkbox.isChecked())))
+        checkbox.setChecked(get_value(self.name, option))
+        checkbox.stateChanged.connect(lambda: set_value(self.name, option, checkbox.isChecked()))
         self.layout.addWidget(checkbox)
         return checkbox
 
@@ -40,8 +48,8 @@ class SettingsTab:
         spinbox = QSpinBox()
         spinbox.setMinimum(min)
         spinbox.setMaximum(max)
-        spinbox.setValue(config.getint(self.name, option))
-        spinbox.valueChanged.connect(lambda: config.set(self.name, option, str(spinbox.value())))
+        spinbox.setValue(get_value(self.name, option))
+        spinbox.valueChanged.connect(lambda: set_value(self.name, option, spinbox.value()))
         self.layout.addWidget(spinbox)
         return spinbox
 
@@ -50,8 +58,8 @@ class SettingsTab:
         # should have a label to the left of the line edit
         label = QLabel(text)
         line_edit = QLineEdit()
-        line_edit.setText(config.get(self.name, option))
-        line_edit.textChanged.connect(lambda: config.set(self.name, option, line_edit.text()))
+        line_edit.setText(get_value(self.name, option))
+        line_edit.textChanged.connect(lambda: set_value(self.name, option, line_edit.text()))
         widget_pair = QWidget()
         widget_pair_layout = QHBoxLayout()
         widget_pair.setLayout(widget_pair_layout)
@@ -75,24 +83,24 @@ class SettingsDialog(QDialog):
         self.setFixedSize(400, 300)
 
         self.tab_widget = QTabWidget()
-        for section in config.sections():
+        sects = sections()
+        for section in sects:
             settings_tab = SettingsTab(self.tab_widget, section)
-            for option in config.options(section):
-                value = config.get_value_as_dtype(section, option)
-                if isinstance(value, bool):
+            for option in section_options(section):
+                if option_type(section, option) == bool:
                     settings_tab.add_checkbox(option, option)
-                elif isinstance(value, int):
+                elif option_type(section, option) == int:
                     settings_tab.add_spinbox(option, option, 0, 100)
-                elif isinstance(value, str):
+                elif option_type(section, option) == str:
                     settings_tab.add_line_edit(option, option)
+                else:
+                    raise TypeError(f"Unknown option type {option_type(section, option)}")
 
-
-
-
-
-        self.button_box = QDialogButtonBox(OK_BUTTON | CANCEL_BUTTON)
-        self.button_box.accepted.connect(self.accept)
-        self.button_box.rejected.connect(self.reject)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(
+            lambda: save_config() or bus.broadcast(bus.SystemEvents.SettingsUpdated) or self.accept()
+        )
+        self.button_box.rejected.connect(lambda: load_config() or self.reject())
 
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.tab_widget)

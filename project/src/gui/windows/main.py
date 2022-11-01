@@ -1,7 +1,7 @@
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QMenuBar, QStatusBar, QFileDialog
-
-from gui.windows.settings import SettingsDialog
+from project.src.system import bus
+from .settings import SettingsDialog
 
 
 LOGO_ICON = QIcon("gui/icons/logo.svg")
@@ -152,16 +152,7 @@ class MainWindow(QMainWindow):
 
         if file_dialog.exec():
             file_path = file_dialog.selectedFiles()[0]
-            print(file_path)
 
-            if file_path.endswith(".gb") or file_path.endswith(".gbc") or file_path.endswith(".zip"):
-                print("Valid ROM")
-            else:
-                print("Invalid ROM")
-                parent = self
-                title = "Invalid ROM"
-                message = "The ROM file must be a .gb, .gbc, or .zip file."
-                QMessageBox.critical(parent, title, message)
 
         else:
             print("Cancelled")
