@@ -24,6 +24,7 @@ class TestRegister(unittest.TestCase):
     def test_8_bit(self, register, value):
         self._test(register, value)
 
+
     @given(register_strat_16_bit, value_strat_16_bit)
     def test_16_bit(self, register, value):
         self._test(register, value)

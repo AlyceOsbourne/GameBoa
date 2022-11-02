@@ -14,7 +14,6 @@ WINDOWS_DIST_PATH = DIST_PATH / "windows"
 SPEC_PATH = PARENT_PATH / f"{__metadata__.__app_name__}.spec"
 EXE_PATH = WINDOWS_DIST_PATH / f"{__metadata__.__app_name__} Build [{__metadata__.__app_version__}].exe"
 
-
 argument_parser = ArgumentParser()
 argument_parser.add_argument("--build", action="store_true")
 argument_parser.add_argument("--test-build", action="store_true")
@@ -22,7 +21,6 @@ argument_parser.add_argument("--reset-build", action="store_true")
 argument_parser.add_argument("--run-unit-tests", action="store_true")
 argument_parser.add_argument("--profile", action="store_true")
 arguments = argument_parser.parse_args()
-
 
 def _sweep(to_sweep: Path):
     if not to_sweep.exists():
@@ -41,11 +39,9 @@ def _sweep(to_sweep: Path):
     else:
         to_sweep.unlink()
 
-
 def _cleanup_build():
     _sweep(BUILD_PATH)
     _sweep(SPEC_PATH)
-
 
 def _cleanup_all():
     _cleanup_build()
@@ -53,14 +49,12 @@ def _cleanup_all():
     if EXE_PATH.exists():
         EXE_PATH.unlink()
 
-
 def _build():
     from build_tools import build
 
     _sweep(DIST_PATH)
     build(EXE_PATH.name)
     _cleanup_build()
-
 
 def _test_build():
     from subprocess import call
@@ -70,29 +64,28 @@ def _test_build():
 
     call(str(EXE_PATH), shell=True)
 
-
-
 def _run_unit_tests():
     from tests import run; run()
-
-
 
 def _run_src():
     from project import run; run()
 
-
 def _profile():
     print("Profiling...")
     from cProfile import Profile
-    from pstats import Stats
     profiler = Profile()
     profiler.enable()
-    _run_src()
+    _run_unit_tests()
+    print('\n', '=' * 80, '\n')
     profiler.disable()
+    _extract_stats(profiler, 'memory.py', 'bus.py', 'cpu.py')
+
+
+def _extract_stats(profiler, *filenames):
+    from pstats import Stats, SortKey
     stats = Stats(profiler)
-    # sort by longest call
-    stats.sort_stats("cumulative")
-    stats.print_stats()
+    stats.stats = {k: v for k, v in stats.stats.items() if k[0].endswith(filenames)}
+    stats.sort_stats(SortKey.FILENAME).print_stats()
 
 
 

@@ -8,6 +8,9 @@ mappings = locals()
 
 _read_mapped_memory = ComponentEvents.RequestMemoryRead
 _write_mapped_memory = ComponentEvents.RequestMemoryWrite
+def _not_impl(msg, *args, **kwargs):
+    raise NotImplementedError(msg)
+
 
 def _get_operator(operator):
     match operator:
@@ -75,22 +78,21 @@ mappings.update({
     },
 })
 
+mappings.update({
+    **{
+        f"_execute_{instruction.mnemonic}": partial(
+            lambda instruction: _not_impl(f"Instruction {instruction.mnemonic} not implemented"))
+        for instruction in list(instructions.values() and cb_instructions.values())
+        if f"_execute_{instruction.mnemonic}" not in mappings
+    },
+})
+
 
 def execute(instruction: Instruction):
     if instruction.op_code == 0xCB:
         instruction = cb_instructions[_read_mapped_memory(mappings.get("_get_16_bit_register_PC")())]
         mappings.get("_set_16_bit_register_PC")(mappings.get("_get_16_bit_register_PC")() + 1)
-    mappings.get(f"_execute_{instruction.mnemonic}")(instruction)
-
-
-mappings.update({
-    **{
-        f"_execute_{instruction.mnemonic}": partial(
-            lambda instruction: LogEvent.LogDebug(f"Instruction {instruction.mnemonic} not implemented"))
-        for instruction in instructions.values() and cb_instructions.values()
-        if instruction.mnemonic not in mappings
-    },
-})
+    return mappings.get(f"_execute_{instruction.mnemonic}")(instruction)
 
 
 LogEvent.LogDebug.emit(f"Mapped CPU Instructions\n{pformat({k:v for k,v in mappings.items() if k.startswith(('_execute_', '_get_', '_set_'))})}")

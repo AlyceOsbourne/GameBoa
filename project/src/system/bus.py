@@ -4,7 +4,6 @@ from itertools import count
 from types import FunctionType, MethodType
 from typing import Any, Callable, Hashable
 from typing import Dict, List
-from test_utils import *
 
 
 Callback = Callable[..., Any]
@@ -31,11 +30,11 @@ class Event(Flag):
     def _generate_next_value_(*_):
         return next(_event_id_generator)
 
-    def subscribe(self, callback) -> None:
-        subscribe(self, callback)
+    def subscribe(self, callback: Callback, priority: Priority = Priority.MEDIUM) -> None:
+        subscribe(self, callback, priority)
 
-    def subscribe_to(self):
-        return subscribes_to(self)
+    def subscribe_to(self, priority: Priority = Priority.MEDIUM):
+        return lambda f: self.subscribe(f, priority)
 
     def emit(self, *args, **kwargs) -> None:
         emit(self, *args, **kwargs)
@@ -76,9 +75,17 @@ class Event(Flag):
 
 
 class EventGroup(tuple[Event, ...], Flag):
-    def subscribe(self, callback) -> None:
+    def subscribe(self, callback, priority=Priority.MEDIUM) -> None:
         for event in self:
-            event.subscribe(callback)
+            event.subscribe(callback, priority)
+
+    def subscribe_to(self, priority: Priority = Priority.MEDIUM):
+        def decorator(f):
+            for event in self:
+                event.subscribe(f, priority)
+            return f
+        return decorator
+
 
     def emit(self, *args, **kwargs) -> None:
         for event in self:
@@ -93,32 +100,32 @@ class EventGroup(tuple[Event, ...], Flag):
             return v
         self.emit(v, *a, **k)
 
-@timeit_decorator
+
 def emit(event: Hashable, *args, **kwargs):
     for priority in _broadcasts.get(event, {}).values():
         for callback in priority:
             callback(*args, **kwargs)
 
-@timeit_decorator
+
 def subscribe(event: Hashable, callback: Callback, priority: Priority = Priority.MEDIUM):
     _broadcasts.setdefault(event, {}).setdefault(priority, []).append(callback)
 
-@timeit_decorator
+
 def subscribes_to(event: Hashable, priority: Priority = Priority.MEDIUM) -> Callable:
     def decorator(f):
         subscribe(event, f, priority)
         return f
     return decorator
 
-@timeit_decorator
+
 def allow_requests(observed_key: Hashable, observed_function: Callable) -> None:
     _allowed_requests[observed_key] = observed_function
 
-@timeit_decorator
+
 def allows_requests(observable_key: Hashable) -> Callable:
     return lambda f: allow_requests(observable_key, f) or f
 
-@timeit_decorator
+
 def request_data(event: Hashable, *args, **kwargs) -> Any:
     if event in _allowed_requests:
         return _allowed_requests[event](*args, **kwargs)
