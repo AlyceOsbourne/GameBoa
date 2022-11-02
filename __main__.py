@@ -20,7 +20,7 @@ argument_parser.add_argument("--build", action="store_true")
 argument_parser.add_argument("--test-build", action="store_true")
 argument_parser.add_argument("--reset-build", action="store_true")
 argument_parser.add_argument("--run-unit-tests", action="store_true")
-argument_parser.add_argument("--profile-system", action="store_true")
+argument_parser.add_argument("--profile", action="store_true")
 arguments = argument_parser.parse_args()
 
 
@@ -104,7 +104,7 @@ def main():
         _test_build()
     elif arguments.run_unit_tests:
         _run_unit_tests()
-    elif arguments.profile_system:
+    elif arguments.profile:
         _profile()
     else:
         _run_src()
