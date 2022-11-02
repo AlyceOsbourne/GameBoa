@@ -1,5 +1,5 @@
 from tkinter import *
-from project.src.system import bus as dd
+from project.src.system import bus as dd, GuiEvents, ComponentEvents, SystemEvents
 
 
 class MenuBarWidget(Frame):
@@ -18,23 +18,21 @@ class MenuBarWidget(Frame):
         file_menu = Menu(menubar, tearoff=0)
         file_menu.add_command(
             label="Load Rom",
-            command=lambda: dd.emit(dd.GuiEvents.OpenLoadRomDialog),
+            command=GuiEvents.OpenLoadRomDialog,
         )
         file_menu.add_command(
             label="Unload Rom",
-            command=lambda: dd.emit(dd.ComponentEvents.RequestReset),
+            command=ComponentEvents.RequestReset,
         )
         file_menu.add_command(
-            label="Exit", command=lambda: dd.emit(dd.SystemEvents.Quit)
+            label="Exit", command=SystemEvents.Quit
         )
         menubar.add_cascade(label="File", menu=file_menu)
 
         edit_menu = Menu(menubar, tearoff=0)
         edit_menu.add_command(
             label="Settings",
-            command=lambda: dd.emit(
-                dd.GuiEvents.OpenSettingsDialog, self.parent
-            ),
+            command=lambda: GuiEvents.OpenSettingsDialog( self.parent)
         )
         menubar.add_cascade(label="Edit", menu=edit_menu)
 
@@ -42,7 +40,7 @@ class MenuBarWidget(Frame):
         help_menu.add_command(
             label="About",
             command=lambda: dd.emit(
-                dd.GuiEvents.OpenAboutDialog, self.parent
+                GuiEvents.OpenAboutDialog(self.parent)
             ),
         )
         menubar.add_cascade(label="Help", menu=help_menu)

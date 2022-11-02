@@ -14,7 +14,7 @@ from tkinter import (
     StringVar,
 )
 
-from project.src.system import bus as dd, GuiEvents
+from project.src.system import bus as dd, GuiEvents, SystemEvents
 from project.src.system.config import (
     sections,
     get_value,
@@ -130,7 +130,7 @@ class SettingsWindow(Toplevel):
 
     def save(self):
         save_config()
-        dd.emit(dd.SystemEvents.SettingsUpdated)
+        SystemEvents.SettingsUpdated()
         self.destroy()
 
     def cancel(self):

@@ -68,7 +68,7 @@ class Event(Flag):
         }
 
 
-class EventGroup(tuple, Flag):
+class EventGroup(tuple[Event, ...], Flag):
     def subscribe(self, callback) -> None:
         for event in self:
             event.subscribe(callback)
@@ -82,7 +82,6 @@ class EventGroup(tuple, Flag):
             self.subscribe(v)
             return v
         self.emit(v, *a, **k)
-
 
 def emit(event: Hashable, *args, **kwargs):
     for priority in _broadcasts.get(event, {}).values():
