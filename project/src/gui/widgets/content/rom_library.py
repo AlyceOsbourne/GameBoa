@@ -2,7 +2,7 @@ import tkinter.ttk
 from pathlib import Path
 from tkinter import BOTH, X
 
-from project.src.system import bus as dd
+from project.src.system import bus as dd, SystemEvents, GuiEvents
 from project.src.system.config import get_value
 
 ROM_PATH = Path(get_value("paths", "roms"))
@@ -17,16 +17,14 @@ class RomEntry(tkinter.ttk.Frame):
         self.load_rom = tkinter.ttk.Button(
             self,
             text="Launch",
-            command=lambda: dd.broadcast(
-                dd.GuiEvents.LoadRomFromLibrary, self.rom_path
-            ),
+            command=lambda:GuiEvents.LoadRomFromLibrary(self.rom_path)
+
         )
         self.delete_rom = tkinter.ttk.Button(
             self,
             text="Delete",
-            command=lambda: dd.broadcast(
-                dd.GuiEvents.DeleteRomFromLibrary, self.rom_path
-            ),
+            command=lambda: GuiEvents.DeleteRomFromLibrary(self.rom_path)
+
         )
         self.label.grid(row=0, column=0, sticky="nsew")
         self.load_rom.grid(row=0, column=1, sticky="nsew", padx=5)
@@ -44,8 +42,8 @@ class RomLibrary(tkinter.ttk.Frame):
         self.rom_list = tkinter.ttk.Frame(self)
         self.rom_list.pack(fill=BOTH, expand=True, padx=10, pady=10)
         self.update_rom_list()
-        dd.subscribe(dd.GuiEvents.UpdateRomLibrary, self.update_rom_list)
-        dd.subscribe(dd.SystemEvents.SettingsUpdated, self.update_rom_list)
+        GuiEvents.UpdateRomLibrary(self.update_rom_list)
+        SystemEvents.SettingsUpdated(self.update_rom_list)
 
     @staticmethod
     def refresh_roms():
@@ -56,7 +54,7 @@ class RomLibrary(tkinter.ttk.Frame):
             )
         ]
 
-    def update_rom_list(self):
+    def update_rom_list(self, *args):
         for child in self.rom_list.winfo_children():
             child.destroy()
         for rom in self.refresh_roms():

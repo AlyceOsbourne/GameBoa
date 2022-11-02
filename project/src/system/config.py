@@ -100,7 +100,6 @@ def reset_to_defaults():
             _config_parser[section][key] = str(value[0])
 
 
-load_config()
 
 __all__ = [
     "load_config",

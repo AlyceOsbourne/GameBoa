@@ -1,6 +1,6 @@
 import array
 from functools import partial
-from project.src.system import bus as dd
+from project.src.system import ComponentEvents, LogEvent, GuiEvents
 
 registry = array.array("B", [0] * 16)
 
@@ -24,9 +24,9 @@ _8_bit_regs = _make_regs(["A", "F", "B", "C", "D", "E", "H", "L"])
 _18_bit_regs = _make_regs(["AF", "BC", "DE", "HL"])
 
 
-@dd.subscribes_to(dd.ComponentEvents.RequestRegisterWrite)
+@ComponentEvents.RequestRegisterWrite
 def set_register(register, value):
-    dd.broadcast(dd.SystemEvents.Log, f"Writing {value} to {register}")
+    LogEvent.LogDebug(f"Writing {value} to {register}")
     match register:
         case "A" | "F" | "B" | "C" | "D" | "E" | "H" | "L":
             _8_bit_regs[register][0](value)
@@ -36,13 +36,15 @@ def set_register(register, value):
             _set_16(8, value)
         case "PC":
             _set_16(10, value)
+        case "FZ" | "FN" | "FH" | "FC":
+            _set_8(1, _get_8(1) & ~(1 << "ZNC".index(register[1])) | (value << "ZNC".index(register[1])))
         case _:
             raise KeyError(f"Unknown register for given key {register}")
 
 
-@dd.allows_requests(dd.ComponentEvents.RequestRegisterRead)
+@ComponentEvents.RequestRegisterRead
 def get_register(register):
-    dd.broadcast(dd.SystemEvents.Log, f"Reading {register}")
+    LogEvent.LogDebug(f"Reading {register}")
     match register:
         case "A" | "F" | "B" | "C" | "D" | "E" | "H" | "L":
             return _8_bit_regs[register][1]()
@@ -52,9 +54,11 @@ def get_register(register):
             return _get_16(8)
         case "PC":
             return _get_16(10)
+        case "FZ", "FN", "FH", "FC":
+            return _get_8(1) >> "ZNC".index(register[1]) & 1
 
 
-@dd.allows_requests(dd.GuiEvents.RequestRegistryStatus)
+@GuiEvents.RequestRegistryStatus
 def get_registry_status():
     return_string = ""
     for i, reg in enumerate(["AF", "BC", "DE", "HL", "SP", "PC"]):
@@ -64,7 +68,7 @@ def get_registry_status():
     return return_string
 
 
-@dd.subscribes_to(dd.ComponentEvents.RequestReset)
+@ComponentEvents.RequestReset
 def reset():
     for i in range(12):
         registry[i] = 0

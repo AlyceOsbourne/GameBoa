@@ -2,15 +2,14 @@ import pprint
 import traceback
 from tkinter import messagebox
 
-from project.src.system import bus as dd
-
+from project.src.system import SystemEvents
 
 LINK_TO_ISSUES_ON_GITHUB = (
     "https://github.com/AlyceOsbourne/GameBoa/issues/new?title={title}&body={body}"
 )
 
 
-@dd.subscribes_to(dd.SystemEvents.ExceptionRaised)
+@SystemEvents.ExceptionRaised
 def handle_exception(exception):
     report_issue_confirmed = messagebox.askyesno(
         "Report Issue Confirmation",

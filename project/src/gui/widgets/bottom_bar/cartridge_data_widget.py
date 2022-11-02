@@ -1,7 +1,7 @@
 from tkinter import ttk
 
 from project.src.structs.gb_header import HEADER_FORMAT
-from project.src.system import bus as dd
+from project.src.system import bus as dd, ComponentEvents
 
 
 class CartridgeDataWidget(ttk.Frame):
@@ -20,15 +20,15 @@ class CartridgeDataWidget(ttk.Frame):
             value.grid(row=i // 7 * 2 + 1, column=i % 7 * 2, sticky="w")
             setattr(self, attr + "_value", value)
 
-        dd.subscribe(dd.ComponentEvents.HeaderLoaded, self.update_data)
-        dd.subscribe(dd.ComponentEvents.RequestReset, self.clear)
+        ComponentEvents.HeaderLoaded(self.update_data)
+        ComponentEvents.RequestReset(self.clear)
 
     def update_data(self, header_data):
         header_data = header_data._asdict()
         for k in (k for k in header_data if k not in ["logo", "global_checksum"]):
             getattr(self, k + "_value").config(text=str(header_data[k]))
 
-    def clear(self):
+    def clear(self, *_):
         for i, attr in enumerate(
             sorted(
                 f[0] for f in HEADER_FORMAT if f[0] not in ["logo", "global_checksum"]

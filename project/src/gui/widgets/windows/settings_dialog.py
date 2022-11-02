@@ -14,7 +14,7 @@ from tkinter import (
     StringVar,
 )
 
-from project.src.system import bus as dd
+from project.src.system import bus as dd, GuiEvents
 from project.src.system.config import (
     sections,
     get_value,
@@ -130,7 +130,7 @@ class SettingsWindow(Toplevel):
 
     def save(self):
         save_config()
-        dd.broadcast(dd.SystemEvents.SettingsUpdated)
+        dd.emit(dd.SystemEvents.SettingsUpdated)
         self.destroy()
 
     def cancel(self):
@@ -146,6 +146,6 @@ class SettingsWindow(Toplevel):
         self.create_tabs(self.tabs)
 
 
-@dd.subscribes_to(dd.GuiEvents.OpenSettingsDialog)
+@GuiEvents.OpenSettingsDialog
 def open_settings_dialog(parent):
     SettingsWindow(parent).grab_set()

@@ -1,10 +1,10 @@
 from tkinter import filedialog
 
-from project.src.system import bus as dd
+from project.src.system import bus as dd, GuiEvents
 from project.src.system.config import get_value
 
 
-@dd.subscribes_to(dd.GuiEvents.OpenLoadRomDialog)
+@GuiEvents.OpenLoadRomDialog
 def open_load_rom_dialog():
     file = filedialog.askopenfilename(
         initialdir=get_value("paths", "roms"),
@@ -18,4 +18,4 @@ def open_load_rom_dialog():
     )
 
     if file:
-        dd.broadcast(dd.GuiEvents.LoadRomFromLibrary, file)
+        GuiEvents.LoadRomFromLibrary(file)

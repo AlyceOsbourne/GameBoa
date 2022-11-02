@@ -1,9 +1,12 @@
 import gzip
 import json
 from pathlib import Path
+from pprint import pprint
 from typing import NamedTuple
+from functools import partial
 
-from project.src.system import bus as dd
+from project.src.system import bus
+from project.src.system import ComponentEvents
 from project.src.system.system_paths import opcode_path
 
 
@@ -27,19 +30,11 @@ class Instruction(
 
     @classmethod
     def load(cls, file_path: Path) -> dict:
-        loaded_instructions: dict = {}
-        try:
-            json_data = json.loads(gzip.decompress(file_path.read_bytes()).decode())
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Could not find {file_path} in current directory.")
-
-        for category, operation in json_data.items():
-            if category not in loaded_instructions:
-                loaded_instructions[category] = {}
-
-            for op_code, op_code_settings in operation.items():
-                op_code = int(op_code, 16)
-                loaded_instructions[category][op_code] = cls(
+        try: json_data = json.loads(gzip.decompress(file_path.read_bytes()).decode())
+        except FileNotFoundError: raise FileNotFoundError(f"Could not find {file_path} in current directory.")
+        return {
+            category: {
+                int(op_code, 16): cls(
                     op_code,
                     op_code_settings["mnemonic"],
                     op_code_settings.get("length"),
@@ -50,18 +45,14 @@ class Instruction(
                     op_code_settings.get("operand1", None),
                     op_code_settings.get("operand2", None),
                 )
-        return loaded_instructions
+                for op_code, op_code_settings in operation.items()
+            }
+            for category, operation in json_data.items()
+        }
 
     def __str__(self) -> str:
         return f"{self.mnemonic}({self.operand1}, {self.operand2})"
 
+instructions, cb_instructions = Instruction.load(opcode_path).values()
 
-instructions, cb_instructions = Instruction.load(opcode_path)
 
-dd.subscribe(
-    dd.ComponentEvents.RequestDecode,
-    lambda op_code, is_cb_instruction: dd.broadcast(
-        dd.ComponentEvents.RequestExecute,
-        cb_instructions[op_code] if is_cb_instruction else instructions[op_code],
-    ),
-)

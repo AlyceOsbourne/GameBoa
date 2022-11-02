@@ -18,21 +18,21 @@ class MenuBarWidget(Frame):
         file_menu = Menu(menubar, tearoff=0)
         file_menu.add_command(
             label="Load Rom",
-            command=lambda: dd.broadcast(dd.GuiEvents.OpenLoadRomDialog),
+            command=lambda: dd.emit(dd.GuiEvents.OpenLoadRomDialog),
         )
         file_menu.add_command(
             label="Unload Rom",
-            command=lambda: dd.broadcast(dd.ComponentEvents.RequestReset),
+            command=lambda: dd.emit(dd.ComponentEvents.RequestReset),
         )
         file_menu.add_command(
-            label="Exit", command=lambda: dd.broadcast(dd.SystemEvents.Quit)
+            label="Exit", command=lambda: dd.emit(dd.SystemEvents.Quit)
         )
         menubar.add_cascade(label="File", menu=file_menu)
 
         edit_menu = Menu(menubar, tearoff=0)
         edit_menu.add_command(
             label="Settings",
-            command=lambda: dd.broadcast(
+            command=lambda: dd.emit(
                 dd.GuiEvents.OpenSettingsDialog, self.parent
             ),
         )
@@ -41,7 +41,7 @@ class MenuBarWidget(Frame):
         help_menu = Menu(menubar, tearoff=0)
         help_menu.add_command(
             label="About",
-            command=lambda: dd.broadcast(
+            command=lambda: dd.emit(
                 dd.GuiEvents.OpenAboutDialog, self.parent
             ),
         )
