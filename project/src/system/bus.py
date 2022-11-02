@@ -4,7 +4,7 @@ from itertools import count
 from types import FunctionType, MethodType
 from typing import Any, Callable, Hashable
 from typing import Dict, List
-from timeit import timeit
+from test_utils import *
 
 
 Callback = Callable[..., Any]
@@ -82,26 +82,32 @@ class EventGroup(tuple[Event, ...], Flag):
             return v
         self.emit(v, *a, **k)
 
+@timeit_decorator
 def emit(event: Hashable, *args, **kwargs):
     for priority in _broadcasts.get(event, {}).values():
         for callback in priority:
             callback(*args, **kwargs)
 
+@timeit_decorator
 def subscribe(event: Hashable, callback: Callback, priority: Priority = Priority.MEDIUM):
     _broadcasts.setdefault(event, {}).setdefault(priority, []).append(callback)
 
+@timeit_decorator
 def subscribes_to(event: Hashable, priority: Priority = Priority.MEDIUM) -> Callable:
     def decorator(f):
         subscribe(event, f, priority)
         return f
     return decorator
 
+@timeit_decorator
 def allow_requests(observed_key: Hashable, observed_function: Callable) -> None:
     _allowed_requests[observed_key] = observed_function
 
+@timeit_decorator
 def allows_requests(observable_key: Hashable) -> Callable:
     return lambda f: allow_requests(observable_key, f) or f
 
+@timeit_decorator
 def request_data(event: Hashable, *args, **kwargs) -> Any:
     if event in _allowed_requests:
         return _allowed_requests[event](*args, **kwargs)
