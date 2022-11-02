@@ -42,7 +42,7 @@ def set_register(register, value):
             raise KeyError(f"Unknown register for given key {register}")
 
 
-@ComponentEvents.RequestRegisterRead
+@ComponentEvents.RequestRegisterRead.allow_requests
 def get_register(register):
     LogEvent.LogDebug(f"Reading {register}")
     match register:
@@ -58,7 +58,7 @@ def get_register(register):
             return _get_8(1) >> "ZNC".index(register[1]) & 1
 
 
-@GuiEvents.RequestRegistryStatus
+@GuiEvents.RequestRegistryStatus.allow_requests
 def get_registry_status():
     return_string = ""
     for i, reg in enumerate(["AF", "BC", "DE", "HL", "SP", "PC"]):

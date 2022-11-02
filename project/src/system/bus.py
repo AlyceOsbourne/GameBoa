@@ -43,6 +43,14 @@ class Event(Flag):
     def subscribers(self) -> list:
         return _broadcasts.get(self, [])
 
+    def request_data(self, *args, **kwargs) -> Any:
+        return request_data(self, *args, **kwargs)
+
+    def allow_requests(self, f: Callable) -> None:
+        _allowed_requests.setdefault(self, f)
+
+
+
     def __or__(self, other: object) -> object:
         return self, other
 
@@ -75,6 +83,9 @@ class EventGroup(tuple[Event, ...], Flag):
     def emit(self, *args, **kwargs) -> None:
         for event in self:
             event.emit(*args, **kwargs)
+
+    def request_data(self, *args, **kwargs):
+        return [event.request_data(*args, **kwargs) for event in self]
 
     def __call__(self, v, *a, **k):
         if isinstance(v, FunctionType):
