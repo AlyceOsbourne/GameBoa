@@ -1,12 +1,11 @@
-import inspect
-from collections import deque
 from enum import IntFlag
 from enum import auto, Flag
 from itertools import count
 from types import FunctionType, MethodType
 from typing import Any, Callable, Hashable
 from typing import Dict, List
-from weakref import WeakValueDictionary
+from timeit import timeit
+
 
 Callback = Callable[..., Any]
 CallbackList = List[Callback]

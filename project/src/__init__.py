@@ -1,6 +1,6 @@
 from .system import bus
 from .components import *
-from .gui import MainWindow
+from .gui import *
 from . import structs
 
 def run():

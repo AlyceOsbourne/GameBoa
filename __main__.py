@@ -20,6 +20,7 @@ argument_parser.add_argument("--build", action="store_true")
 argument_parser.add_argument("--test-build", action="store_true")
 argument_parser.add_argument("--reset-build", action="store_true")
 argument_parser.add_argument("--run-unit-tests", action="store_true")
+argument_parser.add_argument("--profile-system", action="store_true")
 arguments = argument_parser.parse_args()
 
 
@@ -75,16 +76,38 @@ def _run_unit_tests():
     from tests import run; run()
 
 
+
 def _run_src():
     from project import run; run()
 
 
+def _profile():
+    print("Profiling...")
+    from cProfile import Profile
+    from pstats import Stats
+    profiler = Profile()
+    profiler.enable()
+    _run_src()
+    profiler.disable()
+    stats = Stats(profiler)
+    # sort by longest call
+    stats.sort_stats("cumulative")
+    stats.print_stats()
+
+
+
+
 def main():
-    match arguments:
-        case arguments.build: _build()
-        case arguments.test_build: _test_build()
-        case arguments.run_unit_tests: _run_unit_tests()
-        case _: _run_src()
+    if arguments.build:
+        _build()
+    elif arguments.test_build:
+        _test_build()
+    elif arguments.run_unit_tests:
+        _run_unit_tests()
+    elif arguments.profile_system:
+        _profile()
+    else:
+        _run_src()
 
 
 if __name__ == "__main__":

@@ -68,4 +68,4 @@ SystemEvents.SettingsUpdated.subscribe(
 SystemEvents.ExceptionRaised.subscribe(LogEvent.LogError.emit)
 
 
-__all__ = ["bus", 'system_paths', 'config', 'gb_logger', 'LogEvent', 'SystemEvents', 'GuiEvents', 'ComponentEvents']
+__all__ = ["bus", 'system_paths', 'config', 'LogEvent', 'SystemEvents', 'GuiEvents', 'ComponentEvents']
