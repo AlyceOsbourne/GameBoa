@@ -2,4 +2,4 @@ Pillow ~= 9.3.0
 future ~= 0.18.2
 tkthread ~= 0.5.2
 hypothesis ~= 6.56.4
-pyinstaller ~= 5.6.1
+pyinstaller ~= 5.6.2
