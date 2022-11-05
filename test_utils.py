@@ -1,11 +1,13 @@
 import timeit
 
-# timeit decorator
-def timeit_decorator(func):
+
+def execution_time(function):
     def wrapper(*args, **kwargs):
         start = timeit.default_timer()
-        result = func(*args, **kwargs)
+        function_result = function(*args, **kwargs)
         end = timeit.default_timer()
-        print(f"Time taken by {func.__name__}: {end - start} seconds")
-        return result
+        print(f"{function.__name__} took {end - start} seconds")
+
+        return function_result
+
     return wrapper
