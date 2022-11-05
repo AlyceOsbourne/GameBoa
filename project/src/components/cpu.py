@@ -1,100 +1,59 @@
-from functools import partial
-from pprint import pprint, pformat
-
+from project.src.system import LogEvent, ComponentEvents, GuiEvents; LogEvent.LogInfo('Initializing CPU')
 from .instruction import Instruction, instructions, cb_instructions
-from project.src.system import LogEvent, ComponentEvents, GuiEvents
 
-mappings = locals()
-
-_read_mapped_memory = ComponentEvents.RequestMemoryRead
-_write_mapped_memory = ComponentEvents.RequestMemoryWrite
-def _not_impl(msg, *args, **kwargs):
-    raise NotImplementedError(msg)
+#Todo remove this temp event, is stand in for memory read
+ComponentEvents.RequestMemoryRead.allow_requests(lambda addr: 0)
 
 
-def _get_operator(operator):
-    match operator:
-        case _ if operator.startswith("(") and operator.endswith(")"):
-            return _read_mapped_memory(_get_operator(operator[1:-1]))
-        case 'NZ' | 'Z' | 'NC' | 'C':
-            return mappings.get(f"get_flag_{operator[-1]}") ^ (operator[0] == 'N')
-        case 'a16':
-            return mappings.get("_read_mapped_memory")(mappings.get("_get_16_bit_register_PC")()) + (
-                        mappings.get("_read_mapped_memory")(mappings.get("_get_16_bit_register_PC")() + 1) << 8)
+_read_mem = ComponentEvents.RequestMemoryRead.request_data
+_write_mem = ComponentEvents.RequestMemoryWrite
+_read_reg = ComponentEvents.RequestRegisterRead.request_data
+_write_reg = ComponentEvents.RequestRegisterWrite
+
+def read_operand(operand) -> int:
+    match operand:
         case 'A' | 'F' | 'B' | 'C' | 'D' | 'E' | 'H' | 'L':
-            return mappings.get(f"get_register_{operator}")
+            return _read_reg(operand)
         case 'AF' | 'BC' | 'DE' | 'HL' | 'SP' | 'PC':
-            return mappings.get(f"get_16_bit_register_{operator}")
+            return _read_reg(operand)
+        case 'd8' | 'a8':
+            return _read_mem(_read_reg('PC'))
+        case 'd16' | 'a16':
+            return _read_mem(_read_reg('PC')) | _read_mem(_read_reg('PC') + 1) << 8
+        case _ if operand.startswith('(') and operand.endswith(')'):
+            return _read_mem(read_operand(operand[1:-1]))
+        case _:
+            LogEvent.LogDebug(f'Unknown operand {operand} for read')
+            return 0
 
+def write_operand(operand, value):
+    match operand:
+        case _ if operand.startswith('(') and operand.endswith(')'):
+            _write_mem(read_operand(operand[1:-1]), value)
+        case _:
+            LogEvent.LogDebug(f'Unknown operand {operand} for write')
 
-def _set_operator(operator, value):
-    match operator:
-        case _ if operator.startswith("(") and operator.endswith(")"):
-            _write_mapped_memory(_get_operator(operator[1:-1]), value)
-        case 'NZ' | 'Z' | 'NC' | 'C':
-            mappings.get(f"set_flag_{operator[-1]}")(value) ^ (operator[0] == 'N')
-        case 'a16':
-            _write_mapped_memory(_get_operator("a16"), value)
-        case 'A' | 'F' | 'B' | 'C' | 'D' | 'E' | 'H' | 'L':
-            mappings.get(f"_set_8_bit_register_{operator}")(value)
-        case 'AF' | 'BC' | 'DE' | 'HL' | 'SP' | 'PC':
-            mappings.get(f"_set_16_bit_register_{operator}")(value)
+def fetch_op_code():
+    val = _read_mem(_read_reg('PC'))
+    _write_reg('PC', _read_reg('PC') + 1)
+    return val
 
+def decode_op_code(op_code, is_cb=False):
+    if is_cb:
+        return cb_instructions[op_code]
+    return instructions[op_code]
 
-mappings.update(
-    {
-        **{
-            f"_get_8_bit_register_{_8_bit_register}": partial(_get_operator, _8_bit_register)
-            for _8_bit_register in ("A", "F", "B", "C", "D", "E", "H", "L")
-        },
-        **{
-            f"_set_8_bit_register_{_8_bit_register}": partial(_set_operator, _8_bit_register)
-            for _8_bit_register in ("A", "F", "B", "C", "D", "E", "H", "L")
-        },
-        **{
-            f"_get_16_bit_register_{_16_bit_register}": partial(_get_operator, _16_bit_register)
-            for _16_bit_register in ("AF", "BC", "DE", "HL", "SP", "PC")
-        },
-        **{
-            f"_set_16_bit_register_{_16_bit_register}": partial(_set_operator, _16_bit_register)
-            for _16_bit_register in ("AF", "BC", "DE", "HL", "SP", "PC")
-        },
-    })
-
-mappings.update({
-
-    '_get_flags_register': partial(mappings.get('_get_8_bit_register_F'), ),
-    '_set_flags_register': partial(mappings.get('_set_8_bit_register_F'), ),
-
-    **{
-        f"_get_flag_{flag}": partial(lambda: mappings.get("_get_flags_register")() >> 'ZNC'.index(flag) & 1)
-        for flag in ("Z", "N", "H", "C")
-    },
-    **{
-        f"_set_flag_{flag}": partial(lambda value: mappings.get("_set_flags_register")(
-            mappings.get("_get_flags_register")() & ~(1 << 'ZNC'.index(flag)) | (value << 'ZNC'.index(flag))
-        ))
-        for flag in ("Z", "N", "H", "C")
-    },
-})
-
-mappings.update({
-    **{
-        f"_execute_{instruction.mnemonic}": partial(
-            lambda instruction: _not_impl(f"Instruction {instruction.mnemonic} not implemented"))
-        for instruction in list(instructions.values() and cb_instructions.values())
-        if f"_execute_{instruction.mnemonic}" not in mappings
-    },
-})
-
-
+@ComponentEvents.RequestExecute
 def execute(instruction: Instruction):
-    if instruction.op_code == 0xCB:
-        instruction = cb_instructions[_read_mapped_memory(mappings.get("_get_16_bit_register_PC")())]
-        mappings.get("_set_16_bit_register_PC")(mappings.get("_get_16_bit_register_PC")() + 1)
-    return mappings.get(f"_execute_{instruction.mnemonic}")(instruction)
+    match instruction.mnemonic:
+        case "NOP":
+            pass
+        case "PREFIX":
+            execute(decode_op_code(fetch_op_code(), is_cb=True))
+        case "HALT":
+            ComponentEvents.RequestHalt()
+
+        case _:
+            LogEvent.LogDebug(f"Instruction {instruction.mnemonic} not implemented yet.")
 
 
-LogEvent.LogDebug.emit(f"Mapped CPU Instructions\n{pformat({k:v for k,v in mappings.items() if k.startswith(('_execute_', '_get_', '_set_'))})}")
-
-LogEvent.LogInfo.emit("CPU initialized")

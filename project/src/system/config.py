@@ -10,7 +10,6 @@ else:
     user_path.mkdir(exist_ok=True)
 
 
-
 defaults = {
     "paths": {
         "roms": (user_path / "roms", str),
@@ -31,11 +30,9 @@ defaults = {
 
 _config_parser = configparser.ConfigParser()
 
+
 def load_config():
-    defaults_ = {
-        section: {key: value[0] for key, value in options.items()}
-        for section, options in defaults.items()
-    }
+    defaults_ = {section: {key: value[0] for key, value in options.items()} for section, options in defaults.items()}
     _config_parser.read_dict(defaults_)
     _config_parser.read(user_path / "gameboa.config")
     for section in _config_parser.sections():
@@ -48,7 +45,6 @@ def load_config():
     save_config()
     for path in _config_parser["paths"].values():
         pathlib.Path(path).mkdir(parents=True, exist_ok=True)
-
 
 
 def get_value(section, key):
@@ -98,7 +94,6 @@ def reset_to_defaults():
     for section, options in defaults.items():
         for key, value in options.items():
             _config_parser[section][key] = str(value[0])
-
 
 
 __all__ = [

@@ -16,9 +16,7 @@ class AboutWindow(Toplevel):
         self.resizable(False, False)
         self.iconbitmap(str(ico_path))
 
-        image = ImageTk.PhotoImage(
-            Image.open(png_path, "r").resize((100, 100), Image.ANTIALIAS)
-        )
+        image = ImageTk.PhotoImage(Image.open(png_path, "r").resize((100, 100), Image.ANTIALIAS))
 
         label = Label(self, image=image)
         label.image = image

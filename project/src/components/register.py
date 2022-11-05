@@ -4,7 +4,7 @@ from project.src.system import ComponentEvents, LogEvent, GuiEvents
 
 registry = array.array("B", [0] * 16)
 
-_set_8 = lambda i, v: registry.__setitem__(i, v)
+_set_8 = lambda i, v: registry.__setitem__(i, v & 0xFF)
 _set_16 = lambda i, v: registry.__setitem__(
     slice(i, i + 2), array.array("B", [v >> 8, v & 0xFF])
 )

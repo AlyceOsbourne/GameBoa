@@ -6,7 +6,7 @@ from typing import NamedTuple
 from functools import partial
 
 from project.src.system import bus
-from project.src.system import ComponentEvents
+from project.src.system import ComponentEvents, LogEvent
 from project.src.system.system_paths import opcode_path
 
 
@@ -54,5 +54,7 @@ class Instruction(
         return f"{self.mnemonic}({self.operand1}, {self.operand2})"
 
 instructions, cb_instructions = Instruction.load(opcode_path).values()
+
+
 
 

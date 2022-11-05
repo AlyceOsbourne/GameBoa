@@ -25,7 +25,6 @@ class Priority(IntFlag):
 
 
 class Event(Flag):
-
     @staticmethod
     def _generate_next_value_(*_):
         return next(_event_id_generator)
@@ -48,8 +47,6 @@ class Event(Flag):
     def allow_requests(self, f: Callable) -> None:
         _allowed_requests.setdefault(self, f)
 
-
-
     def __or__(self, other: object) -> object:
         return self, other
 
@@ -67,11 +64,7 @@ class Event(Flag):
 
     @staticmethod
     def get_all_events():
-        return {
-            member.name: member
-            for subcls in Event.__subclasses__()
-            for member in subcls.__members__.values()
-        }
+        return {member.name: member for subclass in Event.__subclasses__() for member in subclass.__members__.values()}
 
 
 class EventGroup(tuple[Event, ...], Flag):
@@ -84,8 +77,8 @@ class EventGroup(tuple[Event, ...], Flag):
             for event in self:
                 event.subscribe(f, priority)
             return f
-        return decorator
 
+        return decorator
 
     def emit(self, *args, **kwargs) -> None:
         for event in self:
@@ -115,6 +108,7 @@ def subscribes_to(event: Hashable, priority: Priority = Priority.MEDIUM) -> Call
     def decorator(f):
         subscribe(event, f, priority)
         return f
+
     return decorator
 
 
@@ -133,9 +127,13 @@ def request_data(event: Hashable, *args, **kwargs) -> Any:
         raise ValueError(f"Event {event} not allowed to be requested")
 
 
-
 __all__ = [
-    "Event", "Priority",
-    "emit", "subscribe", "subscribes_to", "allow_requests",
-    "allows_requests", "request_data",
+    "Event",
+    "Priority",
+    "emit",
+    "subscribe",
+    "subscribes_to",
+    "allow_requests",
+    "allows_requests",
+    "request_data",
 ]

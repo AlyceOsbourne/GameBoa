@@ -67,9 +67,7 @@ class SettingsWindow(Toplevel):
                 value.set(get_value(section, option))
                 value.trace(
                     "w",
-                    lambda *args, section=section, option=option, value=value: set_value(
-                        section, option, value.get()
-                    ),
+                    lambda *args, section=section, option=option, value=value: set_value(section, option, value.get()),
                 )
                 value = Checkbutton(tab, variable=value)
             elif value_type == str:
@@ -77,9 +75,7 @@ class SettingsWindow(Toplevel):
                 value.set(get_value(section, option))
                 value.trace(
                     "w",
-                    lambda *args, section=section, option=option, value=value: set_value(
-                        section, option, value.get()
-                    ),
+                    lambda *args, section=section, option=option, value=value: set_value(section, option, value.get()),
                 )
                 value = Entry(tab, textvariable=value)
                 value.config(width=50)
@@ -88,9 +84,7 @@ class SettingsWindow(Toplevel):
                 value.set(get_value(section, option))
                 value.trace(
                     "w",
-                    lambda *args, section=section, option=option, value=value: set_value(
-                        section, option, value.get()
-                    ),
+                    lambda *args, section=section, option=option, value=value: set_value(section, option, value.get()),
                 )
                 value = Spinbox(tab, from_=0, to=100, textvariable=value)
             elif value_type == float:
@@ -98,9 +92,7 @@ class SettingsWindow(Toplevel):
                 value.set(get_value(section, option))
                 value.trace(
                     "w",
-                    lambda *args, section=section, option=option, value=value: set_value(
-                        section, option, value.get()
-                    ),
+                    lambda *args, section=section, option=option, value=value: set_value(section, option, value.get()),
                 )
                 value = Spinbox(tab, from_=0.0, to=100.0, textvariable=value)
             else:
@@ -111,9 +103,7 @@ class SettingsWindow(Toplevel):
                 button = Button(
                     tab,
                     text="Browse",
-                    command=lambda section=section, option=option, value=value: self.browse(
-                        section, option, value
-                    ),
+                    command=lambda section=section, option=option, value=value: self.browse(section, option, value),
                 )
                 button.grid(row=index, column=4, sticky="w", columnspan=2)
 

@@ -1,1 +1,1 @@
-from . import gb_header, rom_data
+from . import rom_data

@@ -4,9 +4,7 @@ from tkinter import messagebox
 
 from project.src.system import SystemEvents
 
-LINK_TO_ISSUES_ON_GITHUB = (
-    "https://github.com/AlyceOsbourne/GameBoa/issues/new?title={title}&body={body}"
-)
+LINK_TO_ISSUES_ON_GITHUB = "https://github.com/AlyceOsbourne/GameBoa/issues/new?title={title}&body={body}"
 
 
 @SystemEvents.ExceptionRaised

@@ -1,6 +1,6 @@
 from tkinter import ttk
 
-from project.src.structs.gb_header import HEADER_FORMAT
+from project.src.components.memory import HEADER_FORMAT
 from project.src.system import bus as dd, ComponentEvents
 
 
@@ -8,11 +8,7 @@ class CartridgeDataWidget(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
 
-        for i, attr in enumerate(
-            sorted(
-                f[0] for f in HEADER_FORMAT if f[0] not in ["logo", "global_checksum"]
-            )
-        ):
+        for i, attr in enumerate(sorted(f[0] for f in HEADER_FORMAT if f[0] not in ["logo", "global_checksum"])):
             label = ttk.Label(self, text=attr)
             value = ttk.Label(self, text="N/A")
 
@@ -29,9 +25,5 @@ class CartridgeDataWidget(ttk.Frame):
             getattr(self, k + "_value").config(text=str(header_data[k]))
 
     def clear(self, *_):
-        for i, attr in enumerate(
-            sorted(
-                f[0] for f in HEADER_FORMAT if f[0] not in ["logo", "global_checksum"]
-            )
-        ):
+        for i, attr in enumerate(sorted(f[0] for f in HEADER_FORMAT if f[0] not in ["logo", "global_checksum"])):
             getattr(self, attr + "_value").config(text="N/A")

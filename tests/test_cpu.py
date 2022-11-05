@@ -1,16 +1,26 @@
-from hypothesis import given, strategies as st
 import unittest
-from project.src.system import ComponentEvents
+
+from hypothesis import (
+    given,
+    strategies as st,
+    settings,
+    HealthCheck,
+)
+
 from project.src.components.instruction import instructions, cb_instructions
-from project.src.components.cpu import execute
+from project.src.system import ComponentEvents, SystemEvents, set_value
+
+set_value("developer", "debug logging", False)
+SystemEvents.SettingsUpdated()
+
 
 class TestCPU(unittest.TestCase):
-    instruction_strat = st.sampled_from(list(instructions.values() and cb_instructions.values()))
+    instruction_list = list(instructions.values()) + list(cb_instructions.values())
 
-    @given(instruction_strat)
-    def test_execute(self, instruction):
-        try:
-            self.assertEqual(execute(instruction), True)
-        except NotImplementedError as e:
-            print(f"Instruction {instruction} not implemented.")
-            self.assertEqual(execute(instruction), False)
+    @given(st.sampled_from(instruction_list))
+    @settings(suppress_health_check=[HealthCheck.too_slow], max_examples=len(instruction_list))
+    def test_instruction(self, instruction):
+        ComponentEvents.RequestReset()
+        ComponentEvents.RequestExecute(instruction)
+
+    ComponentEvents.RequestReset()

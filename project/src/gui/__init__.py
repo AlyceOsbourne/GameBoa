@@ -1,11 +1,7 @@
 import tkinter
 from tkinter.ttk import Notebook
 
-from project.src.system import (
-    get_value,
-    ico_path,
-    bus as dd, GuiEvents, SystemEvents, ComponentEvents
-)
+from project.src.system import get_value, ico_path, bus as dd, GuiEvents, SystemEvents, ComponentEvents
 from .widgets import *
 
 
@@ -29,22 +25,17 @@ class MainWindow(tkinter.Tk):
         self.rom_listbox.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
         self.screen = GameScreen(self)
 
-        self.screen.bind(
-            "<Configure>", lambda e: self.screen.config(width=e.width, height=e.height)
-        )
+        self.screen.bind("<Configure>", lambda e: self.screen.config(width=e.width, height=e.height))
 
         SystemEvents.SettingsUpdated(self.update_dev_view)
         SystemEvents.Quit(self.destroy)
         ComponentEvents.RomLoaded(self.switch_to_screen)
         ComponentEvents.RequestReset(self.switch_to_library)
 
-
     def make_bottom_bar(self):
         self.bottom_bar = Notebook(self, height=150)
         self.bottom_bar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
-        self.bottom_bar_collapse_button = tkinter.Button(
-            self, text="▼", command=self.collapse_bottom_bar
-        )
+        self.bottom_bar_collapse_button = tkinter.Button(self, text="▼", command=self.collapse_bottom_bar)
         self.cartridge_data_tab = CartridgeDataWidget(self.bottom_bar)
         self.registry_view = DataView(self.bottom_bar, GuiEvents.RequestRegistryStatus)
         self.memory_view = DataView(self.bottom_bar, GuiEvents.RequestMemoryStatus)
@@ -52,9 +43,7 @@ class MainWindow(tkinter.Tk):
         self.bottom_bar.add(self.cartridge_data_tab, text="Cartridge Data")
         self.bottom_bar.add(self.registry_view, text="Registry")
         self.bottom_bar.add(self.memory_view, text="Memory")
-        self.bottom_bar_collapse_button = tkinter.Button(
-            self, text="▼", command=self.collapse_bottom_bar
-        )
+        self.bottom_bar_collapse_button = tkinter.Button(self, text="▼", command=self.collapse_bottom_bar)
         self.bottom_bar_collapse_button.pack(side=tkinter.BOTTOM, fill=tkinter.X)
         self.toggle_bottom_bar()
 

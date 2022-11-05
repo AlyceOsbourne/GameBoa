@@ -6,12 +6,8 @@ from PIL import ImageTk, Image
 
 from project.src.system.system_paths import png_path, ico_path
 
-pixel_color_mapping = {
-    0x00: "#FFFFFF",
-    0x01: "#AAAAAA",
-    0x10: "#555555",
-    0x11: "#000000"
-}
+pixel_color_mapping = {0x00: "#FFFFFF", 0x01: "#AAAAAA", 0x10: "#555555", 0x11: "#000000"}
+
 
 class GameScreen(Canvas):
     # the canvas can be resized, but the number of "pixels" is fixed
@@ -31,12 +27,13 @@ class GameScreen(Canvas):
     def update_pixel_data(self):
         self.delete("all")
         self.create_image(
-            0, 0, image=ImageTk.PhotoImage(
-            Image.open(ico_path),
-                width=self.winfo_width(), height=self.winfo_height()
-            ), anchor="nw", tags="all", state="normal")
-        self.create_text(self.winfo_width() // 2, self.winfo_height() * 0.75, text="GameBoa", fill="white", font=("Arial", 32))
-
-
-
-
+            0,
+            0,
+            image=ImageTk.PhotoImage(Image.open(ico_path), width=self.winfo_width(), height=self.winfo_height()),
+            anchor="nw",
+            tags="all",
+            state="normal",
+        )
+        self.create_text(
+            self.winfo_width() // 2, self.winfo_height() * 0.75, text="GameBoa", fill="white", font=("Arial", 32)
+        )

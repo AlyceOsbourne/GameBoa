@@ -1,8 +1,10 @@
-from project.src import bus as dd
 from hypothesis import given, strategies as st
 import unittest
 
-from project.src.system import ComponentEvents
+from project.src.system import ComponentEvents, SystemEvents, set_value
+
+set_value("developer", "debug logging", False)
+SystemEvents.SettingsUpdated()
 
 
 class TestRegister(unittest.TestCase):
@@ -24,7 +26,6 @@ class TestRegister(unittest.TestCase):
     def test_8_bit(self, register, value):
         self._test(register, value)
 
-
     @given(register_strat_16_bit, value_strat_16_bit)
     def test_16_bit(self, register, value):
         self._test(register, value)
@@ -32,3 +33,5 @@ class TestRegister(unittest.TestCase):
     @given(stack_pointer_program_counter, value_strat_16_bit)
     def test_stack_pointer_program_counter(self, register, value):
         self._test(register, value)
+
+    ComponentEvents.RequestReset()

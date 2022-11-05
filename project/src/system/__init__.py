@@ -1,3 +1,4 @@
+import pprint
 from enum import auto
 from .config import * ; load_config()
 from .system_paths import *
@@ -39,8 +40,6 @@ class ComponentEvents(Event):
     HeaderLoaded = auto()
     RequestReset = auto()
 
-    RequestOpCode = auto()
-    RequestDecode = auto()
     RequestExecute = auto()
 
     RequestMemoryRead = auto()
@@ -48,6 +47,31 @@ class ComponentEvents(Event):
 
     RequestRegisterRead = auto()
     RequestRegisterWrite = auto()
+
+    RequestHalt = auto()
+    RequestUnhalt = auto()
+
+    RequestInterrupt = auto()
+    RequestInterruptAcknowledge = auto()
+    RequestInterruptDisable = auto()
+    RequestInterruptEnable = auto()
+
+    RequestTimerTick = auto()
+    RequestTimerRead = auto()
+    RequestTimerWrite = auto()
+
+    RequestJoypadRead = auto()
+    RequestJoypadWrite = auto()
+
+    RequestSerialRead = auto()
+    RequestSerialWrite = auto()
+
+    RequestVideoRead = auto()
+    RequestVideoWrite = auto()
+
+    RequestAudioRead = auto()
+    RequestAudioWrite = auto()
+
 
 
 LogEvent.LogDebug.subscribe(logger.debug)
@@ -67,5 +91,10 @@ SystemEvents.SettingsUpdated.subscribe(
 
 SystemEvents.ExceptionRaised.subscribe(LogEvent.LogError.emit)
 
+if events := Event.get_all_events():
+    LogEvent.LogInfo.emit(f'System loaded {len(events)} events')
+    LogEvent.LogDebug.emit(f'Events: \n{pprint.pformat(list(events.keys()), indent=4)}')
+
+LogEvent.LogDebug.emit('System initialized')
 
 __all__ = ["bus", 'system_paths', 'config', 'LogEvent', 'SystemEvents', 'GuiEvents', 'ComponentEvents']
