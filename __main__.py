@@ -82,9 +82,8 @@ def _run_src():
 
 
 def _profile(func, *filenames):
-    print("Profiling...")
     from cProfile import Profile
-
+    print("Profiling...")
     profiler = Profile()
     profiler.enable()
     func()

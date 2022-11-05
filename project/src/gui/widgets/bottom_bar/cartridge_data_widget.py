@@ -1,6 +1,6 @@
 from tkinter import ttk
 
-from project.src.components.memory import HEADER_FORMAT
+from project.src.components.cartridge import HEADER_FORMAT
 from project.src.system import bus as dd, ComponentEvents
 
 
